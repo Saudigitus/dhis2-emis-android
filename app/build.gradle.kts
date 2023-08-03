@@ -216,6 +216,7 @@ dependencies {
     implementation(project(":dhis2_android_maps"))
     implementation(project(":compose-table"))
     implementation(project(":stock-usecase"))
+    implementation(project(":emis"))
 
     implementation(libs.security.conscrypt)
     implementation(libs.security.rootbeer)
