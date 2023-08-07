@@ -18,6 +18,7 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.rounded.Email
 import androidx.compose.material.icons.rounded.School
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -166,14 +167,16 @@ fun TEICountComponent(
 fun ShowCard(grade: String, section: String, academicYear: String, orgUnitName: String, teiCount: Int){
     val gradeLabel: String = "Grade"
 
-    val paddingModifier = Modifier
-        .fillMaxWidth()
-        .padding(5.dp)
     Card (
         shape = RoundedCornerShape(0.dp),
-        modifier = paddingModifier,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(5.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
     ){
-        Column(modifier = paddingModifier) {
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .padding(5.dp)) {
             Row (modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
@@ -187,11 +190,11 @@ fun ShowCard(grade: String, section: String, academicYear: String, orgUnitName: 
                     )
                     Spacer(modifier = Modifier.size(10.dp))
                     Column {
-                        Text(text = String.format("%s %s, %s",  grade, gradeLabel , section), fontWeight = FontWeight.Bold)
+                        Text(text = String.format("%s, %s",  grade , section), fontWeight = FontWeight.Bold, fontSize = 17.sp)
                         Row {
-                            Text(text = academicYear, fontSize = 10.sp)
-                            Text(text = " | ", fontSize = 10.sp)
-                            Text(text = orgUnitName, fontSize = 10.sp)
+                            Text(text = academicYear, fontSize = 14.sp)
+                            Text(text = " | ", fontSize = 14.sp)
+                            Text(text = orgUnitName, fontSize = 14.sp)
                         }
                     }
                 }
