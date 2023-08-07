@@ -3,4 +3,8 @@
     <string name="sync">Sync</string>
     <string name="filter">Filter</string>
     <string name="back">Back</string>
+    <string name="cls">Class...</string>
+    <string name="grade">Grade...</string>
+    <string name="school">School...</string>
+    <string name="academic_year">Academic year...</string>
 </resources>
