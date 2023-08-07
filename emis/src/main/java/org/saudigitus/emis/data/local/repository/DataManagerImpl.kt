@@ -53,29 +53,25 @@ class DataManagerImpl
         ou: String,
         program: String,
         stage: String,
-        dataElementIds: List<String>
+        dataElementIds: List<String>,
+        options: List<String>
     ): List<SearchTeiModel> = withContext(Dispatchers.IO) {
         return@withContext d2.eventsWithTrackedDataValues(
             ou, program, stage
         ).filter {
-            val dataElements = it.trackedEntityDataValues()?.map { trackedEntityDataValue ->
-                trackedEntityDataValue.dataElement()
+            val dataElements = it.trackedEntityDataValues()?.associate { trackedEntityDataValue ->
+                Pair(trackedEntityDataValue.dataElement(), trackedEntityDataValue.value())
             }
-            dataElements?.containsAll(dataElementIds) == true
+            dataElements?.keys?.containsAll(dataElementIds) == true &&
+                dataElements.values.containsAll(options)
         }.map {
             d2.enrollment("${it.enrollment()}")
         }.map {
-            val repository = d2.trackedEntityModule().trackedEntityInstanceQuery()
-
-            val tei = if (networkUtils.isOnline()) {
-                repository.onlineFirst().allowOnlineCache().eq(true)
-                    .uid("${it.trackedEntityInstance()}")
-                    .blockingGet()
-            } else {
-                repository.offlineOnly().allowOnlineCache().eq(false)
-                    .uid("${it.trackedEntityInstance()}")
-                    .blockingGet()
-            }
+            val tei = d2.trackedEntityModule()
+                .trackedEntityInstances()
+                .byUid().eq(it.trackedEntityInstance())
+                .withTrackedEntityAttributeValues()
+                .one().blockingGet()
 
             transform(tei, program)
         }

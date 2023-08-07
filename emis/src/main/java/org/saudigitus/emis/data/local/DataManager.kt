@@ -16,7 +16,8 @@ interface DataManager {
         ou: String,
         program: String,
         stage: String,
-        dataElements: List<String>
+        dataElementIds: List<String>,
+        options: List<String>
     ): List<SearchTeiModel>
 
     suspend fun trackedEntityInstances(
