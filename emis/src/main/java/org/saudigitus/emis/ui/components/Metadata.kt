@@ -13,7 +13,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.rounded.Email
+import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -22,9 +27,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import org.saudigitus.emis.R
 
 @Composable
@@ -116,6 +125,76 @@ fun RoundedIcon(
         )
         if (painter == null) {
             Text(text = "$label", color = Color.White)
+        }
+    }
+}
+
+@Composable
+fun TEICountComponent(
+    teiCount: Int = 0,
+    imageVector: ImageVector = Icons.Outlined.Person
+) {
+    Row(
+        modifier = Modifier
+            .background(
+                color = Color.LightGray.copy(.35f),
+                shape = RoundedCornerShape(16.dp)
+            )
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = imageVector,
+            contentDescription = "Image",
+            tint = Color.Black.copy(.5f)
+        )
+        Text(
+            text = "$teiCount",
+            color = Color.Black.copy(.5f),
+            maxLines = 1,
+            softWrap = true,
+            overflow = TextOverflow.Ellipsis,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.ExtraBold
+        )
+    }
+}
+
+@Composable
+fun ShowCard(grade: String, section: String, academicYear: String, orgUnitName: String, teiCount: Int){
+    val gradeLabel: String = "Grade"
+
+    val paddingModifier = Modifier
+        .fillMaxWidth()
+        .padding(5.dp)
+    Card (
+        shape = RoundedCornerShape(0.dp),
+        modifier = paddingModifier,
+    ){
+        Column(modifier = paddingModifier) {
+            Row (modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ){
+
+                Row {
+                    Icon(
+                        Icons.Rounded.Email,
+                        contentDescription = "Icon"
+                    )
+                    Spacer(modifier = Modifier.size(10.dp))
+                    Column {
+                        Text(text = String.format("%s %s, %s",  grade, gradeLabel , section), fontWeight = FontWeight.Bold)
+                        Row {
+                            Text(text = academicYear, fontSize = 10.sp)
+                            Text(text = " | ", fontSize = 10.sp)
+                            Text(text = orgUnitName, fontSize = 10.sp)
+                        }
+                    }
+                }
+                TEICountComponent(teiCount = teiCount)
+            }
         }
     }
 }

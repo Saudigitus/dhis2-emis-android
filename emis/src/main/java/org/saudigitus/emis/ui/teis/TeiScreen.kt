@@ -32,6 +32,7 @@ import org.saudigitus.emis.ui.components.DropDown
 import org.saudigitus.emis.ui.components.DropDownOu
 import org.saudigitus.emis.ui.components.MetadataItem
 import org.saudigitus.emis.ui.components.NoResults
+import org.saudigitus.emis.ui.components.ShowCard
 import org.saudigitus.emis.ui.components.Toolbar
 import org.saudigitus.emis.ui.components.ToolbarActionState
 
@@ -142,6 +143,7 @@ fun TeiScreen(
                 } else if (!filterState.isNull() && students.isEmpty()) {
                     NoResults(message = stringResource(R.string.search_no_results))
                 } else {
+                    ShowCard("6th", "A", "2023","OrgUnit name", 6)
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
