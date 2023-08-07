@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.rounded.Email
+import androidx.compose.material.icons.rounded.School
 import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
@@ -180,7 +181,8 @@ fun ShowCard(grade: String, section: String, academicYear: String, orgUnitName: 
 
                 Row {
                     Icon(
-                        Icons.Rounded.Email,
+                        Icons.Rounded.School,
+                        tint = Color(0xFF2C98F0),
                         contentDescription = "Icon"
                     )
                     Spacer(modifier = Modifier.size(10.dp))
