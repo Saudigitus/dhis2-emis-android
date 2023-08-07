@@ -9,11 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Category
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.School
-import androidx.compose.material.icons.rounded.Book
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -26,18 +21,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.dhis2.commons.Constants
 import org.saudigitus.emis.R
-import org.saudigitus.emis.ui.components.DropDownAcademicYear
-import org.saudigitus.emis.ui.components.DropDownClass
-import org.saudigitus.emis.ui.components.DropDownGrade
+import org.saudigitus.emis.ui.components.DropDown
 import org.saudigitus.emis.ui.components.DropDownOu
 import org.saudigitus.emis.ui.components.MetadataItem
 import org.saudigitus.emis.ui.components.Toolbar
 import org.saudigitus.emis.ui.components.ToolbarActionState
-import org.saudigitus.emis.ui.components.ToolbarHeaders
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,18 +40,17 @@ fun TeiScreen(
     viewModel: TeiViewModel,
     onBack: () -> Unit
 ) {
-    var displayFilters by remember { mutableStateOf(false) }
-    val academicYear by viewModel.academicYear.collectAsStateWithLifecycle()
-    val grades by viewModel.grade.collectAsStateWithLifecycle()
-    val sections by viewModel.section.collectAsStateWithLifecycle()
+    var displayFilters by remember { mutableStateOf(true) }
+    val dataElementFilters by viewModel.dataElementFilters.collectAsStateWithLifecycle()
+    val filterState by viewModel.filterState.collectAsStateWithLifecycle()
+    val students by viewModel.teis.collectAsStateWithLifecycle()
+    val toolbarHeaders by viewModel.toolbarHeader.collectAsStateWithLifecycle()
+    val programSettings by viewModel.programSettings.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
             Toolbar(
-                headers = ToolbarHeaders(
-                    title = stringResource(R.string.app_name),
-                    subtitle = ""
-                ),
+                headers = toolbarHeaders,
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color(0xFF2C98F0),
                     navigationIconContentColor = Color.White,
@@ -64,6 +58,7 @@ fun TeiScreen(
                     actionIconContentColor = Color.White
                 ),
                 navigationAction = { onBack.invoke() },
+                disableNavigation = false,
                 actionState = ToolbarActionState(syncVisibility = false),
                 syncAction = {  },
                 filterAction = { displayFilters = !displayFilters }
@@ -84,31 +79,44 @@ fun TeiScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top),
                     horizontalAlignment = Alignment.Start
                 ) {
-                    DropDownAcademicYear(
-                        placeholder = "Academic year...",
-                        leadingIcon = Icons.Rounded.Book,
-                        data = academicYear,
-                        onItemClick = {}
+                    DropDown(
+                        placeholder = stringResource(R.string.academic_year),
+                        leadingIcon = ImageVector.vectorResource(R.drawable.ic_book),
+                        data = dataElementFilters[FilterType.ACADEMIC_YEAR],
+                        selectedItemName = filterState.academicYear?.itemName ?: "",
+                        onItemClick = {
+                            viewModel.setAcademicYear(it)
+                        }
                     )
 
                     DropDownOu(
-                        placeholder = "School...",
-                        leadingIcon = Icons.Default.LocationOn,
-                        onItemClick = {}
+                        placeholder = stringResource(R.string.school),
+                        leadingIcon = ImageVector.vectorResource(R.drawable.ic_location_on),
+                        selectedSchool = filterState.school,
+                        program = programSettings?.getString(Constants.PROGRAM_UID) ?: "",
+                        onItemClick = {
+                            viewModel.setSchool(it)
+                        }
                     )
 
-                    DropDownGrade(
-                        placeholder = "Grade...",
-                        leadingIcon = Icons.Default.School,
-                        data = grades,
-                        onItemClick = {}
+                    DropDown(
+                        placeholder = stringResource(R.string.grade),
+                        leadingIcon = ImageVector.vectorResource(R.drawable.ic_school),
+                        data = dataElementFilters[FilterType.GRADE],
+                        selectedItemName = filterState.grade?.itemName ?: "",
+                        onItemClick = {
+                            viewModel.setGrade(it)
+                        }
                     )
 
-                    DropDownClass(
-                        placeholder = "Class...",
-                        leadingIcon = Icons.Default.Category,
-                        data = sections,
-                        onItemClick = {}
+                    DropDown(
+                        placeholder = stringResource(R.string.cls),
+                        leadingIcon = ImageVector.vectorResource(R.drawable.ic_category),
+                        data = dataElementFilters[FilterType.SECTION],
+                        selectedItemName = filterState.section?.itemName ?: "",
+                        onItemClick = {
+                            viewModel.setSection(it)
+                        }
                     )
                 }
             }
@@ -143,8 +151,11 @@ fun TeiScreen(
                         )
                         .padding(top = 16.dp),
                 ) {
-                    items(listOf("Alpha Beta", "Omega Beta")) {
-                        MetadataItem(displayName = it)
+                    items(students) { student ->
+                        MetadataItem(
+                            displayName = "${student.attributeValues?.values?.toList()?.get(2)?.value()} ${student.attributeValues?.values?.toList()?.get(1)?.value()}",
+                            attrValue = "${student.attributeValues?.values?.toList()?.get(0)?.value()}"
+                        )
                     }
                 }
             }
