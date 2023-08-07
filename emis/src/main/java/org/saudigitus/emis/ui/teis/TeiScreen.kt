@@ -31,6 +31,7 @@ import org.saudigitus.emis.R
 import org.saudigitus.emis.ui.components.DropDown
 import org.saudigitus.emis.ui.components.DropDownOu
 import org.saudigitus.emis.ui.components.MetadataItem
+import org.saudigitus.emis.ui.components.NoResults
 import org.saudigitus.emis.ui.components.Toolbar
 import org.saudigitus.emis.ui.components.ToolbarActionState
 
@@ -136,26 +137,36 @@ fun TeiScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top),
                 horizontalAlignment = Alignment.Start
             ) {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            color = Color.White,
-                            shape = MaterialTheme.shapes.medium
-                                .copy(
-                                    topStart = CornerSize(16.dp),
-                                    topEnd = CornerSize(16.dp),
-                                    bottomStart = CornerSize(0.dp),
-                                    bottomEnd = CornerSize(0.dp)
-                                )
-                        )
-                        .padding(top = 16.dp),
-                ) {
-                    items(students) { student ->
-                        MetadataItem(
-                            displayName = "${student.attributeValues?.values?.toList()?.get(2)?.value()} ${student.attributeValues?.values?.toList()?.get(1)?.value()}",
-                            attrValue = "${student.attributeValues?.values?.toList()?.get(0)?.value()}"
-                        )
+                if (filterState.isNull() && students.isEmpty()) {
+                    NoResults(message = stringResource(R.string.start_search))
+                } else if (!filterState.isNull() && students.isEmpty()) {
+                    NoResults(message = stringResource(R.string.search_no_results))
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                color = Color.White,
+                                shape = MaterialTheme.shapes.medium
+                                    .copy(
+                                        topStart = CornerSize(16.dp),
+                                        topEnd = CornerSize(16.dp),
+                                        bottomStart = CornerSize(0.dp),
+                                        bottomEnd = CornerSize(0.dp)
+                                    )
+                            )
+                            .padding(top = 16.dp),
+                    ) {
+                        items(students) { student ->
+                            MetadataItem(
+                                displayName = "${
+                                    student.attributeValues?.values?.toList()?.get(2)?.value()
+                                } ${student.attributeValues?.values?.toList()?.get(1)?.value()}",
+                                attrValue = "${
+                                    student.attributeValues?.values?.toList()?.get(0)?.value()
+                                }"
+                            )
+                        }
                     }
                 }
             }
