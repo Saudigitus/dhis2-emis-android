@@ -31,7 +31,12 @@ class MainActivity : FragmentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    TeiScreen(viewModel) { finish() }
+                    TeiScreen(
+                        viewModel = viewModel,
+                        onBack = { finish() }
+                    ) {
+
+                    }
                 }
             }
         }

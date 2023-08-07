@@ -38,12 +38,12 @@ import org.saudigitus.emis.ui.components.MetadataItem
 import org.saudigitus.emis.ui.components.NoResults
 import org.saudigitus.emis.ui.components.Toolbar
 import org.saudigitus.emis.ui.components.ToolbarActionState
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TeiScreen(
     viewModel: TeiViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    navTo: () -> Unit
 ) {
     var displayFilters by remember { mutableStateOf(true) }
     val dataElementFilters by viewModel.dataElementFilters.collectAsStateWithLifecycle()
@@ -70,10 +70,8 @@ fun TeiScreen(
             )
         },
         floatingActionButton = {
-            AnimatedVisibility(
-                visible = filterState.isNotNull() && students.isNotEmpty()
-            ) {
-                FloatingActionButton(onClick = { }) {
+            if(filterState.isNotNull() && students.isNotEmpty()) {
+                FloatingActionButton(onClick = { navTo.invoke() }) {
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = null

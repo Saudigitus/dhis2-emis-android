@@ -12,4 +12,8 @@ data class FilterState(
     fun isNull() = academicYear == null &&
     school == null && grade == null &&
     section == null
+
+    fun isNotNull() = academicYear != null &&
+        school != null && grade != null &&
+        section != null
 }
