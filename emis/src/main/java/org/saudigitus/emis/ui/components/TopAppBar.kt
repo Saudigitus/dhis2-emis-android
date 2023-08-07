@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.offset
+import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Sync
@@ -20,6 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -112,19 +115,23 @@ fun Toolbar(
                     text = headers.title,
                     maxLines = 1,
                     fontSize = 17.sp,
-                    lineHeight = 24.sp,
                     overflow = TextOverflow.Ellipsis,
                     softWrap = true,
-
-
+                    style = LocalTextStyle.current.copy(
+                        lineHeight = 24.sp,
+                        fontFamily = FontFamily(Font(R.font.rubik_regular))
                     )
+                )
                 headers.subtitle?.let { subtitle ->
                     Text(
                         text = subtitle,
                         maxLines = 1,
                         fontSize = 12.sp,
                         overflow = TextOverflow.Ellipsis,
-                        softWrap = true
+                        softWrap = true,
+                        style = LocalTextStyle.current.copy(
+                            fontFamily = FontFamily(Font(R.font.rubik_regular))
+                        )
                     )
                 }
             }

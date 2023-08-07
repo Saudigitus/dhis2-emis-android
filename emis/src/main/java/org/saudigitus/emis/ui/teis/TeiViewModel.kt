@@ -96,8 +96,15 @@ class TeiViewModel
         _filterState.update {
             it.copy(academicYear = academicYear)
         }
+
+        val subtitle = if (filterState.value.school?.displayName != null) {
+            "${academicYear?.itemName} | ${filterState.value.school?.displayName}"
+        } else {
+            academicYear?.itemName
+        }
+
         _toolbarHeader.update {
-            it.copy(subtitle = academicYear?.itemName)
+            it.copy(subtitle = subtitle)
         }
         getTeis()
     }
@@ -106,9 +113,15 @@ class TeiViewModel
         _filterState.update {
             it.copy(school = ou)
         }
-        val academicYear = toolbarHeader.value.subtitle
+
+        val subtitle = if (filterState.value.academicYear?.itemName != null) {
+            "${filterState.value.academicYear?.itemName} | ${ou?.displayName}"
+        } else {
+            ou?.displayName
+        }
+
         _toolbarHeader.update {
-            it.copy(subtitle = "$academicYear | ${ou?.displayName}")
+            it.copy(subtitle = subtitle)
         }
 
         getTeis()
