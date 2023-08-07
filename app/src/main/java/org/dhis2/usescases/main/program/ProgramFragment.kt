@@ -223,7 +223,9 @@ class ProgramFragment : FragmentGlobalAbstract(), ProgramView {
                     putExtras(bundle)
                     getActivityContent.launch(this)
                 }*/
-                startActivity(Intent(activity, org.saudigitus.emis.MainActivity::class.java))
+                val intent = Intent(activity, org.saudigitus.emis.MainActivity::class.java)
+                intent.putExtras(bundle)
+                startActivity(intent)
             }
             ProgramType.WITHOUT_REGISTRATION.name -> {
                 Intent(activity, ProgramEventDetailActivity::class.java).apply {
