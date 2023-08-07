@@ -143,7 +143,13 @@ fun TeiScreen(
                 } else if (!filterState.isNull() && students.isEmpty()) {
                     NoResults(message = stringResource(R.string.search_no_results))
                 } else {
-                    ShowCard("6th", "A", "2023","OrgUnit name", 6)
+
+                    var grade: String = filterState.grade?.itemName ?: "";
+                    var school: String = filterState.school?.displayName!!;
+                    var academicYear: String = filterState.academicYear!!.itemName;
+                    var section: String = filterState.section!!.itemName;
+
+                    ShowCard(grade, section, academicYear, school, students.size)
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
