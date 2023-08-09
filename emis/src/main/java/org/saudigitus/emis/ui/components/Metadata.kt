@@ -164,14 +164,18 @@ fun TEICountComponent(
 }
 
 @Composable
-fun ShowCard(grade: String, section: String, academicYear: String, orgUnitName: String, teiCount: Int){
-    val gradeLabel: String = "Grade"
-
+fun ShowCard(
+    grade: String,
+    section: String,
+    academicYear: String,
+    orgUnitName: String,
+    teiCount: Int
+){
     Card (
         shape = RoundedCornerShape(0.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(5.dp),
+            .padding(horizontal = 16.dp, vertical = 16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ){
         Column(modifier = Modifier
@@ -191,11 +195,7 @@ fun ShowCard(grade: String, section: String, academicYear: String, orgUnitName: 
                     Spacer(modifier = Modifier.size(10.dp))
                     Column {
                         Text(text = String.format("%s, %s",  grade , section), fontWeight = FontWeight.Bold, fontSize = 17.sp)
-                        Row {
-                            Text(text = academicYear, fontSize = 14.sp)
-                            Text(text = " | ", fontSize = 14.sp)
-                            Text(text = orgUnitName, fontSize = 14.sp)
-                        }
+                        Text(text = String.format("%s | %s",  academicYear , orgUnitName), fontSize = 14.sp)
                     }
                 }
                 TEICountComponent(teiCount = teiCount)
