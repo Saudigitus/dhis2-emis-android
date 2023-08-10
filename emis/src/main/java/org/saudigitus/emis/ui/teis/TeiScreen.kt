@@ -9,13 +9,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,6 +30,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.dhis2.commons.Constants
@@ -39,6 +43,7 @@ import org.saudigitus.emis.ui.components.NoResults
 import org.saudigitus.emis.ui.components.ShowCard
 import org.saudigitus.emis.ui.components.Toolbar
 import org.saudigitus.emis.ui.components.ToolbarActionState
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TeiScreen(
@@ -52,6 +57,7 @@ fun TeiScreen(
     val students by viewModel.teis.collectAsStateWithLifecycle()
     val toolbarHeaders by viewModel.toolbarHeader.collectAsStateWithLifecycle()
     val programSettings by viewModel.programSettings.collectAsStateWithLifecycle()
+    val infoCard by viewModel.infoCard.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -72,12 +78,25 @@ fun TeiScreen(
         },
         floatingActionButton = {
             if(filterState.isNotNull() && students.isNotEmpty()) {
-                FloatingActionButton(onClick = { navTo.invoke() }) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = null
-                    )
-                }
+                ExtendedFloatingActionButton(
+                    text = {
+                        Text(
+                            text = stringResource(R.string.attendance),
+                            color = Color(0xFF2C98F0),
+                            style = LocalTextStyle.current.copy(
+                                fontFamily = FontFamily(Font(R.font.rubik_medium))
+                            )
+                        )
+                    },
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.CalendarMonth,
+                            contentDescription = null,
+                            tint = Color(0xFF2C98F0)
+                        )
+                    },
+                    onClick = { navTo.invoke() }
+                )
             }
         }
     ) { paddingValues ->
@@ -157,13 +176,7 @@ fun TeiScreen(
                 } else if (!filterState.isNull() && students.isEmpty()) {
                     NoResults(message = stringResource(R.string.search_no_results))
                 } else {
-                    ShowCard(
-                        filterState.grade?.itemName ?: "",
-                        filterState.section!!.itemName,
-                        filterState.academicYear!!.itemName,
-                        filterState.school?.displayName!!,
-                        students.size
-                    )
+                    ShowCard(infoCard)
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                     ) {

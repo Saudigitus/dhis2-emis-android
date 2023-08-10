@@ -15,6 +15,7 @@ import org.saudigitus.emis.data.local.DataManager
 import org.saudigitus.emis.data.model.OU
 import org.saudigitus.emis.data.model.Registration
 import org.saudigitus.emis.ui.components.DropDownItem
+import org.saudigitus.emis.ui.components.InfoCard
 import org.saudigitus.emis.ui.components.ToolbarHeaders
 import org.saudigitus.emis.utils.Constants
 import javax.inject.Inject
@@ -42,6 +43,9 @@ class TeiViewModel
 
     private val _toolbarHeader = MutableStateFlow(ToolbarHeaders(""))
     val toolbarHeader: StateFlow<ToolbarHeaders> = _toolbarHeader
+
+    private val _infoCard = MutableStateFlow(InfoCard())
+    val infoCard: StateFlow<InfoCard> = _infoCard
 
     init {
         viewModelScope.launch {
@@ -81,6 +85,16 @@ class TeiViewModel
                         "${filterState.value.section?.code}",
                     )
                 )
+
+                _infoCard.update {
+                    it.copy(
+                        grade = filterState.value.grade?.itemName ?: "",
+                        section = filterState.value.section?.itemName ?: "",
+                        academicYear = filterState.value.academicYear?.itemName ?: "",
+                        orgUnitName = filterState.value.school?.displayName ?: "",
+                        teiCount = teis.value.size
+                    )
+                }
             }
         }
     }
