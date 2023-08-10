@@ -9,7 +9,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
@@ -35,12 +39,12 @@ import org.saudigitus.emis.ui.components.NoResults
 import org.saudigitus.emis.ui.components.ShowCard
 import org.saudigitus.emis.ui.components.Toolbar
 import org.saudigitus.emis.ui.components.ToolbarActionState
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TeiScreen(
     viewModel: TeiViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    navTo: () -> Unit
 ) {
     var displayFilters by remember { mutableStateOf(true) }
     val dataElementFilters by viewModel.dataElementFilters.collectAsStateWithLifecycle()
@@ -65,6 +69,16 @@ fun TeiScreen(
                 syncAction = {  },
                 filterAction = { displayFilters = !displayFilters }
             )
+        },
+        floatingActionButton = {
+            if(filterState.isNotNull() && students.isNotEmpty()) {
+                FloatingActionButton(onClick = { navTo.invoke() }) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null
+                    )
+                }
+            }
         }
     ) { paddingValues ->
         Column(

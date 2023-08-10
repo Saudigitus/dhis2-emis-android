@@ -55,7 +55,7 @@ fun TextAttribute(
 data class TitleSubtitleDefaults(
     val titleFontSize: TextUnit = 17.sp,
     val subtitleFontSize: TextUnit = 12.sp,
-    val titleFontWeight: FontWeight = FontWeight.Bold,
+    val titleFontWeight: FontWeight = FontWeight.Normal,
     val subtitleFontWeight: FontWeight = FontWeight.Normal,
     val titleColor: Color = Color.Black,
     val subtitleColor: Color = Color.Black.copy(.65f)
