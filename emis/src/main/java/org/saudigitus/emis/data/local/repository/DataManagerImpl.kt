@@ -6,9 +6,11 @@ import org.dhis2.Bindings.userFriendlyValue
 import org.dhis2.commons.bindings.dataElement
 import org.dhis2.commons.bindings.enrollment
 import org.dhis2.commons.data.SearchTeiModel
+import org.dhis2.commons.date.DateUtils
 import org.dhis2.commons.network.NetworkUtils
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.arch.repositories.scope.RepositoryScope
+import org.hisp.dhis.android.core.event.Event
 import org.hisp.dhis.android.core.option.Option
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttribute
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttributeValue
@@ -16,9 +18,13 @@ import org.hisp.dhis.android.core.trackedentity.TrackedEntityInstance
 import org.saudigitus.emis.data.local.DataManager
 import org.saudigitus.emis.data.model.EMISConfig
 import org.saudigitus.emis.data.model.EMISConfigItem
+import org.saudigitus.emis.data.model.dto.AttendanceEntity
+import org.saudigitus.emis.utils.DateHelper
 import org.saudigitus.emis.utils.eventsWithTrackedDataValues
 import org.saudigitus.emis.utils.optionByOptionSet
+import java.sql.Date
 import javax.inject.Inject
+import kotlin.jvm.Throws
 
 class DataManagerImpl
 @Inject constructor(
@@ -34,7 +40,9 @@ class DataManagerImpl
     override suspend fun getConfig(id: String): List<EMISConfigItem>? =
         withContext(Dispatchers.IO) {
             val dataStore = d2.dataStoreModule()
-                .dataStore().byKey().eq(id)
+                .dataStore()
+                .byNamespace().eq("semis")
+                .byKey().eq(id)
                 .one().blockingGet()
 
             return@withContext EMISConfig.fromJson(dataStore.value())
@@ -98,6 +106,61 @@ class DataManagerImpl
                 .flatMap { tei -> listOf(tei) }
                 .map { tei -> transform(tei, program) }
         }
+    }
+
+    @Throws(IllegalArgumentException::class)
+    override suspend fun getAttendanceEvent(
+        program: String,
+        programStage: String,
+        dataElement: String,
+        reasonDataElement: String?,
+        teis: List<String>,
+        date: String?
+    ) = withContext(Dispatchers.IO) {
+        return@withContext d2.eventModule().events()
+            .byTrackedEntityInstanceUids(teis)
+            .byProgramUid().eq(program)
+            .byProgramStageUid().eq(programStage)
+            .byEventDate().eq(
+                if (date != null) {
+                    Date.valueOf(date)
+                } else {
+                    DateUtils.getInstance().today
+                }
+            )
+            .withTrackedEntityDataValues()
+            .blockingGet()
+            .map {
+                eventTransform(it, dataElement, reasonDataElement)
+            }.requireNoNulls()
+    }
+
+    private fun eventTransform(
+        event: Event,
+        dataElement: String,
+        reasonDataElement: String?,
+    ): AttendanceEntity? {
+        val dataValue = event.trackedEntityDataValues()?.find { it.dataElement() == dataElement }
+        val reason = event.trackedEntityDataValues()?.find { it.dataElement() == reasonDataElement }
+
+        return if (dataValue != null) {
+            val tei = d2.enrollment(event.enrollment().toString()).trackedEntityInstance() ?: ""
+
+            AttendanceEntity(
+                tei = tei,
+                dataElement = dataElement,
+                value = dataValue.value().toString(),
+                reasonDataElement = if (reason == null) {
+                    null
+                } else {
+                    reasonDataElement
+                },
+                reasonOfAbsence = reason?.value(),
+                date = DateHelper.formatDate(
+                    event.eventDate()?.time ?: DateUtils.getInstance().today.time
+                ).toString()
+            )
+        } else null
     }
 
     private fun transform(

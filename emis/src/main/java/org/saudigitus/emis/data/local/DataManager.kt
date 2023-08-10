@@ -3,6 +3,7 @@ package org.saudigitus.emis.data.local
 import org.dhis2.commons.data.SearchTeiModel
 import org.hisp.dhis.android.core.option.Option
 import org.saudigitus.emis.data.model.EMISConfigItem
+import org.saudigitus.emis.data.model.dto.AttendanceEntity
 
 interface DataManager {
 
@@ -24,4 +25,13 @@ interface DataManager {
         ou: String,
         program: String
     ): List<SearchTeiModel>
+
+    suspend fun getAttendanceEvent(
+        program: String,
+        programStage: String,
+        dataElement: String,
+        reasonDataElement: String? = null,
+        teis: List<String>,
+        date: String?
+    ): List<AttendanceEntity>
 }
