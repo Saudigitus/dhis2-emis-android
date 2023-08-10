@@ -36,6 +36,7 @@ import org.saudigitus.emis.ui.components.DropDown
 import org.saudigitus.emis.ui.components.DropDownOu
 import org.saudigitus.emis.ui.components.MetadataItem
 import org.saudigitus.emis.ui.components.NoResults
+import org.saudigitus.emis.ui.components.ShowCard
 import org.saudigitus.emis.ui.components.Toolbar
 import org.saudigitus.emis.ui.components.ToolbarActionState
 @OptIn(ExperimentalMaterial3Api::class)
@@ -148,7 +149,7 @@ fun TeiScreen(
                                 bottomEnd = CornerSize(0.dp)
                             )
                     ),
-                verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top),
+                verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
                 horizontalAlignment = Alignment.Start
             ) {
                 if (filterState.isNull() && students.isEmpty()) {
@@ -156,20 +157,15 @@ fun TeiScreen(
                 } else if (!filterState.isNull() && students.isEmpty()) {
                     NoResults(message = stringResource(R.string.search_no_results))
                 } else {
+                    ShowCard(
+                        filterState.grade?.itemName ?: "",
+                        filterState.section!!.itemName,
+                        filterState.academicYear!!.itemName,
+                        filterState.school?.displayName!!,
+                        students.size
+                    )
                     LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                color = Color.White,
-                                shape = MaterialTheme.shapes.medium
-                                    .copy(
-                                        topStart = CornerSize(16.dp),
-                                        topEnd = CornerSize(16.dp),
-                                        bottomStart = CornerSize(0.dp),
-                                        bottomEnd = CornerSize(0.dp)
-                                    )
-                            )
-                            .padding(top = 16.dp),
+                        modifier = Modifier.fillMaxSize(),
                     ) {
                         items(students) { student ->
                             MetadataItem(
