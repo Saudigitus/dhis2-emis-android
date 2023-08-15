@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.rounded.Email
 import androidx.compose.material.icons.rounded.School
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -106,6 +105,50 @@ fun MetadataItem(
 }
 
 @Composable
+fun MetadataItem(
+    displayName: String,
+    attrValue: String? = null,
+    onClick: () -> Unit = {},
+    content: @Composable () -> Unit = {}
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(color = Color.White)
+            .clickable { onClick.invoke() },
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.Start
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth()
+                .padding(vertical = 8.dp, horizontal = 16.dp),
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            RoundedIcon(label = "${displayName[0]}")
+            Spacer(modifier = Modifier.size(15.dp))
+            TitleSubtitleComponent(
+                modifier = Modifier.weight(1f, true),
+                title = displayName,
+                subtitle = "$attrValue",
+                fontDefaults = TitleSubtitleDefaults(
+                    titleColor = Color.Black.copy(.75f)
+                )
+            )
+
+            content.invoke()
+        }
+        Divider(
+            modifier = Modifier
+                .fillMaxWidth(.83f)
+                .align(Alignment.End)
+                .wrapContentWidth(Alignment.End, false)
+                .padding(end = 5.dp)
+        )
+    }
+}
+
+@Composable
 fun RoundedIcon(
     painter: Painter? = null,
     label: String? = null
@@ -163,13 +206,18 @@ fun TEICountComponent(
     }
 }
 
+
+data class InfoCard(
+    val grade: String = "",
+    val section: String = "",
+    val academicYear: String = "",
+    val orgUnitName: String = "",
+    val teiCount: Int = 0
+)
+
 @Composable
 fun ShowCard(
-    grade: String,
-    section: String,
-    academicYear: String,
-    orgUnitName: String,
-    teiCount: Int
+    infoCard: InfoCard
 ){
     Card (
         shape = RoundedCornerShape(0.dp),
@@ -194,11 +242,18 @@ fun ShowCard(
                     )
                     Spacer(modifier = Modifier.size(10.dp))
                     Column {
-                        Text(text = String.format("%s, %s",  grade , section), fontWeight = FontWeight.Bold, fontSize = 17.sp)
-                        Text(text = String.format("%s | %s",  academicYear , orgUnitName), fontSize = 14.sp)
+                        Text(
+                            text = String.format("%s, %s",  infoCard.grade , infoCard.section),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 17.sp
+                        )
+                        Text(
+                            text = String.format("%s | %s",  infoCard.academicYear , infoCard.orgUnitName),
+                            fontSize = 14.sp
+                        )
                     }
                 }
-                TEICountComponent(teiCount = teiCount)
+                TEICountComponent(teiCount = infoCard.teiCount)
             }
         }
     }

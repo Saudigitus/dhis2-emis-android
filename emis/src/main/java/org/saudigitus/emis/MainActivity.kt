@@ -8,7 +8,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
+import org.dhis2.commons.Constants
+import org.saudigitus.emis.ui.attendance.AttendanceScreen
+import org.saudigitus.emis.ui.attendance.AttendanceViewModel
 import org.saudigitus.emis.ui.teis.TeiScreen
 import org.saudigitus.emis.ui.teis.TeiViewModel
 import org.saudigitus.emis.ui.theme.EMISAndroidTheme
@@ -27,15 +35,35 @@ class MainActivity : FragmentActivity() {
             ) {
                 viewModel.setBundle(intent?.extras)
 
+                val navController = rememberNavController()
+
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    TeiScreen(
-                        viewModel = viewModel,
-                        onBack = { finish() }
+                    NavHost(
+                        navController = navController,
+                        startDestination = AppRoutes.TEI_LIST_ROUTE
                     ) {
+                        composable(AppRoutes.TEI_LIST_ROUTE) {
+                            TeiScreen(
+                                viewModel = viewModel,
+                                onBack = { finish() }
+                            ) {
+                                navController.navigate(AppRoutes.ATTENDANCE_ROUTE)
+                            }
+                        }
+                        composable(AppRoutes.ATTENDANCE_ROUTE) {
+                            val attendanceViewModel: AttendanceViewModel = hiltViewModel()
 
+                            attendanceViewModel.setProgram(intent?.extras?.getString(Constants.PROGRAM_UID) ?: "")
+                            attendanceViewModel.setTeis(viewModel.teis.collectAsStateWithLifecycle().value)
+                            attendanceViewModel.setInfoCard(viewModel.infoCard.collectAsStateWithLifecycle().value)
+
+                            AttendanceScreen(attendanceViewModel) {
+                                navController.navigateUp()
+                            }
+                        }
                     }
                 }
             }
