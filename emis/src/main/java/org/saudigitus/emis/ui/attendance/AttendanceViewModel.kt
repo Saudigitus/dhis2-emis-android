@@ -74,7 +74,7 @@ class AttendanceViewModel
     val infoCard: StateFlow<InfoCard> = _infoCard
 
     private val attendanceCache = mutableSetOf<AttendanceEntity>()
-    private val attendanceBtnStateCache = mutableListOf(AttendanceActionButtonState())
+    private var attendanceBtnStateCache = mutableListOf(AttendanceActionButtonState())
 
     private val _absenceState = MutableStateFlow(Absence())
     private val absenceState: StateFlow<Absence> = _absenceState
@@ -169,6 +169,9 @@ class AttendanceViewModel
                     )
                 }
 
+                clearCache()
+                attendanceCache.addAll(attendanceStatus.value)
+
                 setInitialAttendanceStatus()
             } catch (e: Exception) {
                 Timber.tag("ATTENDANCE_DATA").e(e)
@@ -177,7 +180,7 @@ class AttendanceViewModel
     }
 
     private fun setInitialAttendanceStatus() {
-        _attendanceBtnState.value = attendanceStatus.value.map { attendance ->
+        attendanceBtnStateCache = attendanceStatus.value.map { attendance ->
             attendanceActionButtonMapper(
                 index = attendanceOptions.value.indexOfFirst { it.code == attendance.value },
                 tei = attendance.tei,
@@ -186,7 +189,9 @@ class AttendanceViewModel
                     it.code == attendance.value
                 }?.hexColor ?: return
             )
-        }
+        }.toMutableList()
+
+        _attendanceBtnState.value = attendanceBtnStateCache
     }
 
     private fun attendanceActionButtonMapper(
@@ -340,5 +345,12 @@ class AttendanceViewModel
         attendanceCache.clear()
         attendanceBtnStateCache.clear()
         _absenceStateCache.value = emptyList()
+    }
+
+    fun refreshOnSave() {
+        setAttendanceStep(ButtonStep.EDITING)
+        viewModelScope.launch {
+            attendanceEvents(eventDate.value)
+        }
     }
 }
