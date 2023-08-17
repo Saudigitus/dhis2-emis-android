@@ -3,7 +3,9 @@ package org.saudigitus.emis.ui.attendance
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,6 +19,7 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -32,17 +35,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.coroutines.delay
 import org.saudigitus.emis.R
 import org.saudigitus.emis.ui.components.MetadataItem
 import org.saudigitus.emis.ui.components.ShowCard
 import org.saudigitus.emis.ui.components.Toolbar
 import org.saudigitus.emis.ui.components.ToolbarActionState
+import org.saudigitus.emis.ui.theme.light_success
 import org.saudigitus.emis.utils.Constants.ABSENT
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -98,7 +102,7 @@ fun AttendanceScreen(
             onCancel = { viewModel.setAttendanceStep(ButtonStep.HOLD_SAVING) }
         ) {
             viewModel.clearCache()
-            viewModel.setAttendanceStep(ButtonStep.EDITING)
+            viewModel.refreshOnSave()
             isAttendanceCompleted = true
         }
     }
@@ -109,9 +113,6 @@ fun AttendanceScreen(
                 message = context.getString(R.string.attendance_saved),
                 duration = SnackbarDuration.Short
             )
-
-            delay(200)
-            onBack.invoke()
         }
     }
 
@@ -173,7 +174,31 @@ fun AttendanceScreen(
             )
         },
         snackbarHost = {
-            SnackbarHost(snackbarHostState)
+            SnackbarHost(hostState = snackbarHostState) {
+                Snackbar(
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    containerColor = light_success,
+                    contentColor = Color.White
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.Start),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.success_icon), 
+                            contentDescription = it.visuals.message
+                        )
+                        
+                        Text(
+                            text = it.visuals.message,
+                            style = LocalTextStyle.current.copy(
+                                fontFamily = FontFamily(Font(R.font.rubik_regular))
+                            )
+                        )
+                    }
+                }
+            }
         }
     ) { paddingValues ->
         Column(
