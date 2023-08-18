@@ -13,6 +13,7 @@ import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import org.saudigitus.emis.ui.components.DropDownItem
 
+/*
 @Preview
 @Composable
 fun ChipWithIconVisibility(){
@@ -32,13 +34,11 @@ fun ChipWithIconVisibility(){
         false,
         "Grade 1",
         "ssssss",
-        onChecked = {checked, code ->},
-    )
-}
+    ) { checked, code -> }
+}*/
 
 @Composable
 fun TextChipWithIconVisibility(
-    //@DrawableRes iconId: Int,
     isSelected: Boolean,
     text: String,
     code: String,
@@ -60,7 +60,7 @@ fun TextChipWithIconVisibility(
             )
             .clip(shape = shape)
             .clickable {
-                onChecked(!isSelected, code)
+                onChecked(isSelected, code) // Notify the listener
             }
             .padding(12.dp)
 
