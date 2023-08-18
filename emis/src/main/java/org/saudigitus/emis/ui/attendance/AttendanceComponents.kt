@@ -99,7 +99,7 @@ fun AttendanceButtons(
                 },
                 modifier = Modifier
                     .border(
-                        border = BorderStroke(1.dp, Color.LightGray),
+                        border = BorderStroke((0.5).dp, Color.LightGray),
                         shape = MaterialTheme.shapes.small.copy(CornerSize(32.dp))
                     )
                     .size(32.dp),

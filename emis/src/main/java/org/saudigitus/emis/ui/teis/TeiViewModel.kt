@@ -14,7 +14,7 @@ import org.dhis2.commons.data.SearchTeiModel
 import org.saudigitus.emis.data.local.DataManager
 import org.saudigitus.emis.data.model.OU
 import org.saudigitus.emis.data.model.Registration
-import org.saudigitus.emis.ui.components.DropDownItem
+import org.saudigitus.emis.ui.components.Item
 import org.saudigitus.emis.ui.components.InfoCard
 import org.saudigitus.emis.ui.components.ToolbarHeaders
 import org.saudigitus.emis.utils.Constants
@@ -26,8 +26,8 @@ class TeiViewModel
     val repository: DataManager
 ) : ViewModel() {
 
-    private val _dataElementFilters = MutableStateFlow<Map<FilterType, List<DropDownItem>>>(mapOf())
-    val dataElementFilters: StateFlow<Map<FilterType, List<DropDownItem>>> = _dataElementFilters
+    private val _dataElementFilters = MutableStateFlow<Map<FilterType, List<Item>>>(mapOf())
+    val dataElementFilters: StateFlow<Map<FilterType, List<Item>>> = _dataElementFilters
 
     private val _filterState = MutableStateFlow(FilterState())
     val filterState: StateFlow<FilterState> = _filterState
@@ -106,7 +106,7 @@ class TeiViewModel
         }
     }
 
-    fun setAcademicYear(academicYear: DropDownItem?) {
+    fun setAcademicYear(academicYear: Item?) {
         _filterState.update {
             it.copy(academicYear = academicYear)
         }
@@ -141,14 +141,14 @@ class TeiViewModel
         getTeis()
     }
 
-    fun setGrade(grade: DropDownItem?) {
+    fun setGrade(grade: Item?) {
         _filterState.update {
             it.copy(grade = grade)
         }
         getTeis()
     }
 
-    fun setSection(section: DropDownItem?) {
+    fun setSection(section: Item?) {
         _filterState.update {
             it.copy(section = section)
         }
@@ -156,7 +156,7 @@ class TeiViewModel
     }
 
     private suspend fun options(uid: String) = repository.getOptions(uid).map {
-        DropDownItem(
+        Item(
             id = it.uid(),
             itemName =  "${it.displayName()}",
             code = it.code()

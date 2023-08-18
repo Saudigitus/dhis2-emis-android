@@ -7,7 +7,12 @@ import org.saudigitus.emis.data.model.dto.AttendanceEntity
 
 interface DataManager {
 
-    suspend fun downloadDatastore()
+    suspend fun save(
+        ou: String,
+        program: String,
+        programStage: String,
+        attendance: AttendanceEntity
+    )
     suspend fun getConfig(id: String): List<EMISConfigItem>?
 
     suspend fun getOptions(

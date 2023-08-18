@@ -1,6 +1,7 @@
 package org.saudigitus.emis.utils
 
 import org.hisp.dhis.android.core.D2
+import org.hisp.dhis.android.core.arch.repositories.scope.RepositoryScope
 import org.hisp.dhis.android.core.event.Event
 import org.hisp.dhis.android.core.option.Option
 
@@ -20,5 +21,6 @@ fun D2.optionByOptionSet(
 ): List<Option> = optionModule()
     .options()
     .byOptionSetUid().eq(optionSet)
+    .orderBySortOrder(RepositoryScope.OrderByDirection.ASC)
     .blockingGet()
 

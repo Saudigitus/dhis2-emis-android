@@ -49,7 +49,7 @@ import org.saudigitus.emis.ui.components.ToolbarActionState
 fun TeiScreen(
     viewModel: TeiViewModel,
     onBack: () -> Unit,
-    navTo: () -> Unit
+    navToAttendance: () -> Unit
 ) {
     var displayFilters by remember { mutableStateOf(true) }
     val dataElementFilters by viewModel.dataElementFilters.collectAsStateWithLifecycle()
@@ -95,7 +95,7 @@ fun TeiScreen(
                             tint = Color(0xFF2C98F0)
                         )
                     },
-                    onClick = { navTo.invoke() }
+                    onClick = { navToAttendance.invoke() }
                 )
             }
         }

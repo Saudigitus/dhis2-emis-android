@@ -1,6 +1,7 @@
 package org.saudigitus.emis.ui.attendance
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -12,53 +13,77 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Quiz
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import org.saudigitus.emis.R
 import org.saudigitus.emis.ui.components.ActionButtons
-import org.saudigitus.emis.ui.components.DropDown
-import org.saudigitus.emis.ui.components.DropDownItem
+import org.saudigitus.emis.ui.components.Item
 import org.saudigitus.emis.ui.theme.light_error
 import org.saudigitus.emis.ui.theme.light_success
 import org.saudigitus.emis.ui.theme.light_warning
 
 @Composable
 fun ReasonForAbsenceDialog(
-    reasons: List<DropDownItem>,
+    reasons: List<Item>,
     title: String,
     themeColor: Color,
-    onItemClick: (DropDownItem) -> Unit,
+    selectedItemCode: String? = null,
+    onItemClick: (Item) -> Unit,
     onCancel: () -> Unit,
     onDone: () -> Unit
 ) {
+    var selectedIndex by remember {
+        mutableStateOf(reasons.indexOfFirst { it.code == selectedItemCode })
+    }
+
     DialogTemplate(
         title = title,
         themeColor = themeColor
     ) {
-        DropDown(
-            placeholder = stringResource(R.string.reason_absence),
-            leadingIcon = Icons.Default.Quiz,
-            data = reasons,
-            onItemClick = { onItemClick.invoke(it) }
-        )
+        reasons.forEachIndexed { index, option ->
+            Row(
+                modifier = Modifier.fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 5.dp)
+                    .clickable {
+                        selectedIndex = index
+                        onItemClick(option)
+                    },
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RadioButton(
+                    selected = selectedIndex == index,
+                    onClick = {
+                        selectedIndex = index
+                        onItemClick(option)
+                    }
+                )
+                Text(text = option.itemName)
+            }
+        }
         ActionButtons(
             modifier = Modifier.align(Alignment.End),
             contentColor = themeColor,
-            onCancel = onCancel,
+            onCancel = {
+                selectedIndex = -1
+                onCancel.invoke()
+            },
             onDone = onDone
         )
     }
@@ -67,9 +92,7 @@ fun ReasonForAbsenceDialog(
 @Composable
 fun AttendanceSummaryDialog(
     title: String,
-    presentValue: String,
-    lateValue: String,
-    absentValue: String,
+    data: Triple<String, String, String>,
     themeColor: Color,
     onCancel: () -> Unit,
     onDone: () -> Unit
@@ -86,19 +109,19 @@ fun AttendanceSummaryDialog(
             verticalAlignment = Alignment.CenterVertically
         ) {
             SummaryComponent(
-                summary = presentValue,
+                summary = data.first,
                 containerColor = light_success,
                 icon = Icons.Outlined.Check
             )
 
             SummaryComponent(
-                summary = lateValue,
+                summary = data.second,
                 containerColor = light_warning,
                 icon = Icons.Outlined.Schedule
             )
 
             SummaryComponent(
-                summary = absentValue,
+                summary = data.third,
                 containerColor = light_error,
                 icon = Icons.Outlined.Close
             )

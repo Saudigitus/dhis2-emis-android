@@ -11,6 +11,7 @@ import org.dhis2.commons.network.NetworkUtils
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.arch.repositories.scope.RepositoryScope
 import org.hisp.dhis.android.core.event.Event
+import org.hisp.dhis.android.core.event.EventCreateProjection
 import org.hisp.dhis.android.core.option.Option
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttribute
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttributeValue
@@ -19,9 +20,11 @@ import org.saudigitus.emis.data.local.DataManager
 import org.saudigitus.emis.data.model.EMISConfig
 import org.saudigitus.emis.data.model.EMISConfigItem
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
+import org.saudigitus.emis.utils.Constants
 import org.saudigitus.emis.utils.DateHelper
 import org.saudigitus.emis.utils.eventsWithTrackedDataValues
 import org.saudigitus.emis.utils.optionByOptionSet
+import timber.log.Timber
 import java.sql.Date
 import javax.inject.Inject
 import kotlin.jvm.Throws
@@ -31,11 +34,84 @@ class DataManagerImpl
     val d2: D2,
     val networkUtils: NetworkUtils
 ) : DataManager {
-    override suspend fun downloadDatastore() {
-        withContext(Dispatchers.IO)  {
-            d2.dataStoreModule().dataStoreDownloader().blockingDownload()
-        }
+    private fun getAttributeOptionCombo() =
+        d2.categoryModule().categoryOptionCombos()
+            .byDisplayName().eq(Constants.DEFAULT).one().blockingGet().uid()
+
+    private fun createEventProjection(
+        tei: String,
+        ou: String,
+        program: String,
+        programStage: String
+    ): String {
+        val enrollment = d2.enrollmentModule().enrollments()
+            .byTrackedEntityInstance().eq(tei)
+            .one().blockingGet()
+
+        return d2.eventModule().events()
+            .blockingAdd(
+                EventCreateProjection.builder()
+                    .organisationUnit(ou)
+                    .program(program).programStage(programStage)
+                    .attributeOptionCombo(getAttributeOptionCombo())
+                    .enrollment(enrollment.uid()).build()
+            )
     }
+
+    private fun eventUid(
+        tei: String,
+        program: String,
+        programStage: String,
+        date: String?
+    ): String? {
+        return d2.eventModule().events()
+            .byTrackedEntityInstanceUids(listOf(tei))
+            .byProgramUid().eq(program)
+            .byProgramStageUid().eq(programStage)
+            .byEventDate().eq(Date.valueOf(date.toString()))
+            .one().blockingGet()?.uid()
+    }
+
+    override suspend fun save(
+        ou: String,
+        program: String,
+        programStage: String,
+        attendance: AttendanceEntity
+    ): Unit =
+        withContext(Dispatchers.IO) {
+            try {
+                val uid = eventUid(
+                    attendance.tei,
+                    program,
+                    programStage,
+                    attendance.date
+                ) ?: createEventProjection(
+                    attendance.tei,
+                    ou,
+                    program,
+                    programStage
+                )
+
+                d2.trackedEntityModule().trackedEntityDataValues()
+                    .value(uid, attendance.dataElement)
+                    .blockingSet(attendance.value)
+
+                if (attendance.reasonDataElement != null && attendance.reasonOfAbsence != null) {
+                    attendance.reasonOfAbsence.let {
+                        if (it.isNotEmpty() && it.isNotBlank()) {
+                            d2.trackedEntityModule().trackedEntityDataValues()
+                                .value(uid, attendance.reasonDataElement).blockingSet(it)
+                        }
+                    }
+                }
+
+                val repository = d2.eventModule().events().uid(uid)
+                repository.setEventDate(Date.valueOf(attendance.date))
+            } catch (e: Exception) {
+                Timber.tag("SAVE_EVENT").e(e)
+            }
+        }
+
 
     override suspend fun getConfig(id: String): List<EMISConfigItem>? =
         withContext(Dispatchers.IO) {

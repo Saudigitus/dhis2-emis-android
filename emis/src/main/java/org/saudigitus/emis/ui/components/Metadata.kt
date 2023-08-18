@@ -99,7 +99,8 @@ fun MetadataItem(
                 .fillMaxWidth(.83f)
                 .align(Alignment.End)
                 .wrapContentWidth(Alignment.End, false)
-                .padding(end = 5.dp)
+                .padding(end = 5.dp),
+            thickness = .75.dp
         )
     }
 }
@@ -108,6 +109,7 @@ fun MetadataItem(
 fun MetadataItem(
     displayName: String,
     attrValue: String? = null,
+    enableClickAction: Boolean = true,
     onClick: () -> Unit = {},
     content: @Composable () -> Unit = {}
 ) {
@@ -115,7 +117,7 @@ fun MetadataItem(
         modifier = Modifier
             .fillMaxWidth()
             .background(color = Color.White)
-            .clickable { onClick.invoke() },
+            .clickable(enabled = enableClickAction) { onClick.invoke() },
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.Start
     ) {
@@ -143,7 +145,8 @@ fun MetadataItem(
                 .fillMaxWidth(.83f)
                 .align(Alignment.End)
                 .wrapContentWidth(Alignment.End, false)
-                .padding(end = 5.dp)
+                .padding(end = 5.dp),
+            thickness = .75.dp
         )
     }
 }

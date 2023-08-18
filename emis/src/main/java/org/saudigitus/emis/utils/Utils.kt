@@ -3,6 +3,9 @@ package org.saudigitus.emis.utils
 import android.annotation.SuppressLint
 import android.content.Context
 import org.saudigitus.emis.R
+import org.saudigitus.emis.utils.Constants.ABSENT
+import org.saudigitus.emis.utils.Constants.LATE
+import org.saudigitus.emis.utils.Constants.PRESENT
 
 object Utils {
     @SuppressLint("DiscouragedApi")
@@ -33,15 +36,23 @@ object Utils {
         else -> R.drawable.ic_empty
     }
 
-    const val GREEN = 0xFF81C784
-    const val RED = 0xFFE57373
-    const val ORANGE = 0xFFFFB74D
+    private const val GREEN = 0xFF81C784
+    private const val RED = 0xFFE57373
+    private const val ORANGE = 0xFFFFB74D
     const val WHITE = 0xFFFFFFFF
 
     fun getColorByIconName(name: String) = when (name) {
         "correct_blue_fill" -> GREEN
         "wrong_red_fill" -> RED
         "clock_orange_fill" -> ORANGE
+        else -> WHITE
+    }
+
+
+    fun getColorByAttendanceType(type: String) = when (type) {
+        PRESENT -> { GREEN }
+        LATE -> { ORANGE }
+        ABSENT -> { RED }
         else -> WHITE
     }
 }

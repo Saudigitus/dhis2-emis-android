@@ -47,7 +47,7 @@ import org.dhis2.commons.orgunitselector.OrgUnitSelectorScope
 import org.saudigitus.emis.R
 import org.saudigitus.emis.data.model.OU
 
-data class DropDownItem(
+data class Item(
     val id: String,
     val itemName: String,
     val code: String? = null
@@ -161,9 +161,9 @@ fun DropDown(
     modifier: Modifier = Modifier,
     placeholder: String,
     leadingIcon: ImageVector,
-    data: List<DropDownItem>?,
+    data: List<Item>?,
     selectedItemName: String = "",
-    onItemClick: (DropDownItem) -> Unit
+    onItemClick: (Item) -> Unit
 ) {
     var selectedItemIndex by remember { mutableStateOf(-1) }
     var selectedItem by remember { mutableStateOf(selectedItemName) }
