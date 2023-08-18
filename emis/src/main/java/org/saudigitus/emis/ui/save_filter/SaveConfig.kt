@@ -56,12 +56,14 @@ fun TestScreen(){
 @Composable
 fun SaveFavoriteFilterScreen(
     viewModel: TeiViewModel,
+    favoriteViewModel: FavoriteViewModel,
     onBack: () -> Unit,
     ) {
 
     val filterState by viewModel.filterState.collectAsStateWithLifecycle()
     val programSettings by viewModel.programSettings.collectAsStateWithLifecycle()
     val dataElementFilters by viewModel.dataElementFilters.collectAsStateWithLifecycle()
+    val favorites by favoriteViewModel.favorites.collectAsStateWithLifecycle()
 
 
     Scaffold(
