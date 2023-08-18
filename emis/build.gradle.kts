@@ -108,6 +108,9 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.dagger.hilt.android)
+    implementation(libs.datastore)
+    implementation(libs.kotlin.serialization.json)
+    implementation(libs.kotlinx.collections.immutable)
 
     kapt(libs.dagger.hilt.android.compiler)
 
