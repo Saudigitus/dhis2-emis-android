@@ -12,12 +12,14 @@ import org.dhis2.commons.Constants.DATA_SET_NAME
 import org.dhis2.commons.Constants.PROGRAM_UID
 import org.dhis2.commons.data.SearchTeiModel
 import org.saudigitus.emis.data.local.DataManager
+import org.saudigitus.emis.data.model.DefaultConfig
 import org.saudigitus.emis.data.model.OU
 import org.saudigitus.emis.data.model.Registration
 import org.saudigitus.emis.ui.components.Item
 import org.saudigitus.emis.ui.components.InfoCard
 import org.saudigitus.emis.ui.components.ToolbarHeaders
 import org.saudigitus.emis.utils.Constants
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -38,6 +40,9 @@ class TeiViewModel
     private val _registration = MutableStateFlow<Registration?>(null)
     private val registration: StateFlow<Registration?> = _registration
 
+    private val _defaultConfig = MutableStateFlow<DefaultConfig?>(null)
+    val defaultConfig: StateFlow<DefaultConfig?> = _defaultConfig
+
     private val _programSettings = MutableStateFlow<Bundle?>(null)
     val programSettings: StateFlow<Bundle?> = _programSettings
 
@@ -54,6 +59,7 @@ class TeiViewModel
             if (config != null) {
 
                 for (c in config) {
+                    _defaultConfig.value = c.default
                     _registration.value = c.registration
                     break
                 }
@@ -63,6 +69,8 @@ class TeiViewModel
                     Pair(FilterType.GRADE, options("${registration.value?.grade}")),
                     Pair(FilterType.SECTION, options("${registration.value?.section}")),
                 )
+
+                Timber.tag("DEFAULT_CONF").e("${defaultConfig.value}")
             }
         }
     }
