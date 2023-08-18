@@ -2,6 +2,7 @@ package org.saudigitus.emis.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,12 +10,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.School
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -206,6 +209,51 @@ fun TEICountComponent(
     }
 }
 
+@Composable
+fun TextChipWithIconVisibility(
+    isSelected: Boolean,
+    text: String,
+    onChecked: (Boolean) -> Unit,
+) {
+    val shape = RoundedCornerShape(8.dp)
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .padding(
+                vertical = 2.dp,
+                horizontal = 4.dp
+            )
+            .border(
+                width = 1.dp,
+                color = Color.LightGray,
+                shape = shape
+            )
+            .background(
+                color = Color.LightGray,
+                shape = shape
+            )
+            .clip(shape = shape)
+            .clickable {
+                onChecked(!isSelected)
+            }
+            .padding(4.dp)
+    ) {
+        if (isSelected) {
+            Icon(
+                Icons.Rounded.Check,
+                tint = Color(0xFF2C98F0),
+                contentDescription = "Icon"
+            )
+        }
+        Text(
+            text = text,
+            fontSize = 8.sp,
+            color = Color(0xFF2C98F0)
+        )
+    }
+}
+
 
 data class InfoCard(
     val grade: String = "",
@@ -254,6 +302,65 @@ fun ShowCard(
                     }
                 }
                 TEICountComponent(teiCount = infoCard.teiCount)
+            }
+        }
+    }
+}
+
+@Composable
+fun SumaryCard(
+    infoCard: InfoCard
+){
+    Card (
+        shape = RoundedCornerShape(0.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 0.dp, vertical = 16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ){
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .padding(5.dp)) {
+            Row (modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Row {
+                    Icon(
+                        Icons.Rounded.School,
+                        tint = Color(0xFF2C98F0),
+                        contentDescription = "Icon",
+                        modifier = Modifier.size(40.dp)
+                    )
+                    Spacer(modifier = Modifier.size(10.dp))
+                    Column {
+                        Text(
+                            text = "Primary school A",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 17.sp
+                        )
+                        Row{
+                            Text(
+                                text = "Grade 1: ",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp,
+                                color = Color.Gray
+                            )
+                            Text(
+                                text = "A,B,C",
+                                fontSize = 14.sp,
+                                color = Color.Gray
+                            )
+                        }
+                        Divider(
+                            color = Color.Gray,
+                            thickness = 1.dp,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(1.dp)
+                        )
+                    }
+                }
             }
         }
     }

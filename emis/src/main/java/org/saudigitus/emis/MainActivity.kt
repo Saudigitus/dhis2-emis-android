@@ -17,6 +17,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import org.dhis2.commons.Constants
 import org.saudigitus.emis.ui.attendance.AttendanceScreen
 import org.saudigitus.emis.ui.attendance.AttendanceViewModel
+import org.saudigitus.emis.ui.save_filter.SaveFavoriteFilterScreen
 import org.saudigitus.emis.ui.teis.TeiScreen
 import org.saudigitus.emis.ui.teis.TeiViewModel
 import org.saudigitus.emis.ui.theme.EMISAndroidTheme
@@ -48,7 +49,11 @@ class MainActivity : FragmentActivity() {
                         composable(AppRoutes.TEI_LIST_ROUTE) {
                             TeiScreen(
                                 viewModel = viewModel,
-                                onBack = { finish() }
+                                onBack = { finish() },
+                                navToFavorite = {
+                                    navController.navigate(AppRoutes.FAVORITE_ROUTE)
+                                }
+
                             ) {
                                 navController.navigate(AppRoutes.ATTENDANCE_ROUTE)
                             }
@@ -62,6 +67,13 @@ class MainActivity : FragmentActivity() {
 
                             AttendanceScreen(attendanceViewModel) {
                                 navController.navigateUp()
+                            }
+                        }
+                        composable(AppRoutes.FAVORITE_ROUTE) {
+                            SaveFavoriteFilterScreen(
+                                viewModel
+                            ){
+                                navController.navigateUp();
                             }
                         }
                     }
