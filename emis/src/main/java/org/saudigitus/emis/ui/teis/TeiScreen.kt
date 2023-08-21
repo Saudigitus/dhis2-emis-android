@@ -38,6 +38,7 @@ import org.dhis2.commons.Constants
 import org.saudigitus.emis.R
 import org.saudigitus.emis.ui.components.DropDown
 import org.saudigitus.emis.ui.components.DropDownOu
+import org.saudigitus.emis.ui.components.DropDownWithSelectionByCode
 import org.saudigitus.emis.ui.components.MetadataItem
 import org.saudigitus.emis.ui.components.NoResults
 import org.saudigitus.emis.ui.components.ShowCard
@@ -58,6 +59,7 @@ fun TeiScreen(
     val toolbarHeaders by viewModel.toolbarHeader.collectAsStateWithLifecycle()
     val programSettings by viewModel.programSettings.collectAsStateWithLifecycle()
     val infoCard by viewModel.infoCard.collectAsStateWithLifecycle()
+    val defaultConfig by viewModel.defaultConfig.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -114,11 +116,11 @@ fun TeiScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top),
                     horizontalAlignment = Alignment.Start
                 ) {
-                    DropDown(
+                    DropDownWithSelectionByCode(
                         placeholder = stringResource(R.string.academic_year),
                         leadingIcon = ImageVector.vectorResource(R.drawable.ic_book),
                         data = dataElementFilters[FilterType.ACADEMIC_YEAR],
-                        selectedItemName = filterState.academicYear?.itemName ?: "",
+                        selectedCodeItem = defaultConfig?.currentAcademicYear ?: "",
                         onItemClick = {
                             viewModel.setAcademicYear(it)
                         }
