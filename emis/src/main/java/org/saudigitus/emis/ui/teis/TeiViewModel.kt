@@ -52,25 +52,19 @@ class TeiViewModel
     private val _infoCard = MutableStateFlow(InfoCard())
     val infoCard: StateFlow<InfoCard> = _infoCard
 
-    init {
+    private fun setConfig(program: String) {
         viewModelScope.launch {
-            val config = repository.getConfig(Constants.KEY)
+            val config = repository.getConfig(Constants.KEY)?.find { it.program == program }
 
             if (config != null) {
-
-                for (c in config) {
-                    _defaultConfig.value = c.default
-                    _registration.value = c.registration
-                    break
-                }
+                _defaultConfig.value = config.default
+                _registration.value = config.registration
 
                 _dataElementFilters.value = mapOf(
                     Pair(FilterType.ACADEMIC_YEAR, options("${registration.value?.academicYear}")),
                     Pair(FilterType.GRADE, options("${registration.value?.grade}")),
                     Pair(FilterType.SECTION, options("${registration.value?.section}")),
                 )
-
-                Timber.tag("DEFAULT_CONF").e("${defaultConfig.value}")
             }
         }
     }
@@ -109,6 +103,9 @@ class TeiViewModel
 
     fun setBundle(bundle: Bundle?) {
         _programSettings.value = bundle
+
+        setConfig(programSettings.value?.getString(PROGRAM_UID) ?: "")
+
         _toolbarHeader.update {
             it.copy(title = "${programSettings.value?.getString(DATA_SET_NAME)}")
         }

@@ -14,8 +14,8 @@ import org.saudigitus.emis.data.model.Attendance
 import org.saudigitus.emis.data.model.dto.Absence
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
 import org.saudigitus.emis.data.model.dto.withBtnSettings
-import org.saudigitus.emis.ui.components.Item
 import org.saudigitus.emis.ui.components.InfoCard
+import org.saudigitus.emis.ui.components.Item
 import org.saudigitus.emis.ui.components.ToolbarHeaders
 import org.saudigitus.emis.utils.Constants.ABSENT
 import org.saudigitus.emis.utils.Constants.KEY
@@ -82,15 +82,12 @@ class AttendanceViewModel
     private val _absenceStateCache = MutableStateFlow<List<Absence>>(emptyList())
     val absenceStateCache: StateFlow<List<Absence>> = _absenceStateCache
 
-    init {
+    private fun setConfig(program: String) {
         viewModelScope.launch {
-            val config = repository.getConfig(KEY)
+            val config = repository.getConfig(KEY)?.find { it.program == program }
 
             if (config != null) {
-                for (c in config) {
-                    _datastoreAttendance.value = c.attendance
-                    break
-                }
+                _datastoreAttendance.value = config.attendance
             }
             getAttendanceOptions(datastoreAttendance.value?.status ?: "")
             getReasonForAbsence(datastoreAttendance.value?.absenceReason ?: "")
@@ -103,6 +100,9 @@ class AttendanceViewModel
 
     fun setProgram(program: String) {
         _program.value = program
+
+        setConfig(program)
+
         viewModelScope.launch {
             attendanceEvents()
         }
