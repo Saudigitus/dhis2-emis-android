@@ -46,8 +46,6 @@ import org.dhis2.commons.orgunitselector.OUTreeFragment
 import org.dhis2.commons.orgunitselector.OrgUnitSelectorScope
 import org.saudigitus.emis.R
 import org.saudigitus.emis.data.model.OU
-import timber.log.Timber
-
 data class Item(
     val id: String,
     val itemName: String,
@@ -334,6 +332,10 @@ fun DropDownWithSelectionByCode(
 
     selectedItemIndex = data?.indexOfFirst { it.code == selectedCodeItem } ?: -1
     selectedItem = data?.find { it.code == selectedCodeItem }?.itemName ?: ""
+
+    if (selectedItemIndex != -1) {
+        onItemClick.invoke(data?.find { it.code == selectedCodeItem }!!)
+    }
 
     Column(
         modifier = modifier
