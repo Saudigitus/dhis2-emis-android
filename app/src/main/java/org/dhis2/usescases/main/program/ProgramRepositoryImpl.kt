@@ -2,6 +2,8 @@ package org.dhis2.usescases.main.program
 
 import io.reactivex.Flowable
 import io.reactivex.parallel.ParallelFlowable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.dhis2.commons.filters.data.FilterPresenter
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.commons.schedulers.SchedulerProvider
@@ -13,6 +15,7 @@ import org.hisp.dhis.android.core.arch.call.D2ProgressSyncStatus
 import org.hisp.dhis.android.core.common.State
 import org.hisp.dhis.android.core.program.Program
 import org.hisp.dhis.android.core.program.ProgramType.WITHOUT_REGISTRATION
+import org.saudigitus.emis.data.model.EMISConfig
 
 internal class ProgramRepositoryImpl(
     private val d2: D2,
@@ -52,6 +55,18 @@ internal class ProgramRepositoryImpl(
     override fun clearCache() {
         baseProgramCache = emptyList()
     }
+
+    override suspend fun getConfigFromDataStore(id: String) =
+        withContext(Dispatchers.IO) {
+            val dataStore = d2.dataStoreModule()
+                .dataStore()
+                .byNamespace().eq("semis")
+                .byKey().eq(id)
+                .one().blockingGet()
+
+            return@withContext EMISConfig.fromJson(dataStore.value()) ?: emptyList()
+        }
+
 
     private fun aggregatesModels(): Flowable<List<ProgramViewModel>> {
         return filterPresenter.filteredDataSetInstances().get()
