@@ -44,6 +44,7 @@ import org.saudigitus.emis.ui.components.NoResults
 import org.saudigitus.emis.ui.components.ShowCard
 import org.saudigitus.emis.ui.components.Toolbar
 import org.saudigitus.emis.ui.components.ToolbarActionState
+import org.saudigitus.emis.utils.getByType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -117,9 +118,10 @@ fun TeiScreen(
                     horizontalAlignment = Alignment.Start
                 ) {
                     DropDownWithSelectionByCode(
-                        placeholder = stringResource(R.string.academic_year),
+                        placeholder = dataElementFilters.getByType(FilterType.ACADEMIC_YEAR)?.displayName
+                            ?: stringResource(R.string.academic_year),
                         leadingIcon = ImageVector.vectorResource(R.drawable.ic_book),
-                        data = dataElementFilters[FilterType.ACADEMIC_YEAR],
+                        data = dataElementFilters.getByType(FilterType.ACADEMIC_YEAR)?.data,
                         selectedCodeItem = defaultConfig?.currentAcademicYear ?: "",
                         onItemClick = {
                             viewModel.setAcademicYear(it)
@@ -137,9 +139,10 @@ fun TeiScreen(
                     )
 
                     DropDown(
-                        placeholder = stringResource(R.string.grade),
+                        placeholder = dataElementFilters.getByType(FilterType.GRADE)?.displayName
+                            ?: stringResource(R.string.grade),
                         leadingIcon = ImageVector.vectorResource(R.drawable.ic_school),
-                        data = dataElementFilters[FilterType.GRADE],
+                        data = dataElementFilters.getByType(FilterType.GRADE)?.data,
                         selectedItemName = filterState.grade?.itemName ?: "",
                         onItemClick = {
                             viewModel.setGrade(it)
@@ -147,9 +150,10 @@ fun TeiScreen(
                     )
 
                     DropDown(
-                        placeholder = stringResource(R.string.cls),
+                        placeholder = dataElementFilters.getByType(FilterType.SECTION)?.displayName
+                            ?: stringResource(R.string.cls),
                         leadingIcon = ImageVector.vectorResource(R.drawable.ic_category),
-                        data = dataElementFilters[FilterType.SECTION],
+                        data = dataElementFilters.getByType(FilterType.SECTION)?.data,
                         selectedItemName = filterState.section?.itemName ?: "",
                         onItemClick = {
                             viewModel.setSection(it)
