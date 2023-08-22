@@ -10,6 +10,7 @@ import org.dhis2.commons.date.DateUtils
 import org.dhis2.commons.network.NetworkUtils
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.arch.repositories.scope.RepositoryScope
+import org.hisp.dhis.android.core.dataelement.DataElement
 import org.hisp.dhis.android.core.event.Event
 import org.hisp.dhis.android.core.event.EventCreateProjection
 import org.hisp.dhis.android.core.option.Option
@@ -132,6 +133,11 @@ class DataManagerImpl
 
         return@withContext d2.optionByOptionSet(optionSet)
     }
+
+    override suspend fun getDataElement(uid: String): DataElement =
+        withContext(Dispatchers.IO) {
+            return@withContext d2.dataElement(uid)
+        }
 
     override suspend fun getTeisBy(
         ou: String,
