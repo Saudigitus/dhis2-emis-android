@@ -17,6 +17,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import org.dhis2.commons.Constants
 import org.saudigitus.emis.ui.attendance.AttendanceScreen
 import org.saudigitus.emis.ui.attendance.AttendanceViewModel
+import org.saudigitus.emis.ui.save_filter.FavoriteViewModel
 import org.saudigitus.emis.ui.save_filter.SaveFavoriteFilterScreen
 import org.saudigitus.emis.ui.teis.TeiScreen
 import org.saudigitus.emis.ui.teis.TeiViewModel
@@ -70,8 +71,9 @@ class MainActivity : FragmentActivity() {
                             }
                         }
                         composable(AppRoutes.FAVORITE_ROUTE) {
+                            val favoriteViewModel: FavoriteViewModel = hiltViewModel()
                             SaveFavoriteFilterScreen(
-                                viewModel
+                                viewModel, favoriteViewModel
                             ){
                                 navController.navigateUp();
                             }

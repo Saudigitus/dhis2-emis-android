@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Favorite(
     @JsonProperty("school")
-    val school: String?,
+    val school: String? = null,
     @JsonProperty("stream")
-    val stream: List<Stream?>?
+    val stream: List<Stream> = emptyList()
 )

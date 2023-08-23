@@ -94,17 +94,6 @@ fun TeiScreen(
 
 
     Scaffold(
-        snackbarHost = {
-            SnackbarHost(
-                hostState = snackState
-            ) { snackbarData: SnackbarData ->
-                CustomSnackBar(
-                    navTo = navToFavorite,
-                    snackbarData.message,
-                    containerColor = Color.Gray
-                )
-            }
-        },
         topBar = {
             Toolbar(
                 headers = toolbarHeaders,
@@ -116,8 +105,11 @@ fun TeiScreen(
                 ),
                 navigationAction = { onBack.invoke() },
                 disableNavigation = false,
-                actionState = ToolbarActionState(syncVisibility = false),
-                syncAction = {  },
+                actionState = ToolbarActionState(
+                    syncVisibility = false,
+                    showFavorite = true
+                ),
+                favoriteAction = navToFavorite,
                 filterAction = { displayFilters = !displayFilters }
             )
         },
@@ -240,51 +232,5 @@ fun TeiScreen(
             }
         }
 
-    }
-}
-
-@Preview
-@Composable
-fun TestSnackBar(){
-    CustomSnackBar(
-        navTo = {
-
-        },
-        "Save the filter as Favorite?",
-        containerColor = Color.Gray
-    )
-}
-
-
-@Composable
-fun CustomSnackBar(
-    navTo: () -> Unit,
-    message: String,
-    containerColor: Color = Color.Black
-) {
-    val navController = rememberNavController()
-
-    Snackbar( contentColor = containerColor) {
-        CompositionLocalProvider(
-            LocalLayoutDirection provides  LayoutDirection.Ltr
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(message,  color = Color.White)
-                TextButton(
-                    onClick = {
-                        // Handle the action when clicked
-                        println("SAVE button clicked in Snackbar")
-                        navTo.invoke()
-                        //navController.navigate(AppRoutes.FAVORITE_ROUTE)
-                    }
-                ) {
-                    Text("SAVE", color = Color(0xFF2C98F0))
-                }
-            }
-        }
     }
 }

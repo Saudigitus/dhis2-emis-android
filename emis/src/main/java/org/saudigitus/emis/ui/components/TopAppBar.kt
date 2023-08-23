@@ -8,6 +8,7 @@ import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -44,7 +45,8 @@ data class ToolbarHeaders(
 data class ToolbarActionState(
     val syncVisibility: Boolean = true,
     val filterVisibility: Boolean = true,
-    val showCalendar: Boolean = false
+    val showCalendar: Boolean = false,
+    val showFavorite: Boolean = false
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -110,6 +112,7 @@ fun Toolbar(
     disableNavigation: Boolean = true,
     actionState: ToolbarActionState = ToolbarActionState(),
     calendarAction: (date: String) -> Unit = {},
+    favoriteAction: () -> Unit = {},
     syncAction: () -> Unit = {},
     filterAction: () -> Unit = {}
 ) {
@@ -166,6 +169,14 @@ fun Toolbar(
             }
         },
         actions = {
+            if (actionState.showFavorite) {
+                IconButton(onClick = { favoriteAction.invoke() }) {
+                    Icon(
+                        imageVector = Icons.Default.Favorite,
+                        contentDescription = stringResource(R.string.calendar)
+                    )
+                }
+            }
             if (actionState.showCalendar) {
                 IconButton(onClick = { isCalendarShown = !isCalendarShown }) {
                     Icon(

@@ -39,7 +39,7 @@ fun ChipWithIconVisibility(){
 
 @Composable
 fun TextChipWithIconVisibility(
-    isSelected: Boolean,
+    isSelected: MutableState<Boolean>,
     text: String,
     code: String,
     onChecked: (checked: Boolean, code: String) -> Unit,
@@ -60,12 +60,13 @@ fun TextChipWithIconVisibility(
             )
             .clip(shape = shape)
             .clickable {
-                onChecked(isSelected, code) // Notify the listener
+                isSelected.value = !isSelected.value // Toggle the value using MutableState
+                onChecked(isSelected.value, code) // Notify the listener
             }
-            .padding(12.dp)
+            .padding(horizontal =  12.dp, vertical = 16.dp)
 
     ) {
-        if (isSelected) {
+        if (isSelected.value) {
             Icon(
                 Icons.Rounded.Check,
                 tint = Color(0xFF2C98F0),

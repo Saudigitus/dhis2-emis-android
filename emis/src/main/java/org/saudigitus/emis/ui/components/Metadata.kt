@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.saudigitus.emis.R
+import org.saudigitus.emis.data.model.Stream
 
 @Composable
 fun MetadataIcon(
@@ -263,6 +264,8 @@ data class InfoCard(
     val teiCount: Int = 0
 )
 
+
+
 @Composable
 fun ShowCard(
     infoCard: InfoCard
@@ -307,10 +310,18 @@ fun ShowCard(
     }
 }
 
+data class SchoolInfoCard(
+    val grade: String = "",
+    val section: String = "",
+    val academicYear: String = "",
+    val orgUnitName: String = "",
+    val teiCount: Int = 0
+)
 @Composable
 fun SumaryCard(
-    infoCard: InfoCard
-){
+    school: String? = "",
+    streams:  List<Stream>?,
+    ){
     Card (
         shape = RoundedCornerShape(0.dp),
         modifier = Modifier
@@ -335,7 +346,7 @@ fun SumaryCard(
                     Spacer(modifier = Modifier.size(10.dp))
                     Column {
                         Text(
-                            text = "Primary school A",
+                            text = "$school",
                             fontWeight = FontWeight.Bold,
                             fontSize = 17.sp
                         )
