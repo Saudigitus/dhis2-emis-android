@@ -350,26 +350,32 @@ fun SumaryCard(
                             fontWeight = FontWeight.Bold,
                             fontSize = 17.sp
                         )
-                        Row{
-                            Text(
-                                text = "Grade 1: ",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 14.sp,
-                                color = Color.Gray
-                            )
-                            Text(
-                                text = "A,B,C",
-                                fontSize = 14.sp,
-                                color = Color.Gray
+
+                        streams?.forEach {
+                            Row{
+                                Text(
+                                    text = "${it.grade}: ",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp,
+                                    color = Color.Gray
+                                )
+                                it.sections?.forEach {
+                                    Text(
+                                        text = "${it.code},",
+                                        fontSize = 14.sp,
+                                        color = Color.Gray
+                                    )
+                                }
+                            }
+                            Divider(
+                                color = Color.Gray,
+                                thickness = 1.dp,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(1.dp)
                             )
                         }
-                        Divider(
-                            color = Color.Gray,
-                            thickness = 1.dp,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(1.dp)
-                        )
+
                     }
                 }
             }

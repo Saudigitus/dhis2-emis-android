@@ -96,7 +96,7 @@ class FavoriteViewModel
 
             repository.save(FavoriteConfig(favoritesCache))
 
-            Timber.tag("FAVORITE_savE").e("${favorite.value}")
+            Timber.tag("FAVORITE_SAVE").e("${favorite.value}")
         }
     }
 

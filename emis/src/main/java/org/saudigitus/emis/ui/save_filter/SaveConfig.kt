@@ -111,7 +111,7 @@ fun SaveFavoriteFilterScreen(
                     modifier = Modifier.padding(horizontal = 32.dp),
                     text = {
                         Text(
-                            text = "Reset",
+                            text = stringResource(R.string.reset),
                             color = Color(0xFF2C98F0),
                             style = LocalTextStyle.current.copy(
                                 fontFamily = FontFamily(Font(R.font.rubik_medium))
@@ -132,7 +132,7 @@ fun SaveFavoriteFilterScreen(
                 ExtendedFloatingActionButton(
                     text = {
                         Text(
-                            text = "Update",
+                            text = stringResource(R.string.update),
                             color = Color(0xFF2C98F0),
                             style = LocalTextStyle.current.copy(
                                 fontFamily = FontFamily(Font(R.font.rubik_medium))
@@ -181,7 +181,7 @@ fun SaveFavoriteFilterScreen(
                         .padding(16.dp)
                 ) {
                     Spacer(modifier = Modifier.size(10.dp))
-                    Text("Grade", color = Color.Gray)
+                    Text(stringResource(R.string.gradeSection), color = Color.Gray)
                     Spacer(modifier = Modifier.size(10.dp))
 
                     LazyRow {
@@ -191,15 +191,14 @@ fun SaveFavoriteFilterScreen(
                                 "${grade.itemName}",
                                 "${grade.code}",
                             ) { checked, code ->
-                                selectedStatesGrade[index].value =
-                                    checked // Update the MutableState value
+                                selectedStatesGrade[index].value = checked
                                 println("CHECKED: ${checked} GRADE CODE: $code")
                                 favoriteViewModel.setFavorite(gradeCode = code)
                             }
                         }
                     }
                     Spacer(modifier = Modifier.size(10.dp))
-                    Text("Class/Section", color = Color.Gray)
+                    Text(stringResource(R.string.section), color = Color.Gray)
                     Spacer(modifier = Modifier.size(10.dp))
                     LazyRow {
                         itemsIndexed(dataElementFilters[FilterType.SECTION]!!) { index, section ->
@@ -215,14 +214,14 @@ fun SaveFavoriteFilterScreen(
                         }
                     }
                     Spacer(modifier = Modifier.size(10.dp))
-                    Text("Summary", color = Color.Gray)
+                    Text(stringResource(R.string.summary), color = Color.Gray)
                     /*SumaryCard(
                         //InfoCard(),
                     )*/
 
                     if (favorites.isEmpty()) {
                         Text(
-                            "Please select your favourite Grades and classes",
+                            stringResource(R.string.emptyFavorites),
                             modifier = Modifier.padding(16.dp),
                             color = Color.Gray,
                             fontSize = 12.sp
@@ -236,6 +235,7 @@ fun SaveFavoriteFilterScreen(
                                 )
                             }
                         }
+
                     }
                 }
 
