@@ -15,11 +15,11 @@ import org.saudigitus.emis.data.local.DataManager
 import org.saudigitus.emis.data.model.DefaultConfig
 import org.saudigitus.emis.data.model.OU
 import org.saudigitus.emis.data.model.Registration
+import org.saudigitus.emis.ui.components.DropdownState
 import org.saudigitus.emis.ui.components.Item
 import org.saudigitus.emis.ui.components.InfoCard
 import org.saudigitus.emis.ui.components.ToolbarHeaders
 import org.saudigitus.emis.utils.Constants
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -28,8 +28,8 @@ class TeiViewModel
     val repository: DataManager
 ) : ViewModel() {
 
-    private val _dataElementFilters = MutableStateFlow<Map<FilterType, List<Item>>>(mapOf())
-    val dataElementFilters: StateFlow<Map<FilterType, List<Item>>> = _dataElementFilters
+    private val _dataElementFilters = MutableStateFlow<List<DropdownState>>(emptyList())
+    val dataElementFilters: StateFlow<List<DropdownState>> = _dataElementFilters
 
     private val _filterState = MutableStateFlow(FilterState())
     val filterState: StateFlow<FilterState> = _filterState
@@ -52,28 +52,37 @@ class TeiViewModel
     private val _infoCard = MutableStateFlow(InfoCard())
     val infoCard: StateFlow<InfoCard> = _infoCard
 
-    init {
+    private fun setConfig(program: String) {
         viewModelScope.launch {
-            val config = repository.getConfig(Constants.KEY)
+            val config = repository.getConfig(Constants.KEY)?.find { it.program == program }
 
             if (config != null) {
+                _defaultConfig.value = config.default
+                _registration.value = config.registration
 
-                for (c in config) {
-                    _defaultConfig.value = c.default
-                    _registration.value = c.registration
-                    break
-                }
-
-                _dataElementFilters.value = mapOf(
-                    Pair(FilterType.ACADEMIC_YEAR, options("${registration.value?.academicYear}")),
-                    Pair(FilterType.GRADE, options("${registration.value?.grade}")),
-                    Pair(FilterType.SECTION, options("${registration.value?.section}")),
+                _dataElementFilters.value = listOf(
+                    DropdownState(
+                        FilterType.ACADEMIC_YEAR,
+                        getDataElementName("${registration.value?.academicYear}"),
+                        options("${registration.value?.academicYear}")
+                    ),
+                    DropdownState(
+                        FilterType.GRADE,
+                        getDataElementName("${registration.value?.grade}"),
+                        options("${registration.value?.grade}")
+                    ),
+                    DropdownState(
+                        FilterType.SECTION,
+                        getDataElementName("${registration.value?.section}"),
+                        options("${registration.value?.section}")
+                    )
                 )
-
-                Timber.tag("DEFAULT_CONF").e("${defaultConfig.value}")
             }
         }
     }
+
+    private suspend fun getDataElementName(uid: String) =
+        repository.getDataElement(uid).displayFormName() ?: ""
 
     private fun getTeis() {
         viewModelScope.launch {
@@ -109,6 +118,9 @@ class TeiViewModel
 
     fun setBundle(bundle: Bundle?) {
         _programSettings.value = bundle
+
+        setConfig(programSettings.value?.getString(PROGRAM_UID) ?: "")
+
         _toolbarHeader.update {
             it.copy(title = "${programSettings.value?.getString(DATA_SET_NAME)}")
         }

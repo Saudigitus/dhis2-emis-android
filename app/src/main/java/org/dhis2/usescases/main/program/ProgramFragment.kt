@@ -17,6 +17,8 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.view.ViewCompat
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import org.dhis2.App
 import org.dhis2.Bindings.Bindings
 import org.dhis2.Bindings.clipWithRoundedCorners
@@ -35,6 +37,7 @@ import org.dhis2.usescases.datasets.datasetDetail.DataSetDetailActivity
 import org.dhis2.usescases.general.FragmentGlobalAbstract
 import org.dhis2.usescases.main.MainActivity
 import org.dhis2.usescases.programEventDetail.ProgramEventDetailActivity
+import org.dhis2.usescases.searchTrackEntity.SearchTEActivity
 import org.dhis2.utils.HelpManager
 import org.dhis2.utils.analytics.SELECT_PROGRAM
 import org.dhis2.utils.analytics.TYPE_PROGRAM_SELECTED
@@ -219,13 +222,19 @@ class ProgramFragment : FragmentGlobalAbstract(), ProgramView {
 
         when (program.programType) {
             ProgramType.WITH_REGISTRATION.name -> {
-                /*Intent(activity, SearchTEActivity::class.java).apply {
-                    putExtras(bundle)
-                    getActivityContent.launch(this)
-                }*/
-                val intent = Intent(activity, org.saudigitus.emis.MainActivity::class.java)
-                intent.putExtras(bundle)
-                startActivity(intent)
+                lifecycleScope.launch {
+                    if (presenter.hasDatastoreConfig(program.uid)) {
+                        Intent(activity, org.saudigitus.emis.MainActivity::class.java).apply {
+                            putExtras(bundle)
+                            getActivityContent.launch(this)
+                        }
+                    } else {
+                        Intent(activity, SearchTEActivity::class.java).apply {
+                            putExtras(bundle)
+                            getActivityContent.launch(this)
+                        }
+                    }
+                }
             }
             ProgramType.WITHOUT_REGISTRATION.name -> {
                 Intent(activity, ProgramEventDetailActivity::class.java).apply {

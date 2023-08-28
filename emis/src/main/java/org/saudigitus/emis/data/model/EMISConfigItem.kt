@@ -21,5 +21,7 @@ data class EMISConfigItem(
     @JsonProperty("registration")
     val registration: Registration?,
     @JsonProperty("socio-economics")
-    val socioEconomics: SocioEconomics?
+    val socioEconomics: SocioEconomics?,
+    @JsonProperty("transfer")
+    val transfer: Transfer?
 )

@@ -46,10 +46,18 @@ import org.dhis2.commons.orgunitselector.OUTreeFragment
 import org.dhis2.commons.orgunitselector.OrgUnitSelectorScope
 import org.saudigitus.emis.R
 import org.saudigitus.emis.data.model.OU
+import org.saudigitus.emis.ui.teis.FilterType
+
 data class Item(
     val id: String,
     val itemName: String,
     val code: String? = null
+)
+
+data class DropdownState(
+    val filterType: FilterType,
+    val displayName: String,
+    val data: List<Item>
 )
 
 @Composable
