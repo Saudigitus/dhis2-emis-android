@@ -1,8 +1,12 @@
 package org.saudigitus.emis.ui.save_filter
 
+import android.content.Context
+import android.widget.Toast
+import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -13,6 +17,7 @@ import org.saudigitus.emis.data.model.Favorite
 import org.saudigitus.emis.data.model.FavoriteConfig
 import org.saudigitus.emis.data.model.Section
 import org.saudigitus.emis.data.model.Stream
+import org.saudigitus.emis.ui.components.FavoriteAlertDialog
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -34,9 +39,22 @@ class FavoriteViewModel
     private val _sections = MutableStateFlow<List<Section>>(emptyList())
     private val sections: StateFlow<List<Section>> = _sections
 
+    private val junkSections = mutableListOf<Section>()
+    private val junkStream = mutableListOf<Stream>()
 
     init {
         getFavorites()
+    }
+
+    fun removeItem(item: String){
+        val updatedFavorites = _favorites.value.toMutableList()
+
+        val itemToRemove = updatedFavorites.find { it.uid == item }
+
+        if (itemToRemove != null) {
+            updatedFavorites.remove(itemToRemove)
+            _favorites.value = updatedFavorites
+        }
     }
 
     fun setFavorite(
@@ -87,6 +105,14 @@ class FavoriteViewModel
         }
     }
 
+    fun clear() {
+        junkSections.clear()
+        junkStream.clear()
+
+        _favorite.value = Favorite()
+        _stream.value = Stream()
+        _sections.value = emptyList()
+    }
 
     fun save() {
         viewModelScope.launch {
@@ -96,8 +122,12 @@ class FavoriteViewModel
 
             repository.save(FavoriteConfig(favoritesCache))
 
-            Timber.tag("FAVORITE_SAVE").e("${favorite.value}")
+            clear()
         }
+    }
+
+    fun showToast(context: Context, message: String){
+        Toast.makeText(context, "$message", Toast.LENGTH_LONG).show()
     }
 
     private fun getFavorites() {

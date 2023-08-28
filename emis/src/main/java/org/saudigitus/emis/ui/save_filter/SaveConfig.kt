@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.Font
@@ -41,21 +42,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.dhis2.commons.Constants
 import org.saudigitus.emis.R
 import org.saudigitus.emis.ui.components.DropDownOu
+import org.saudigitus.emis.ui.components.FavoriteAlertDialog
 import org.saudigitus.emis.ui.components.SumaryCard
+import org.saudigitus.emis.ui.components.Toolbar
+import org.saudigitus.emis.ui.components.ToolbarActionState
+import org.saudigitus.emis.ui.components.ToolbarHeaders
 import org.saudigitus.emis.ui.teis.FilterType
 import org.saudigitus.emis.ui.teis.TeiViewModel
 import timber.log.Timber
-
-
-/*@Preview
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TestScreen(){
-    SaveFavoriteFilterScreen(
-        //viewModel = null,
-        onBack= {},
-    )
-}*/
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,6 +58,8 @@ fun SaveFavoriteFilterScreen(
     favoriteViewModel: FavoriteViewModel,
     onBack: () -> Unit,
 ) {
+
+    val context = LocalContext.current
 
     val filterState by viewModel.filterState.collectAsStateWithLifecycle()
     val programSettings by viewModel.programSettings.collectAsStateWithLifecycle()
@@ -74,6 +70,9 @@ fun SaveFavoriteFilterScreen(
         remember { List(dataElementFilters[FilterType.GRADE]!!.size) { mutableStateOf(false) } }
     val selectedStatesSection =
         remember { List(dataElementFilters[FilterType.SECTION]!!.size) { mutableStateOf(false) } }.toMutableList()
+
+    //val clearFavorite by remember { mutableStateOf(false) }
+    val showDialog = remember { mutableStateOf(false) }
 
     Timber.tag("MY_FAVORITES").e("$favorites")
 
@@ -86,20 +85,22 @@ fun SaveFavoriteFilterScreen(
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
+            Toolbar(
+                headers = ToolbarHeaders(title = "Attendance", subtitle = null),
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color(0xFF2C98F0),
                     navigationIconContentColor = Color.White,
                     titleContentColor = Color.White,
                     actionIconContentColor = Color.White
                 ),
-                title = {
-                    Text(
-                        "Favorite Filter",
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
+                navigationAction = { onBack.invoke() },
+                disableNavigation = false,
+                actionState = ToolbarActionState(
+                    syncVisibility = false,
+                    showFavorite = false
+                ),
+                favoriteAction = {},
+                filterAction = {}
             )
         },
         floatingActionButton = {
@@ -126,7 +127,7 @@ fun SaveFavoriteFilterScreen(
                         )
                     },
                     onClick = {
-                        favoriteViewModel.reset()
+                        showDialog.value = true
                     }
                 )
                 ExtendedFloatingActionButton(
@@ -147,7 +148,15 @@ fun SaveFavoriteFilterScreen(
                         )
                     },
                     onClick = {
-                        favoriteViewModel.save()
+                        if(filterState.school?.uid != null) {
+                            favoriteViewModel.save()
+                        }else{
+                            favoriteViewModel.showToast(
+                                context = context,
+                                message = "Please select one School to save!"
+                            )
+                        }
+                        showDialog.value = false
                     }
                 )
             }
@@ -160,6 +169,20 @@ fun SaveFavoriteFilterScreen(
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start
         ) {
+            // show alert dialog when the value is true
+            if(showDialog.value){
+                FavoriteAlertDialog(
+                    title = "warning",
+                    message = "Would you like to clear the saved favorites?",
+                    onYes = {
+                        favoriteViewModel.reset()
+                    },
+                    onDismiss = {
+                        showDialog.value = true
+                    },
+                    openDialog = showDialog
+                )
+            }
             Column {
                 Spacer(modifier = Modifier.size(20.dp))
                 DropDownOu(
@@ -193,7 +216,13 @@ fun SaveFavoriteFilterScreen(
                             ) { checked, code ->
                                 selectedStatesGrade[index].value = checked
                                 println("CHECKED: ${checked} GRADE CODE: $code")
-                                favoriteViewModel.setFavorite(gradeCode = code)
+                                //favoriteViewModel.setFavorite(gradeCode = code)
+
+                                if(checked){
+                                    favoriteViewModel.setFavorite(gradeCode = code)
+                                } else {
+                                    favoriteViewModel.removeItem(item = code)
+                                }
                             }
                         }
                     }
@@ -209,15 +238,16 @@ fun SaveFavoriteFilterScreen(
                             ) { checked, code ->
                                 //selectedStatesSection[index] = checked
                                 println("CHECKED: ${checked} SECTION CODE: $code")
-                                favoriteViewModel.setFavorite(sectionCode = code)
+                                if(checked){
+                                    favoriteViewModel.setFavorite(sectionCode = code)
+                                } else {
+                                    favoriteViewModel.removeItem(item = code)
+                                }
                             }
                         }
                     }
                     Spacer(modifier = Modifier.size(10.dp))
                     Text(stringResource(R.string.summary), color = Color.Gray)
-                    /*SumaryCard(
-                        //InfoCard(),
-                    )*/
 
                     if (favorites.isEmpty()) {
                         Text(
