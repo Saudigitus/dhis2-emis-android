@@ -17,8 +17,6 @@ import org.saudigitus.emis.data.model.Favorite
 import org.saudigitus.emis.data.model.FavoriteConfig
 import org.saudigitus.emis.data.model.Section
 import org.saudigitus.emis.data.model.Stream
-import org.saudigitus.emis.ui.components.FavoriteAlertDialog
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -39,22 +37,27 @@ class FavoriteViewModel
     private val _sections = MutableStateFlow<List<Section>>(emptyList())
     private val sections: StateFlow<List<Section>> = _sections
 
-    private val junkSections = mutableListOf<Section>()
-    private val junkStream = mutableListOf<Stream>()
+    //private val junkSections = mutableListOf<Section>()
+    //private val junkStream = mutableListOf<Stream>()
+
+    fun removeFavorite(favorite: Favorite) {
+        val updatedList = _favorites.value.toMutableList()
+        updatedList.remove(favorite)
+        _favorites.value = updatedList
+    }
 
     init {
         getFavorites()
     }
 
-    fun removeItem(item: String){
-        val updatedFavorites = _favorites.value.toMutableList()
+    fun removeItem(sectionCode: String){
+        val updatedFavorites = _favorite.value.stream
+        val sectionsValues = updatedFavorites.flatMap { it.sections }.toMutableList()
 
-        val itemToRemove = updatedFavorites.find { it.uid == item }
+        sectionsValues.removeIf { it.code == sectionCode }
+        println("SV: $sectionsValues")
 
-        if (itemToRemove != null) {
-            updatedFavorites.remove(itemToRemove)
-            _favorites.value = updatedFavorites
-        }
+        _sections.value  = sectionsValues
     }
 
     fun setFavorite(
@@ -63,6 +66,7 @@ class FavoriteViewModel
         gradeCode: String? = null,
         sectionCode: String? = null,
         sectionName: String? =  null,
+        isSelected: Boolean  = false
     ){
         if(school != null) {
             _favorite.update {
@@ -75,16 +79,22 @@ class FavoriteViewModel
             val junkStream = mutableListOf<Stream>()
 
             junkSections.addAll(sections.value)
-            junkSections.add(Section(sectionCode, sectionName))
+
+            if(isSelected){
+                junkSections.add(Section(sectionCode, sectionName))
+            } else {
+                val objectToRemove = junkSections.find { it.code == sectionCode }
+                objectToRemove?.let {
+                    junkSections.remove(it)
+                }
+            }
+
             _sections.value = junkSections
 
             _stream.update {
                 it.copy(sections = sections.value)
             }
 
-            val record = favorites.value.find { it.uid == favorite.value.uid }
-
-            record?.stream?.let { junkStream.addAll(it) }
             junkStream.add(stream.value)
 
             _favorite.update {
@@ -106,8 +116,8 @@ class FavoriteViewModel
     }
 
     fun clear() {
-        junkSections.clear()
-        junkStream.clear()
+        //junkSections.clear()
+        //junkStream.clear()
 
         _favorite.value = Favorite()
         _stream.value = Stream()

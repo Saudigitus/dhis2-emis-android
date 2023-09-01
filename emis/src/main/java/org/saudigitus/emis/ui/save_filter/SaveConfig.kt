@@ -23,6 +23,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -83,10 +84,14 @@ fun SaveFavoriteFilterScreen(
         )
     }
 
+    fun resetSelectedStates(selectedStates: List<MutableState<Boolean>>) {
+        selectedStates.forEach { it.value = false }
+    }
+
     Scaffold(
         topBar = {
             Toolbar(
-                headers = ToolbarHeaders(title = "Attendance", subtitle = null),
+                headers = ToolbarHeaders(title = "Favorites", subtitle = null),
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color(0xFF2C98F0),
                     navigationIconContentColor = Color.White,
@@ -150,6 +155,8 @@ fun SaveFavoriteFilterScreen(
                     onClick = {
                         if(filterState.school?.uid != null) {
                             favoriteViewModel.save()
+                            resetSelectedStates(selectedStatesGrade)
+                            resetSelectedStates(selectedStatesSection)
                         }else{
                             favoriteViewModel.showToast(
                                 context = context,
@@ -176,6 +183,8 @@ fun SaveFavoriteFilterScreen(
                     message = "Would you like to clear the saved favorites?",
                     onYes = {
                         favoriteViewModel.reset()
+                        resetSelectedStates(selectedStatesGrade)
+                        resetSelectedStates(selectedStatesSection)
                     },
                     onDismiss = {
                         showDialog.value = true
@@ -194,7 +203,7 @@ fun SaveFavoriteFilterScreen(
                         viewModel.setSchool(it)
                         favoriteViewModel.setFavorite(
                             schoolUid = filterState.school?.uid ?: "",
-                            school = filterState.school?.displayName ?: ""
+                            school = filterState.school?.displayName ?: "",
                         )
                     }
                 )
@@ -203,9 +212,9 @@ fun SaveFavoriteFilterScreen(
                         .fillMaxWidth()
                         .padding(16.dp)
                 ) {
-                    Spacer(modifier = Modifier.size(10.dp))
+                    Spacer(modifier = Modifier.size(6.dp))
                     Text(stringResource(R.string.gradeSection), color = Color.Gray)
-                    Spacer(modifier = Modifier.size(10.dp))
+                    Spacer(modifier = Modifier.size(6.dp))
 
                     LazyRow {
                         itemsIndexed(dataElementFilters[FilterType.GRADE]!!) { index, grade ->
@@ -214,21 +223,22 @@ fun SaveFavoriteFilterScreen(
                                 "${grade.itemName}",
                                 "${grade.code}",
                             ) { checked, code ->
+                                resetSelectedStates(selectedStatesGrade) // reset the states
+
                                 selectedStatesGrade[index].value = checked
                                 println("CHECKED: ${checked} GRADE CODE: $code")
-                                //favoriteViewModel.setFavorite(gradeCode = code)
 
                                 if(checked){
                                     favoriteViewModel.setFavorite(gradeCode = code)
                                 } else {
-                                    favoriteViewModel.removeItem(item = code)
+                                    //favoriteViewModel.removeItem(sectionCode = code)
                                 }
                             }
                         }
                     }
-                    Spacer(modifier = Modifier.size(10.dp))
+                    Spacer(modifier = Modifier.size(6.dp))
                     Text(stringResource(R.string.section), color = Color.Gray)
-                    Spacer(modifier = Modifier.size(10.dp))
+                    Spacer(modifier = Modifier.size(6.dp))
                     LazyRow {
                         itemsIndexed(dataElementFilters[FilterType.SECTION]!!) { index, section ->
                             TextChipWithIconVisibility(
@@ -238,15 +248,12 @@ fun SaveFavoriteFilterScreen(
                             ) { checked, code ->
                                 //selectedStatesSection[index] = checked
                                 println("CHECKED: ${checked} SECTION CODE: $code")
-                                if(checked){
-                                    favoriteViewModel.setFavorite(sectionCode = code)
-                                } else {
-                                    favoriteViewModel.removeItem(item = code)
-                                }
+
+                                favoriteViewModel.setFavorite(sectionCode = code, isSelected = checked)
                             }
                         }
                     }
-                    Spacer(modifier = Modifier.size(10.dp))
+                    Spacer(modifier = Modifier.size(6.dp))
                     Text(stringResource(R.string.summary), color = Color.Gray)
 
                     if (favorites.isEmpty()) {
@@ -265,7 +272,6 @@ fun SaveFavoriteFilterScreen(
                                 )
                             }
                         }
-
                     }
                 }
 

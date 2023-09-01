@@ -326,7 +326,7 @@ fun SumaryCard(
         shape = RoundedCornerShape(0.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 0.dp, vertical = 16.dp),
+            .padding(horizontal = 0.dp, vertical = 10.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ){
         Column(modifier = Modifier
@@ -375,7 +375,6 @@ fun SumaryCard(
                                     .height(1.dp)
                             )
                         }
-
                     }
                 }
             }

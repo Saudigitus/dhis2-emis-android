@@ -26,17 +26,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import org.saudigitus.emis.ui.components.DropDownItem
 
-/*
-@Preview
-@Composable
-fun ChipWithIconVisibility(){
-    TextChipWithIconVisibility(
-        false,
-        "Grade 1",
-        "ssssss",
-    ) { checked, code -> }
-}*/
-
 @Composable
 fun TextChipWithIconVisibility(
     isSelected: MutableState<Boolean>,
@@ -45,6 +34,12 @@ fun TextChipWithIconVisibility(
     onChecked: (checked: Boolean, code: String) -> Unit,
 ) {
     val shape = RoundedCornerShape(16.dp)
+    val backgroundColor = if (isSelected.value) {
+        Color(0xFF03599E) // Change to the desired selected background color
+    } else {
+        Color(0xFCD0E6FB ) // Change to the desired unselected background color
+    }
+
     Row(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
@@ -55,7 +50,7 @@ fun TextChipWithIconVisibility(
             )
             .shadow(3.dp, RoundedCornerShape(16.dp), true)
             .background(
-                color = Color(0xFCD0E6FB),
+                color = backgroundColor,
                 shape = shape
             )
             .clip(shape = shape)
@@ -66,14 +61,8 @@ fun TextChipWithIconVisibility(
             .padding(horizontal =  12.dp, vertical = 16.dp)
 
     ) {
-        if (isSelected.value) {
-            Icon(
-                Icons.Rounded.Check,
-                tint = Color(0xFF2C98F0),
-                contentDescription = "Icon"
-            )
-        }
         Text(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
             text = text,
             fontSize = 14.sp,
             color = Color(0xFF2C98F0)
