@@ -1,16 +1,11 @@
-package org.saudigitus.emis.ui.save_filter
+package org.saudigitus.emis.ui.favorites
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.AppBarDefaults
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -19,12 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.LightGray
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
-import org.saudigitus.emis.ui.components.DropDownItem
 
 @Composable
 fun TextChipWithIconVisibility(
@@ -37,7 +28,7 @@ fun TextChipWithIconVisibility(
     val backgroundColor = if (isSelected.value) {
         Color(0xFF03599E) // Change to the desired selected background color
     } else {
-        Color(0xFCD0E6FB ) // Change to the desired unselected background color
+        Color(0xFCD0E6FB) // Change to the desired unselected background color
     }
 
     Row(

@@ -1,12 +1,10 @@
-package org.saudigitus.emis.ui.save_filter
+package org.saudigitus.emis.ui.favorites
 
 import android.content.Context
 import android.widget.Toast
-import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -37,27 +35,13 @@ class FavoriteViewModel
     private val _sections = MutableStateFlow<List<Section>>(emptyList())
     private val sections: StateFlow<List<Section>> = _sections
 
-    //private val junkSections = mutableListOf<Section>()
-    //private val junkStream = mutableListOf<Stream>()
-
-    fun removeFavorite(favorite: Favorite) {
-        val updatedList = _favorites.value.toMutableList()
-        updatedList.remove(favorite)
-        _favorites.value = updatedList
-    }
-
     init {
         getFavorites()
     }
-
-    fun removeItem(sectionCode: String){
-        val updatedFavorites = _favorite.value.stream
-        val sectionsValues = updatedFavorites.flatMap { it.sections }.toMutableList()
-
-        sectionsValues.removeIf { it.code == sectionCode }
-        println("SV: $sectionsValues")
-
-        _sections.value  = sectionsValues
+    private fun removeFavorite(favorite: Favorite) {
+        val updatedList = _favorites.value.toMutableList()
+        updatedList.remove(favorite)
+        _favorites.value = updatedList
     }
 
     fun setFavorite(
@@ -74,37 +58,66 @@ class FavoriteViewModel
             }
         }
 
-        if(sectionCode != null) {
-            val junkSections = mutableListOf<Section>()
-            val junkStream = mutableListOf<Stream>()
+        val existingFavorite = favorites.value.find { it.uid == _favorite.value.uid }
+        if (existingFavorite != null) {
+            println("FAVORITE EXISTS $existingFavorite")
 
-            junkSections.addAll(sections.value)
-
-            if(isSelected){
-                junkSections.add(Section(sectionCode, sectionName))
-            } else {
-                val objectToRemove = junkSections.find { it.code == sectionCode }
-                objectToRemove?.let {
-                    junkSections.remove(it)
+            if(gradeCode != null) {
+                _stream.update {
+                    it.copy(grade = gradeCode)
                 }
             }
 
-            _sections.value = junkSections
+            val updatedFavorite = existingFavorite.copy(
+                stream = existingFavorite.stream.toMutableList().apply {
+                    if (sectionCode != null && isSelected) {
+                        val junkSections = mutableListOf<Section>()
+                        junkSections.addAll(sections.value)
+                        junkSections.add(Section(sectionCode, sectionName))
 
-            _stream.update {
-                it.copy(sections = sections.value)
+                        _sections.value = junkSections
+
+                        add(Stream(grade = _stream.value.grade, sections = sections.value))
+                    }
+                }
+            )
+
+            _favorite.value = updatedFavorite
+        } else {
+            println("FAVORITE DOESN'T EXISTS $existingFavorite")
+
+            if(sectionCode != null) {
+                val junkSections = mutableListOf<Section>()
+                val junkStream = mutableListOf<Stream>()
+
+                junkSections.addAll(sections.value)
+
+                if(isSelected){
+                    junkSections.add(Section(sectionCode, sectionName))
+                } else {
+                    val objectToRemove = junkSections.find { it.code == sectionCode }
+                    objectToRemove?.let {
+                        junkSections.remove(it)
+                    }
+                }
+
+                _sections.value = junkSections
+
+                _stream.update {
+                    it.copy(sections = sections.value)
+                }
+
+                junkStream.add(stream.value)
+
+                _favorite.update {
+                    it.copy(stream = junkStream)
+                }
             }
 
-            junkStream.add(stream.value)
-
-            _favorite.update {
-                it.copy(stream = junkStream)
-            }
-        }
-
-        if(gradeCode != null) {
-            _stream.update {
-                it.copy(grade = gradeCode)
+            if(gradeCode != null) {
+                _stream.update {
+                    it.copy(grade = gradeCode)
+                }
             }
         }
     }
@@ -116,22 +129,22 @@ class FavoriteViewModel
     }
 
     fun clear() {
-        //junkSections.clear()
-        //junkStream.clear()
-
         _favorite.value = Favorite()
         _stream.value = Stream()
         _sections.value = emptyList()
     }
 
     fun save() {
+
+        val existingFavorite = favorites.value.find { it.uid == _favorite.value.uid }
+        if (existingFavorite != null) {
+            removeFavorite(existingFavorite)
+        }
         viewModelScope.launch {
             val favoritesCache = mutableListOf<Favorite>()
             favoritesCache.addAll(favorites.value)
             favoritesCache.add(favorite.value)
-
             repository.save(FavoriteConfig(favoritesCache))
-
             clear()
         }
     }

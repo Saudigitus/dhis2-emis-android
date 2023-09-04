@@ -17,8 +17,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import org.dhis2.commons.Constants
 import org.saudigitus.emis.ui.attendance.AttendanceScreen
 import org.saudigitus.emis.ui.attendance.AttendanceViewModel
-import org.saudigitus.emis.ui.save_filter.FavoriteViewModel
-import org.saudigitus.emis.ui.save_filter.SaveFavoriteFilterScreen
+import org.saudigitus.emis.ui.favorites.FavoriteViewModel
+import org.saudigitus.emis.ui.favorites.SaveFavoriteFilterScreen
 import org.saudigitus.emis.ui.teis.TeiScreen
 import org.saudigitus.emis.ui.teis.TeiViewModel
 import org.saudigitus.emis.ui.theme.EMISAndroidTheme

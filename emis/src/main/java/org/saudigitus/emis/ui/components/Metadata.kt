@@ -210,52 +210,6 @@ fun TEICountComponent(
     }
 }
 
-@Composable
-fun TextChipWithIconVisibility(
-    isSelected: Boolean,
-    text: String,
-    onChecked: (Boolean) -> Unit,
-) {
-    val shape = RoundedCornerShape(8.dp)
-    Row(
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .padding(
-                vertical = 2.dp,
-                horizontal = 4.dp
-            )
-            .border(
-                width = 1.dp,
-                color = Color.LightGray,
-                shape = shape
-            )
-            .background(
-                color = Color.LightGray,
-                shape = shape
-            )
-            .clip(shape = shape)
-            .clickable {
-                onChecked(!isSelected)
-            }
-            .padding(4.dp)
-    ) {
-        if (isSelected) {
-            Icon(
-                Icons.Rounded.Check,
-                tint = Color(0xFF2C98F0),
-                contentDescription = "Icon"
-            )
-        }
-        Text(
-            text = text,
-            fontSize = 8.sp,
-            color = Color(0xFF2C98F0)
-        )
-    }
-}
-
-
 data class InfoCard(
     val grade: String = "",
     val section: String = "",
@@ -263,8 +217,6 @@ data class InfoCard(
     val orgUnitName: String = "",
     val teiCount: Int = 0
 )
-
-
 
 @Composable
 fun ShowCard(
