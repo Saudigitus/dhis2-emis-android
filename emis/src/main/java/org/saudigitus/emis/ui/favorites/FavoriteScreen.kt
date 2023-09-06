@@ -73,6 +73,7 @@ fun SaveFavoriteFilterScreen(
     //val clearFavorite by remember { mutableStateOf(false) }
     val showDialog = remember { mutableStateOf(false) }
     val hasGrade = remember { mutableStateOf(false) }
+    val hasClass = remember { mutableStateOf(false) }
 
     Timber.tag("MY_FAVORITES").e("$favorites")
 
@@ -153,10 +154,20 @@ fun SaveFavoriteFilterScreen(
                     },
                     onClick = {
                         if(filterState.school?.uid != null) {
-                            favoriteViewModel.save()
-                            resetSelectedStates(selectedStatesGrade)
-                            resetSelectedStates(selectedStatesSection)
-                            hasGrade.value = false
+
+                            if(hasGrade.value and hasClass.value){
+                                favoriteViewModel.save()
+                                resetSelectedStates(selectedStatesGrade)
+                                resetSelectedStates(selectedStatesSection)
+                                hasGrade.value = false
+                                hasClass.value = false
+                            } else {
+                                favoriteViewModel.showToast(
+                                    context = context,
+                                    message = "Please select both Grade and Class!"
+                                )
+                            }
+
                         }else{
                             favoriteViewModel.showToast(
                                 context = context,
@@ -185,6 +196,8 @@ fun SaveFavoriteFilterScreen(
                         favoriteViewModel.reset()
                         resetSelectedStates(selectedStatesGrade)
                         resetSelectedStates(selectedStatesSection)
+                        hasGrade.value = false
+                        hasClass.value = false
                     },
                     onDismiss = {
                         showDialog.value = true
@@ -249,7 +262,9 @@ fun SaveFavoriteFilterScreen(
                                 println("CHECKED: ${checked} SECTION CODE: $code")
                                 if(hasGrade.value){
                                     favoriteViewModel.setFavorite(sectionCode = code, isSelected = checked)
+                                    hasClass.value = true
                                 } else {
+                                    hasClass.value = false
                                     resetSelectedStates(selectedStatesSection)
                                     favoriteViewModel.showToast(
                                         context = context,
@@ -271,7 +286,7 @@ fun SaveFavoriteFilterScreen(
                         )
                     } else {
                         LazyColumn (modifier = Modifier.padding(bottom =  60.dp)) {
-                            itemsIndexed(favorites) { index, favorite ->
+                            itemsIndexed(favorites.reversed()) { index, favorite ->
                                 SumaryCard(
                                     school = favorite.school,
                                     streams = favorite.stream

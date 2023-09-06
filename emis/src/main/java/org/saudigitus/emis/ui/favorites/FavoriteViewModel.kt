@@ -60,8 +60,6 @@ class FavoriteViewModel
 
         val existingFavorite = favorites.value.find { it.uid == _favorite.value.uid }
         if (existingFavorite != null) {
-            println("FAVORITE EXISTS $existingFavorite")
-
             if(gradeCode != null) {
                 _stream.update {
                     it.copy(grade = gradeCode)
@@ -74,9 +72,7 @@ class FavoriteViewModel
                         val junkSections = mutableListOf<Section>()
                         junkSections.addAll(sections.value)
                         junkSections.add(Section(sectionCode, sectionName))
-
                         _sections.value = junkSections
-
                         add(Stream(grade = _stream.value.grade, sections = sections.value))
                     }
                 }
@@ -84,14 +80,11 @@ class FavoriteViewModel
 
             _favorite.value = updatedFavorite
         } else {
-            println("FAVORITE DOESN'T EXISTS $existingFavorite")
-
             if(sectionCode != null) {
                 val junkSections = mutableListOf<Section>()
                 val junkStream = mutableListOf<Stream>()
 
                 junkSections.addAll(sections.value)
-
                 if(isSelected){
                     junkSections.add(Section(sectionCode, sectionName))
                 } else {
@@ -100,20 +93,15 @@ class FavoriteViewModel
                         junkSections.remove(it)
                     }
                 }
-
                 _sections.value = junkSections
-
                 _stream.update {
                     it.copy(sections = sections.value)
                 }
-
                 junkStream.add(stream.value)
-
                 _favorite.update {
                     it.copy(stream = junkStream)
                 }
             }
-
             if(gradeCode != null) {
                 _stream.update {
                     it.copy(grade = gradeCode)
