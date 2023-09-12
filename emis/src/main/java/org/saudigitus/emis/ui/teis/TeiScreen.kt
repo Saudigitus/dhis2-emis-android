@@ -71,7 +71,6 @@ fun TeiScreen(
     onBack: () -> Unit,
     navToFavorite: () -> Unit,
     navTo: () -> Unit
-
 ) {
     var displayFilters by remember { mutableStateOf(true) }
     val dataElementFilters by viewModel.dataElementFilters.collectAsStateWithLifecycle()
@@ -80,18 +79,6 @@ fun TeiScreen(
     val toolbarHeaders by viewModel.toolbarHeader.collectAsStateWithLifecycle()
     val programSettings by viewModel.programSettings.collectAsStateWithLifecycle()
     val infoCard by viewModel.infoCard.collectAsStateWithLifecycle()
-
-    val snackState = remember { SnackbarHostState() }
-    val coroutineScope = rememberCoroutineScope()
-
-    if(filterState.isNotNull()){
-        LaunchedEffect(snackState) {
-            coroutineScope.launch {
-                snackState.showSnackbar("Save the filter as Favorite?")
-            }
-        }
-    }
-
 
     Scaffold(
         topBar = {
