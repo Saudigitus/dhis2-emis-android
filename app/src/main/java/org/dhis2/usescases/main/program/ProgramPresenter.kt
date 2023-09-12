@@ -13,6 +13,7 @@ import org.dhis2.commons.schedulers.SchedulerProvider
 import org.dhis2.data.service.SyncStatusController
 import org.hisp.dhis.android.core.organisationunit.OrganisationUnit
 import org.hisp.dhis.android.core.program.ProgramType
+import org.saudigitus.emis.utils.Constants.KEY
 import timber.log.Timber
 
 class ProgramPresenter internal constructor(
@@ -148,4 +149,8 @@ class ProgramPresenter internal constructor(
     fun setIsDownloading() {
         refreshData.onNext(Unit)
     }
+
+    suspend fun hasDatastoreConfig(uid: String): Boolean =
+        programRepository.getConfigFromDataStore(KEY).find { it.program == uid } != null
+
 }

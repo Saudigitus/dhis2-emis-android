@@ -11,13 +11,19 @@ import org.dhis2.commons.data.SearchTeiModel
 import org.dhis2.commons.date.DateUtils
 import org.saudigitus.emis.data.local.DataManager
 import org.saudigitus.emis.data.model.Attendance
+import org.saudigitus.emis.data.model.dto.Absence
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
 import org.saudigitus.emis.data.model.dto.withBtnSettings
 import org.saudigitus.emis.ui.components.InfoCard
+import org.saudigitus.emis.ui.components.Item
 import org.saudigitus.emis.ui.components.ToolbarHeaders
+import org.saudigitus.emis.utils.Constants.ABSENT
 import org.saudigitus.emis.utils.Constants.KEY
+import org.saudigitus.emis.utils.Constants.LATE
+import org.saudigitus.emis.utils.Constants.PRESENT
 import org.saudigitus.emis.utils.DateHelper
 import org.saudigitus.emis.utils.Utils.WHITE
+import org.saudigitus.emis.utils.Utils.getColorByAttendanceType
 import org.saudigitus.emis.utils.Utils.getColorByIconName
 import org.saudigitus.emis.utils.Utils.getDrawableIdByName
 import org.saudigitus.emis.utils.Utils.getIconByName
@@ -42,6 +48,9 @@ class AttendanceViewModel
     private val _attendanceStatus = MutableStateFlow<List<AttendanceEntity>>(emptyList())
     val attendanceStatus: StateFlow<List<AttendanceEntity>> = _attendanceStatus
 
+    private val _reasonOfAbsence = MutableStateFlow<List<Item>>(emptyList())
+    val reasonOfAbsence: StateFlow<List<Item>> = _reasonOfAbsence
+
     private val _attendanceStep = MutableStateFlow(ButtonStep.EDITING)
     val attendanceStep: StateFlow<ButtonStep> = _attendanceStep
 
@@ -49,26 +58,39 @@ class AttendanceViewModel
         MutableStateFlow<List<AttendanceActionButtonState>>(emptyList())
     val attendanceBtnState: StateFlow<List<AttendanceActionButtonState>> = _attendanceBtnState
 
-    private val _toolbarHeaders = MutableStateFlow(ToolbarHeaders(title = "Attendance"))
+    private val _toolbarHeaders = MutableStateFlow(ToolbarHeaders(
+        title = "Attendance",
+        subtitle = DateHelper.formatDateWithWeekDay("${DateHelper.formatDate(System.currentTimeMillis())}")
+    ))
     val toolbarHeaders: StateFlow<ToolbarHeaders> = _toolbarHeaders
 
     private val _program = MutableStateFlow("")
     val program: StateFlow<String> = _program
 
+    private val _eventDate = MutableStateFlow(DateHelper.formatDate(System.currentTimeMillis()) ?: "")
+    val eventDate: StateFlow<String> = _eventDate
+
     private val _infoCard = MutableStateFlow(InfoCard())
     val infoCard: StateFlow<InfoCard> = _infoCard
 
-    init {
+    private val attendanceCache = mutableSetOf<AttendanceEntity>()
+    private var attendanceBtnStateCache = mutableListOf(AttendanceActionButtonState())
+
+    private val _absenceState = MutableStateFlow(Absence())
+    private val absenceState: StateFlow<Absence> = _absenceState
+
+    private val _absenceStateCache = MutableStateFlow<List<Absence>>(emptyList())
+    val absenceStateCache: StateFlow<List<Absence>> = _absenceStateCache
+
+    private fun setConfig(program: String) {
         viewModelScope.launch {
-            val config = repository.getConfig(KEY)
+            val config = repository.getConfig(KEY)?.find { it.program == program }
 
             if (config != null) {
-                for (c in config) {
-                    _datastoreAttendance.value = c.attendance
-                    break
-                }
+                _datastoreAttendance.value = config.attendance
             }
             getAttendanceOptions(datastoreAttendance.value?.status ?: "")
+            getReasonForAbsence(datastoreAttendance.value?.absenceReason ?: "")
         }
     }
 
@@ -78,6 +100,9 @@ class AttendanceViewModel
 
     fun setProgram(program: String) {
         _program.value = program
+
+        setConfig(program)
+
         viewModelScope.launch {
             attendanceEvents()
         }
@@ -87,7 +112,12 @@ class AttendanceViewModel
         _infoCard.value = infoCard
     }
 
+    fun setAttendanceStep(attendanceStep: ButtonStep) {
+        _attendanceStep.value = attendanceStep
+    }
+
     fun setAttendanceDate(date: String) {
+        _eventDate.value = date
         viewModelScope.launch {
             attendanceEvents(date)
         }
@@ -139,6 +169,9 @@ class AttendanceViewModel
                     )
                 }
 
+                clearCache()
+                attendanceCache.addAll(attendanceStatus.value)
+
                 setInitialAttendanceStatus()
             } catch (e: Exception) {
                 Timber.tag("ATTENDANCE_DATA").e(e)
@@ -147,7 +180,7 @@ class AttendanceViewModel
     }
 
     private fun setInitialAttendanceStatus() {
-        _attendanceBtnState.value = attendanceStatus.value.map { attendance ->
+        attendanceBtnStateCache = attendanceStatus.value.map { attendance ->
             attendanceActionButtonMapper(
                 index = attendanceOptions.value.indexOfFirst { it.code == attendance.value },
                 tei = attendance.tei,
@@ -156,7 +189,9 @@ class AttendanceViewModel
                     it.code == attendance.value
                 }?.hexColor ?: return
             )
-        }
+        }.toMutableList()
+
+        _attendanceBtnState.value = attendanceBtnStateCache
     }
 
     private fun attendanceActionButtonMapper(
@@ -174,4 +209,148 @@ class AttendanceViewModel
             contentColor = WHITE
         )
     )
+
+    private fun getAttendanceUiState(
+        index: Int,
+        tei: String,
+        value: String
+    ): MutableList<AttendanceActionButtonState> {
+        val uiCache = attendanceBtnStateCache.find { it.btnId == tei }
+
+        val uiCacheItem = attendanceActionButtonMapper(
+            index = index,
+            tei = tei,
+            attendanceValue = value,
+            containerColor = getColorByAttendanceType(value)
+        )
+
+        if (uiCache == null) {
+            attendanceBtnStateCache.add(uiCacheItem)
+        } else {
+            attendanceBtnStateCache.remove(uiCache)
+            attendanceBtnStateCache.add(uiCacheItem)
+        }
+
+        return attendanceBtnStateCache
+    }
+
+    private fun getReasonForAbsence(dataElement: String) {
+        viewModelScope.launch {
+            _reasonOfAbsence.value = repository.getOptions(dataElement).map {
+                Item(
+                    id = it.uid(),
+                    itemName = "${it.displayName()}",
+                    code = it.code() ?: ""
+                )
+            }
+        }
+    }
+
+    fun setAttendance(
+        index: Int,
+        ou: String,
+        tei: String,
+        value: String,
+        reasonOfAbsence: String? = null
+    ) {
+        _attendanceBtnState.value = getAttendanceUiState(index, tei, value)
+
+        val attendance = AttendanceEntity(
+            tei = tei,
+            dataElement = datastoreAttendance.value?.status ?: "",
+            value = value,
+            reasonDataElement = datastoreAttendance.value?.absenceReason,
+            reasonOfAbsence = reasonOfAbsence,
+            date = eventDate.value
+        )
+
+        val cacheItem = attendanceCache.find { it.tei == attendance.tei }
+
+        if (cacheItem == null) {
+            attendanceCache.add(attendance)
+        } else {
+            attendanceCache.remove(cacheItem)
+            attendanceCache.add(attendance)
+        }
+
+        viewModelScope.launch {
+            repository.save(
+                ou = ou,
+                program = program.value,
+                programStage = datastoreAttendance.value?.programStage ?: "",
+                attendance = attendance
+            )
+        }
+    }
+
+    fun setAbsence(
+        index: Int? = null,
+        ou: String? = null,
+        tei: String? = null,
+        value: String? = null,
+        reasonOfAbsence: String? = null
+    ) {
+        if (index != null) {
+            _absenceState.update {
+                it.copy(index = index)
+            }
+        }
+        if (ou != null) {
+            _absenceState.update {
+                it.copy(ou = ou)
+            }
+        }
+        if (tei != null) {
+            _absenceState.update {
+                it.copy(tei = tei)
+            }
+        }
+        if (value != null) {
+            _absenceState.update {
+                it.copy(value = value)
+            }
+        }
+        if (reasonOfAbsence != null) {
+            _absenceState.update {
+                it.copy(reasonOfAbsence = reasonOfAbsence)
+            }
+        }
+    }
+    fun saveAbsenceState() {
+        setAttendance(
+            index = absenceState.value.index,
+            ou = absenceState.value.ou,
+            tei = absenceState.value.tei,
+            value = absenceState.value.value,
+            reasonOfAbsence = absenceState.value.reasonOfAbsence
+        )
+
+        val cache = mutableListOf<Absence>()
+
+        cache.addAll( absenceStateCache.value)
+        cache.add(absenceState.value)
+
+        _absenceStateCache.value = cache
+    }
+
+    fun getSummary(): Triple<String, String, String> {
+        val presence = "${attendanceCache.count { it.value == PRESENT }}"
+        val lateness = "${attendanceCache.count { it.value == LATE }}"
+        val absence = "${attendanceCache.count { it.value == ABSENT }}"
+
+        return Triple(presence, lateness, absence)
+    }
+
+    fun clearCache() {
+        attendanceCache.clear()
+        attendanceBtnStateCache.clear()
+        _absenceStateCache.value = emptyList()
+    }
+
+    fun refreshOnSave() {
+        setAttendanceStep(ButtonStep.EDITING)
+        viewModelScope.launch {
+            attendanceEvents(eventDate.value)
+        }
+    }
 }

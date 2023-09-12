@@ -9,14 +9,19 @@
     <string name="academic_year">Academic year...</string>
     <string name="search_no_results">There are no results for this search</string>
     <string name="start_search">Select filters to list</string>
-    <string name="reason_absence">Reason of absence...</string>
+    <string name="reason_absence">Reason of absence</string>
     <string name="calendar">Calendar</string>
     <string name="attendance_date">Select attendance date</string>
     <string name="update">Update</string>
     <string name="attendance">Attendance</string>
+<<<<<<< HEAD
     <string name="summary">Summary</string>
     <string name="section">Class/Section</string>
     <string name="gradeSection">Grade</string>
     <string name="emptyFavorites">Please select your favourite Grades and classes</string>
     <string name="reset">Reset</string>
+=======
+    <string name="attendance_summary">Attendance summary</string>
+    <string name="attendance_saved">Attendance saved sucessful</string>
+>>>>>>> develop
 </resources>

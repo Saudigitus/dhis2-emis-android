@@ -40,7 +40,7 @@ fun AttendanceItemState(
             Icon(
                 imageVector = Icons.Filled.Help,
                 contentDescription = null,
-                modifier = Modifier.size(32.dp),
+                modifier = Modifier.size(40.dp),
                 tint = Color.LightGray
             )
         } else {
@@ -51,14 +51,14 @@ fun AttendanceItemState(
                 Icon(
                     imageVector = ImageVector.vectorResource(attendance.setting?.icon!!),
                     contentDescription = attendance.value,
-                    modifier = Modifier.size(32.dp),
+                    modifier = Modifier.size(40.dp),
                     tint = Color(attendance.setting.iconColor)
                 )
             } else {
                 Icon(
                     imageVector = Icons.Filled.Help,
                     contentDescription = null,
-                    modifier = Modifier.size(32.dp),
+                    modifier = Modifier.size(40.dp),
                     tint = Color.LightGray
                 )
             }
@@ -97,12 +97,7 @@ fun AttendanceButtons(
                         action.code ?: ""
                     )
                 },
-                modifier = Modifier
-                    .border(
-                        border = BorderStroke(1.dp, Color.LightGray),
-                        shape = MaterialTheme.shapes.small.copy(CornerSize(32.dp))
-                    )
-                    .size(32.dp),
+                modifier = Modifier.size(40.dp),
                 colors = IconButtonDefaults.iconButtonColors(
                     containerColor = Color(
                         getContainerColor(btnState, tei, action.code.toString(), selectedIndex, index)

@@ -56,12 +56,14 @@ import org.saudigitus.emis.AppRoutes
 import org.saudigitus.emis.R
 import org.saudigitus.emis.ui.components.DropDown
 import org.saudigitus.emis.ui.components.DropDownOu
+import org.saudigitus.emis.ui.components.DropDownWithSelectionByCode
 import org.saudigitus.emis.ui.components.MetadataItem
 import org.saudigitus.emis.ui.components.NoResults
 import org.saudigitus.emis.ui.components.ShowCard
 import org.saudigitus.emis.ui.components.Toolbar
 import org.saudigitus.emis.ui.components.ToolbarActionState
-import timber.log.Timber
+
+import org.saudigitus.emis.utils.getByType
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -70,7 +72,7 @@ fun TeiScreen(
     viewModel: TeiViewModel,
     onBack: () -> Unit,
     navToFavorite: () -> Unit,
-    navTo: () -> Unit
+    navToAttendance: () -> Unit
 ) {
     var displayFilters by remember { mutableStateOf(true) }
     val dataElementFilters by viewModel.dataElementFilters.collectAsStateWithLifecycle()
@@ -79,6 +81,7 @@ fun TeiScreen(
     val toolbarHeaders by viewModel.toolbarHeader.collectAsStateWithLifecycle()
     val programSettings by viewModel.programSettings.collectAsStateWithLifecycle()
     val infoCard by viewModel.infoCard.collectAsStateWithLifecycle()
+    val defaultConfig by viewModel.defaultConfig.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -119,7 +122,7 @@ fun TeiScreen(
                             tint = Color(0xFF2C98F0)
                         )
                     },
-                    onClick = { navTo.invoke() }
+                    onClick = { navToAttendance.invoke() }
                 )
             }
         }
@@ -138,11 +141,12 @@ fun TeiScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top),
                     horizontalAlignment = Alignment.Start
                 ) {
-                    DropDown(
-                        placeholder = stringResource(R.string.academic_year),
+                    DropDownWithSelectionByCode(
+                        placeholder = dataElementFilters.getByType(FilterType.ACADEMIC_YEAR)?.displayName
+                            ?: stringResource(R.string.academic_year),
                         leadingIcon = ImageVector.vectorResource(R.drawable.ic_book),
-                        data = dataElementFilters[FilterType.ACADEMIC_YEAR],
-                        selectedItemName = filterState.academicYear?.itemName ?: "",
+                        data = dataElementFilters.getByType(FilterType.ACADEMIC_YEAR)?.data,
+                        selectedCodeItem = defaultConfig?.currentAcademicYear ?: "",
                         onItemClick = {
                             viewModel.setAcademicYear(it)
                         }
@@ -159,9 +163,10 @@ fun TeiScreen(
                     )
 
                     DropDown(
-                        placeholder = stringResource(R.string.grade),
+                        placeholder = dataElementFilters.getByType(FilterType.GRADE)?.displayName
+                            ?: stringResource(R.string.grade),
                         leadingIcon = ImageVector.vectorResource(R.drawable.ic_school),
-                        data = dataElementFilters[FilterType.GRADE],
+                        data = dataElementFilters.getByType(FilterType.GRADE)?.data,
                         selectedItemName = filterState.grade?.itemName ?: "",
                         onItemClick = {
                             viewModel.setGrade(it)
@@ -169,9 +174,10 @@ fun TeiScreen(
                     )
 
                     DropDown(
-                        placeholder = stringResource(R.string.cls),
+                        placeholder = dataElementFilters.getByType(FilterType.SECTION)?.displayName
+                            ?: stringResource(R.string.cls),
                         leadingIcon = ImageVector.vectorResource(R.drawable.ic_category),
-                        data = dataElementFilters[FilterType.SECTION],
+                        data = dataElementFilters.getByType(FilterType.SECTION)?.data,
                         selectedItemName = filterState.section?.itemName ?: "",
                         onItemClick = {
                             viewModel.setSection(it)
