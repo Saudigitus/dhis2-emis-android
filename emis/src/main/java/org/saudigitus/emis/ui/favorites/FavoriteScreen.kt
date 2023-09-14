@@ -66,14 +66,24 @@ fun SaveFavoriteFilterScreen(
     val dataElementFilters by viewModel.dataElementFilters.collectAsStateWithLifecycle()
     val favorites by favoriteViewModel.favorites.collectAsStateWithLifecycle()
 
-    val selectedStatesGrade =
-        remember { List(dataElementFilters.getByType(FilterType.GRADE)!!.data.size) {
-            mutableStateOf(false) }
-        }
-    val selectedStatesSection =
-        remember { List(dataElementFilters.getByType(FilterType.SECTION)!!.data.size) {
-            mutableStateOf(false) }
-        }.toMutableList()
+    var selectedStatesGrade = emptyList<MutableState<Boolean>>()
+    var selectedStatesSection = emptyList<MutableState<Boolean>>()
+
+    if(dataElementFilters.getByType(FilterType.GRADE)!!.data.isNotEmpty()){
+        selectedStatesGrade =
+            remember { List(dataElementFilters.getByType(FilterType.GRADE)!!.data.size) {
+                mutableStateOf(false) }
+            }
+    }
+
+    if(dataElementFilters.getByType(FilterType.SECTION)!!.data.isNotEmpty()) {
+        selectedStatesSection =
+            remember {
+                List(dataElementFilters.getByType(FilterType.SECTION)!!.data.size) {
+                    mutableStateOf(false)
+                }
+            }.toMutableList()
+    }
 
     //val clearFavorite by remember { mutableStateOf(false) }
     val showDialog = remember { mutableStateOf(false) }
