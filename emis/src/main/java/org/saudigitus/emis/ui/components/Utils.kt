@@ -1,5 +1,7 @@
 package org.saudigitus.emis.ui.components
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -8,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.Button
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.Text
 import androidx.compose.material3.DatePicker
@@ -17,6 +21,7 @@ import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -126,5 +131,50 @@ fun CustomDatePicker(
                 showModeToggle = false
             )
         }
+    }
+}
+
+@Composable
+fun FavoriteAlertDialog(
+    onYes: () -> Unit,
+    onDismiss: () -> Unit,
+    title: String = "",
+    message: String = "",
+    openDialog: MutableState<Boolean>
+) {
+    if (openDialog.value) {
+        AlertDialog(
+            onDismissRequest = {
+                openDialog.value = false
+            },
+            title = {
+                Text(text = "$title")
+            },
+            text = {
+                //Text(text = "Would you like to clear the saved favorites?")
+                Text(text = "$message")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onYes.invoke()
+                        openDialog.value = false
+                    },
+                    contentColor = Color(0xFF2C98F0),
+                    containerColor = Color.White,
+                    title = "Yes"
+                )
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        openDialog.value = false
+                    },
+                    contentColor = Color(0xFF2C98F0),
+                    containerColor = Color.White,
+                    title = "Cancel"
+                )
+            }
+        )
     }
 }

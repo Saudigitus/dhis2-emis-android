@@ -9,7 +9,9 @@ import dagger.hilt.components.SingletonComponent
 import org.dhis2.commons.network.NetworkUtils
 import org.hisp.dhis.android.core.D2
 import org.saudigitus.emis.data.local.DataManager
+import org.saudigitus.emis.data.local.FavoriteConfigRepository
 import org.saudigitus.emis.data.local.repository.DataManagerImpl
+import org.saudigitus.emis.data.local.repository.FavoriteConfigRepositoryImpl
 import javax.inject.Singleton
 
 @Module
@@ -28,4 +30,10 @@ object AppModule {
         d2: D2,
         networkUtils: NetworkUtils
     ): DataManager = DataManagerImpl(d2, networkUtils)
+
+    @Provides
+    @Singleton
+    fun providesFavoriteRepository(
+        @ApplicationContext context: Context
+    ): FavoriteConfigRepository = FavoriteConfigRepositoryImpl(context)
 }

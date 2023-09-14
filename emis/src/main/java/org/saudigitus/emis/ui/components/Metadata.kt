@@ -2,6 +2,7 @@ package org.saudigitus.emis.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,12 +10,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.School
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -36,6 +39,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.saudigitus.emis.R
+import org.saudigitus.emis.data.model.Stream
 
 @Composable
 fun MetadataIcon(
@@ -209,7 +213,6 @@ fun TEICountComponent(
     }
 }
 
-
 data class InfoCard(
     val grade: String = "",
     val section: String = "",
@@ -257,6 +260,78 @@ fun ShowCard(
                     }
                 }
                 TEICountComponent(teiCount = infoCard.teiCount)
+            }
+        }
+    }
+}
+
+data class SchoolInfoCard(
+    val grade: String = "",
+    val section: String = "",
+    val academicYear: String = "",
+    val orgUnitName: String = "",
+    val teiCount: Int = 0
+)
+@Composable
+fun SumaryCard(
+    school: String? = "",
+    streams:  List<Stream>?,
+    ){
+    Card (
+        shape = RoundedCornerShape(0.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 0.dp, vertical = 10.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ){
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .padding(5.dp)) {
+            Row (modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Row {
+                    Icon(
+                        Icons.Rounded.School,
+                        tint = Color(0xFF2C98F0),
+                        contentDescription = "Icon",
+                        modifier = Modifier.size(40.dp)
+                    )
+                    Spacer(modifier = Modifier.size(10.dp))
+                    Column {
+                        Text(
+                            text = "$school",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 17.sp
+                        )
+
+                        streams?.forEach {
+                            Row{
+                                Text(
+                                    text = "${it.grade}: ",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp,
+                                    color = Color.Gray
+                                )
+                                it.sections?.forEach {
+                                    Text(
+                                        text = "${it.code},",
+                                        fontSize = 14.sp,
+                                        color = Color.Gray
+                                    )
+                                }
+                            }
+                            Divider(
+                                color = Color.Gray,
+                                thickness = 1.dp,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(1.dp)
+                            )
+                        }
+                    }
+                }
             }
         }
     }
