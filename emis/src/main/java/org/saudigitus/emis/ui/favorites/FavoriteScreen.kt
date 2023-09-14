@@ -48,6 +48,7 @@ import org.saudigitus.emis.ui.components.ToolbarActionState
 import org.saudigitus.emis.ui.components.ToolbarHeaders
 import org.saudigitus.emis.ui.teis.FilterType
 import org.saudigitus.emis.ui.teis.TeiViewModel
+import org.saudigitus.emis.utils.getByType
 import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,9 +67,13 @@ fun SaveFavoriteFilterScreen(
     val favorites by favoriteViewModel.favorites.collectAsStateWithLifecycle()
 
     val selectedStatesGrade =
-        remember { List(dataElementFilters[FilterType.GRADE]!!.size) { mutableStateOf(false) } }
+        remember { List(dataElementFilters.getByType(FilterType.GRADE)!!.data.size) {
+            mutableStateOf(false) }
+        }
     val selectedStatesSection =
-        remember { List(dataElementFilters[FilterType.SECTION]!!.size) { mutableStateOf(false) } }.toMutableList()
+        remember { List(dataElementFilters.getByType(FilterType.SECTION)!!.data.size) {
+            mutableStateOf(false) }
+        }.toMutableList()
 
     //val clearFavorite by remember { mutableStateOf(false) }
     val showDialog = remember { mutableStateOf(false) }
@@ -229,7 +234,8 @@ fun SaveFavoriteFilterScreen(
                     Text(stringResource(R.string.gradeSection), color = Color.Gray)
                     //Spacer(modifier = Modifier.size(6.dp))
                     LazyRow {
-                        itemsIndexed(dataElementFilters[FilterType.GRADE]!!) { index, grade ->
+                        itemsIndexed(dataElementFilters.getByType(FilterType.GRADE)!!.data) {
+                                index, grade ->
                             TextChipWithIconVisibility(
                                 isSelected = selectedStatesGrade[index],
                                 "${grade.itemName}",
@@ -252,7 +258,7 @@ fun SaveFavoriteFilterScreen(
                     Text(stringResource(R.string.section), color = Color.Gray)
                     //Spacer(modifier = Modifier.size(6.dp))
                     LazyRow {
-                        itemsIndexed(dataElementFilters[FilterType.SECTION]!!) { index, section ->
+                        itemsIndexed(dataElementFilters.getByType(FilterType.SECTION)!!.data) { index, section ->
                             TextChipWithIconVisibility(
                                 isSelected = selectedStatesSection[index],
                                 "${section.itemName}",
