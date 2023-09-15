@@ -20,9 +20,10 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun TextChipWithIconVisibility(
     isSelected: MutableState<Boolean>,
-    text: String,
+    displayName: String,
     code: String,
-    onChecked: (checked: Boolean, code: String) -> Unit,
+
+    onChecked: (checked: Boolean, code: String, displayName: String) -> Unit,
 ) {
     val shape = RoundedCornerShape(16.dp)
     val backgroundColor = if (isSelected.value) {
@@ -47,14 +48,14 @@ fun TextChipWithIconVisibility(
             .clip(shape = shape)
             .clickable {
                 isSelected.value = !isSelected.value // Toggle the value using MutableState
-                onChecked(isSelected.value, code) // Notify the listener
+                onChecked(isSelected.value, code, displayName) // Notify the listener
             }
             .padding(horizontal =  12.dp, vertical = 16.dp)
 
     ) {
         Text(
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-            text = text,
+            text = displayName,
             fontSize = 14.sp,
             color = Color(0xFF2C98F0)
         )
