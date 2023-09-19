@@ -78,7 +78,6 @@ class TeiViewModel
         getFavorites()
     }
 
-
     private fun setConfig(program: String) {
         viewModelScope.launch {
             val config = repository.getConfig(Constants.KEY)?.find { it.program == program }

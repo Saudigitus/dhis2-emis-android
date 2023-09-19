@@ -88,9 +88,10 @@ fun TeiScreen(
     val gradeOptions by viewModel.gradeOptions.collectAsStateWithLifecycle()
     val sectionsOptions by viewModel.sectionsOptions.collectAsStateWithLifecycle()
 
-    // Start filter selected with it grades
+    // Start filter with School selected with it grades
     if(schoolOptions.isNotEmpty()){
         viewModel.setGradeFilter(schoolOptions[0].id)
+        viewModel.setSchool(OU(uid= schoolOptions[0].id, displayName = schoolOptions[0].itemName))
     }
 
     Scaffold(
