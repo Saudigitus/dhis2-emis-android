@@ -54,6 +54,7 @@ import kotlinx.coroutines.launch
 import org.dhis2.commons.Constants
 import org.saudigitus.emis.AppRoutes
 import org.saudigitus.emis.R
+import org.saudigitus.emis.data.model.OU
 import org.saudigitus.emis.ui.components.DropDown
 import org.saudigitus.emis.ui.components.DropDownOu
 import org.saudigitus.emis.ui.components.DropDownWithSelectionByCode
@@ -82,6 +83,16 @@ fun TeiScreen(
     val programSettings by viewModel.programSettings.collectAsStateWithLifecycle()
     val infoCard by viewModel.infoCard.collectAsStateWithLifecycle()
     val defaultConfig by viewModel.defaultConfig.collectAsStateWithLifecycle()
+
+    val schoolOptions by viewModel.schoolOptions.collectAsStateWithLifecycle()
+    val gradeOptions by viewModel.gradeOptions.collectAsStateWithLifecycle()
+    val sectionsOptions by viewModel.sectionsOptions.collectAsStateWithLifecycle()
+
+    // Start filter with School selected with it grades
+    if(schoolOptions.isNotEmpty()){
+        viewModel.setGradeFilter(schoolOptions[0].id)
+        viewModel.setSchool(OU(uid= schoolOptions[0].id, displayName = schoolOptions[0].itemName))
+    }
 
     Scaffold(
         topBar = {
@@ -152,23 +163,39 @@ fun TeiScreen(
                         }
                     )
 
-                    DropDownOu(
-                        placeholder = stringResource(R.string.school),
-                        leadingIcon = ImageVector.vectorResource(R.drawable.ic_location_on),
-                        selectedSchool = filterState.school,
-                        program = programSettings?.getString(Constants.PROGRAM_UID) ?: "",
-                        onItemClick = {
-                            viewModel.setSchool(it)
-                        }
-                    )
+                    if(schoolOptions.isNotEmpty()) {
+                        DropDown(
+                            placeholder = stringResource(R.string.school),
+                            leadingIcon = ImageVector.vectorResource(R.drawable.ic_location_on),
+                            data =  schoolOptions,
+                            selectedItemName =  schoolOptions[0].itemName,
+                            onItemClick = {
+                                viewModel.setGradeFilter(it.id)
+                                viewModel.setSchool(OU(uid= it.id, displayName = it.itemName))
+                            }
+                        )
+                    } else {
+                        DropDownOu(
+                            placeholder = stringResource(R.string.school),
+                            leadingIcon = ImageVector.vectorResource(R.drawable.ic_location_on),
+                            selectedSchool = filterState.school,
+                            program = programSettings?.getString(Constants.PROGRAM_UID) ?: "",
+                            onItemClick = {
+                                viewModel.setSchool(it)
+                            }
+                        )
+                    }
 
                     DropDown(
                         placeholder = dataElementFilters.getByType(FilterType.GRADE)?.displayName
                             ?: stringResource(R.string.grade),
                         leadingIcon = ImageVector.vectorResource(R.drawable.ic_school),
-                        data = dataElementFilters.getByType(FilterType.GRADE)?.data,
+                        data = if(gradeOptions.isNotEmpty()) gradeOptions else dataElementFilters.getByType(FilterType.GRADE)?.data,
                         selectedItemName = filterState.grade?.itemName ?: "",
                         onItemClick = {
+                            if(gradeOptions.isNotEmpty()){
+                                viewModel.setSectionFilter(it.code.toString())
+                            }
                             viewModel.setGrade(it)
                         }
                     )
@@ -177,9 +204,10 @@ fun TeiScreen(
                         placeholder = dataElementFilters.getByType(FilterType.SECTION)?.displayName
                             ?: stringResource(R.string.cls),
                         leadingIcon = ImageVector.vectorResource(R.drawable.ic_category),
-                        data = dataElementFilters.getByType(FilterType.SECTION)?.data,
+                        data = if(sectionsOptions.isNotEmpty()) sectionsOptions else dataElementFilters.getByType(FilterType.SECTION)?.data,
                         selectedItemName = filterState.section?.itemName ?: "",
                         onItemClick = {
+                            println("SECTION_CODE: $it")
                             viewModel.setSection(it)
                         }
                     )

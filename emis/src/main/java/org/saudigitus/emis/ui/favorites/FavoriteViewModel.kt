@@ -48,6 +48,7 @@ class FavoriteViewModel
         schoolUid: String = "",
         school: String? = null,
         gradeCode: String? = null,
+        gradeName: String? = null,
         sectionCode: String? = null,
         sectionName: String? =  null,
         isSelected: Boolean  = false
@@ -62,7 +63,7 @@ class FavoriteViewModel
         if (existingFavorite != null) {
             if(gradeCode != null) {
                 _stream.update {
-                    it.copy(grade = gradeCode)
+                    it.copy(grade = gradeName, code = gradeCode)
                 }
             }
 
@@ -73,7 +74,7 @@ class FavoriteViewModel
                         junkSections.addAll(sections.value)
                         junkSections.add(Section(sectionCode, sectionName))
                         _sections.value = junkSections
-                        add(Stream(grade = _stream.value.grade, sections = sections.value))
+                        add(Stream(grade = _stream.value.grade, code =_stream.value.code, sections = sections.value))
                     }
                 }
             )
@@ -104,7 +105,7 @@ class FavoriteViewModel
             }
             if(gradeCode != null) {
                 _stream.update {
-                    it.copy(grade = gradeCode)
+                    it.copy(grade = gradeName, code = gradeCode)
                 }
             }
         }

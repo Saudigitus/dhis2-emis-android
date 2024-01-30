@@ -8,6 +8,8 @@ import kotlinx.serialization.Serializable
 data class Stream(
     @JsonProperty("grade")
     var grade: String? = null,
+    @JsonProperty("code")
+    val code: String? = null,
     @JsonProperty("sections")
     val sections: List<Section> = emptyList()
 )

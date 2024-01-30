@@ -250,14 +250,14 @@ fun SaveFavoriteFilterScreen(
                                 isSelected = selectedStatesGrade[index],
                                 "${grade.itemName}",
                                 "${grade.code}",
-                            ) { checked, code ->
+                            ) { checked, code, displayName ->
                                 resetSelectedStates(selectedStatesGrade) // reset the states
                                 selectedStatesGrade[index].value = checked
                                 println("CHECKED: ${checked} GRADE CODE: $code")
 
                                 if(checked){
                                     hasGrade.value = true
-                                    favoriteViewModel.setFavorite(gradeCode = code)
+                                    favoriteViewModel.setFavorite(gradeCode = code, gradeName = displayName)
                                 } else {
                                     hasGrade.value = false
                                 }
@@ -273,11 +273,11 @@ fun SaveFavoriteFilterScreen(
                                 isSelected = selectedStatesSection[index],
                                 "${section.itemName}",
                                 "${section.code}",
-                            ) { checked, code ->
+                            ) { checked, code, dispayName ->
                                 //selectedStatesSection[index] = checked
                                 println("CHECKED: ${checked} SECTION CODE: $code")
                                 if(hasGrade.value){
-                                    favoriteViewModel.setFavorite(sectionCode = code, isSelected = checked)
+                                    favoriteViewModel.setFavorite(sectionCode = code, sectionName = dispayName, isSelected = checked)
                                     hasClass.value = true
                                 } else {
                                     hasClass.value = false

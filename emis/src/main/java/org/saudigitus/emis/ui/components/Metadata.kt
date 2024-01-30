@@ -316,7 +316,7 @@ fun SumaryCard(
                                 )
                                 it.sections?.forEach {
                                     Text(
-                                        text = "${it.code},",
+                                        text = "${it.displayName},",
                                         fontSize = 14.sp,
                                         color = Color.Gray
                                     )
