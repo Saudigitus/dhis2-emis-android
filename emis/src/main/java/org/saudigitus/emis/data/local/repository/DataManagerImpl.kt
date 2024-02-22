@@ -212,9 +212,9 @@ class DataManagerImpl
             )
             .withTrackedEntityDataValues()
             .blockingGet()
-            .map {
+            .mapNotNull {
                 eventTransform(it, dataElement, reasonDataElement)
-            }.requireNoNulls()
+            }
     }
 
     private fun eventTransform(
