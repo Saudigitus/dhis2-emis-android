@@ -5,22 +5,14 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.LocalTextStyle
-import androidx.compose.material.Snackbar
-import androidx.compose.material.SnackbarData
-import androidx.compose.material.SnackbarHost
-import androidx.compose.material.SnackbarHostState
-import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.rounded.Save
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -29,32 +21,22 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.compose.rememberNavController
-import kotlinx.coroutines.launch
 import org.dhis2.commons.Constants
-import org.saudigitus.emis.AppRoutes
 import org.saudigitus.emis.R
-import org.saudigitus.emis.data.model.OU
 import org.saudigitus.emis.ui.components.DropDown
 import org.saudigitus.emis.ui.components.DropDownOu
 import org.saudigitus.emis.ui.components.DropDownWithSelectionByCode
@@ -63,8 +45,8 @@ import org.saudigitus.emis.ui.components.NoResults
 import org.saudigitus.emis.ui.components.ShowCard
 import org.saudigitus.emis.ui.components.Toolbar
 import org.saudigitus.emis.ui.components.ToolbarActionState
-
 import org.saudigitus.emis.utils.getByType
+import org.saudigitus.emis.data.model.OU
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -86,9 +68,7 @@ fun TeiScreen(
 
     val schoolOptions by viewModel.schoolOptions.collectAsStateWithLifecycle()
     val gradeOptions by viewModel.gradeOptions.collectAsStateWithLifecycle()
-    val sectionsOptions by viewModel.sectionsOptions.collectAsStateWithLifecycle()
 
-    // Start filter with School selected with it grades
     if(schoolOptions.isNotEmpty()){
         viewModel.setGradeFilter(schoolOptions[0].id)
         viewModel.setSchool(OU(uid= schoolOptions[0].id, displayName = schoolOptions[0].itemName))
@@ -157,10 +137,8 @@ fun TeiScreen(
                             ?: stringResource(R.string.academic_year),
                         leadingIcon = ImageVector.vectorResource(R.drawable.ic_book),
                         data = dataElementFilters.getByType(FilterType.ACADEMIC_YEAR)?.data,
-                        selectedCodeItem = defaultConfig?.currentAcademicYear ?: "",
-                        onItemClick = {
-                            viewModel.setAcademicYear(it)
-                        }
+                        selectedCodeItem = filterState.academicYear?.code ?: defaultConfig?.currentAcademicYear ?: "",
+                        onItemClick = viewModel::setAcademicYear
                     )
 
                     if(schoolOptions.isNotEmpty()) {
@@ -180,9 +158,7 @@ fun TeiScreen(
                             leadingIcon = ImageVector.vectorResource(R.drawable.ic_location_on),
                             selectedSchool = filterState.school,
                             program = programSettings?.getString(Constants.PROGRAM_UID) ?: "",
-                            onItemClick = {
-                                viewModel.setSchool(it)
-                            }
+                            onItemClick =  viewModel::setSchool
                         )
                     }
 
@@ -190,7 +166,7 @@ fun TeiScreen(
                         placeholder = dataElementFilters.getByType(FilterType.GRADE)?.displayName
                             ?: stringResource(R.string.grade),
                         leadingIcon = ImageVector.vectorResource(R.drawable.ic_school),
-                        data = if(gradeOptions.isNotEmpty()) gradeOptions else dataElementFilters.getByType(FilterType.GRADE)?.data,
+                        data = gradeOptions.ifEmpty { dataElementFilters.getByType(FilterType.GRADE)?.data },
                         selectedItemName = filterState.grade?.itemName ?: "",
                         onItemClick = {
                             if(gradeOptions.isNotEmpty()){
@@ -204,12 +180,9 @@ fun TeiScreen(
                         placeholder = dataElementFilters.getByType(FilterType.SECTION)?.displayName
                             ?: stringResource(R.string.cls),
                         leadingIcon = ImageVector.vectorResource(R.drawable.ic_category),
-                        data = if(sectionsOptions.isNotEmpty()) sectionsOptions else dataElementFilters.getByType(FilterType.SECTION)?.data,
+                        data = dataElementFilters.getByType(FilterType.SECTION)?.data,
                         selectedItemName = filterState.section?.itemName ?: "",
-                        onItemClick = {
-                            println("SECTION_CODE: $it")
-                            viewModel.setSection(it)
-                        }
+                        onItemClick = viewModel::setSection
                     )
                 }
             }
