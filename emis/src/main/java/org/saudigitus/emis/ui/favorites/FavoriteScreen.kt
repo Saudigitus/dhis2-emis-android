@@ -90,6 +90,7 @@ fun SaveFavoriteFilterScreen(
     val hasGrade = remember { mutableStateOf(false) }
     val hasClass = remember { mutableStateOf(false) }
 
+    /**  TODO("Remove this line, is not important to log in production") */
     Timber.tag("MY_FAVORITES").e("$favorites")
 
     if (filterState.school?.uid != null) {
@@ -106,6 +107,7 @@ fun SaveFavoriteFilterScreen(
     Scaffold(
         topBar = {
             Toolbar(
+                /**  TODO("Set string resource) */
                 headers = ToolbarHeaders(title = "Favorites", subtitle = null),
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color(0xFF2C98F0),
@@ -179,6 +181,7 @@ fun SaveFavoriteFilterScreen(
                             } else {
                                 favoriteViewModel.showToast(
                                     context = context,
+                                    /**  TODO(" set string resource ) */
                                     message = "Please select both Grade and Class!"
                                 )
                             }
@@ -186,6 +189,7 @@ fun SaveFavoriteFilterScreen(
                         }else{
                             favoriteViewModel.showToast(
                                 context = context,
+                                /**  TODO(" set string resource ") */
                                 message = "Please select one School to save!"
                             )
                         }
@@ -205,6 +209,7 @@ fun SaveFavoriteFilterScreen(
             // show alert dialog when the value is true
             if(showDialog.value){
                 FavoriteAlertDialog(
+                    /**  TODO(" set string resource ") */
                     title = "warning",
                     message = "Would you like to clear the saved favorites?",
                     onYes = {
@@ -240,6 +245,7 @@ fun SaveFavoriteFilterScreen(
                         .fillMaxWidth()
                         .padding(16.dp)
                 ) {
+                    /**  TODO("emove commented code") */
                     //Spacer(modifier = Modifier.size(6.dp))
                     Text(stringResource(R.string.gradeSection), color = Color.Gray)
                     //Spacer(modifier = Modifier.size(6.dp))
@@ -253,6 +259,7 @@ fun SaveFavoriteFilterScreen(
                             ) { checked, code, displayName ->
                                 resetSelectedStates(selectedStatesGrade) // reset the states
                                 selectedStatesGrade[index].value = checked
+                                /**  TODO(" remove the print ") */
                                 println("CHECKED: ${checked} GRADE CODE: $code")
 
                                 if(checked){
@@ -264,6 +271,7 @@ fun SaveFavoriteFilterScreen(
                             }
                         }
                     }
+                    /**  TODO(" remove commented code ") */
                     //Spacer(modifier = Modifier.size(6.dp))
                     Text(stringResource(R.string.section), color = Color.Gray)
                     //Spacer(modifier = Modifier.size(6.dp))
@@ -271,9 +279,11 @@ fun SaveFavoriteFilterScreen(
                         itemsIndexed(dataElementFilters.getByType(FilterType.SECTION)!!.data) { index, section ->
                             TextChipWithIconVisibility(
                                 isSelected = selectedStatesSection[index],
+                                /**  TODO("Remove sigle expressions") */
                                 "${section.itemName}",
                                 "${section.code}",
                             ) { checked, code, dispayName ->
+                                /**  TODO("Remove commented code and printLn) */
                                 //selectedStatesSection[index] = checked
                                 println("CHECKED: ${checked} SECTION CODE: $code")
                                 if(hasGrade.value){
@@ -284,6 +294,7 @@ fun SaveFavoriteFilterScreen(
                                     resetSelectedStates(selectedStatesSection)
                                     favoriteViewModel.showToast(
                                         context = context,
+                                        /**  TODO(" set string resource ") */
                                         message = "Please select the Grade!"
                                     )
                                 }

@@ -246,6 +246,7 @@ class TeiViewModel
                 _favorites.value = it.favorites ?: emptyList()
                 _schoolOptions.value =  favorites.value.map {
                     Item(
+                        /**  TODO("remove single expressions) */
                         id = "${it.uid}",
                         itemName = "${it.school}",
                         code = null

@@ -198,6 +198,7 @@ fun TEICountComponent(
     ) {
         Icon(
             imageVector = imageVector,
+            /**  TODO("SET String resource") */
             contentDescription = "Image",
             tint = Color.Black.copy(.5f)
         )
@@ -239,11 +240,11 @@ fun ShowCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ){
-
                 Row {
                     Icon(
                         Icons.Rounded.School,
                         tint = Color(0xFF2C98F0),
+                        /**  TODO("SET String resource") */
                         contentDescription = "Icon"
                     )
                     Spacer(modifier = Modifier.size(10.dp))
@@ -295,6 +296,7 @@ fun SumaryCard(
                     Icon(
                         Icons.Rounded.School,
                         tint = Color(0xFF2C98F0),
+                        /**  TODO("SET String resource") */
                         contentDescription = "Icon",
                         modifier = Modifier.size(40.dp)
                     )
@@ -314,6 +316,7 @@ fun SumaryCard(
                                     fontSize = 14.sp,
                                     color = Color.Gray
                                 )
+                                /**  TODO("Raplace with dot ou let") */
                                 it.sections?.forEach {
                                     Text(
                                         text = "${it.displayName},",

@@ -42,7 +42,7 @@ import org.saudigitus.emis.R
 import org.saudigitus.emis.ui.theme.light_error
 import org.saudigitus.emis.ui.theme.light_info
 import org.saudigitus.emis.utils.DateHelper
-
+/**  TODO("remove unused imports") */
 @Composable
 fun NoResults(
     message: String
@@ -148,10 +148,12 @@ fun FavoriteAlertDialog(
                 openDialog.value = false
             },
             title = {
+                /**  TODO("Remove single expression") and then, remove this line*/
                 Text(text = "$title")
             },
             text = {
-                //Text(text = "Would you like to clear the saved favorites?")
+                //Text(text = "Would you like to clear the saved favorites?") REMOVE THIS LINE
+                /**  TODO("Remove single expression")  and then remove this line*/
                 Text(text = "$message")
             },
             confirmButton = {
@@ -163,6 +165,7 @@ fun FavoriteAlertDialog(
                     contentColor = Color(0xFF2C98F0),
                     containerColor = Color.White,
                     title = "Yes"
+                    /**  TODO("SET String resource") */
                 )
             },
             dismissButton = {
@@ -173,6 +176,7 @@ fun FavoriteAlertDialog(
                     contentColor = Color(0xFF2C98F0),
                     containerColor = Color.White,
                     title = "Cancel"
+                    /**  TODO("SET String resource") */
                 )
             }
         )

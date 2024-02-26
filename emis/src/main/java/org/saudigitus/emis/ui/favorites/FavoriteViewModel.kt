@@ -139,6 +139,7 @@ class FavoriteViewModel
     }
 
     fun showToast(context: Context, message: String){
+        /**  TODO("Remove sigle expressions") */
         Toast.makeText(context, "$message", Toast.LENGTH_LONG).show()
     }
 
