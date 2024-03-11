@@ -1,8 +1,12 @@
 package org.saudigitus.emis.utils
 
 import org.dhis2.commons.date.DateUtils
+import org.saudigitus.emis.data.model.Holiday
 import timber.log.Timber
 import java.text.SimpleDateFormat
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.format.TextStyle
 import java.util.Date
 import java.util.Locale
 
@@ -14,6 +18,21 @@ object DateHelper {
         } catch (e: Exception) {
             Timber.tag("DATE_FORMAT").e(e)
             null
+        }
+    }
+
+    fun stringToLocalDate(date: String): LocalDate {
+        return LocalDate.parse(date)
+    }
+
+    fun isWeekend(date: LocalDate): Boolean {
+        val dayOfWeek = date.dayOfWeek
+        return dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY
+    }
+
+    fun isHoliday(holidays: List<Holiday>, date: Long): Boolean {
+        return holidays.none { holiday ->
+            holiday.date == formatDate(date)
         }
     }
 

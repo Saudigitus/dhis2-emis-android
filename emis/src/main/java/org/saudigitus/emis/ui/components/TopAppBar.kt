@@ -34,7 +34,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.android.material.datepicker.CompositeDateValidator
 import org.saudigitus.emis.R
+import org.saudigitus.emis.data.model.CalendarConfig
 
 
 data class ToolbarHeaders(
@@ -112,6 +114,7 @@ fun Toolbar(
     disableNavigation: Boolean = true,
     actionState: ToolbarActionState = ToolbarActionState(),
     calendarAction: (date: String) -> Unit = {},
+    dateValidator: (Long) -> Boolean = { true },
     favoriteAction: () -> Unit = {},
     syncAction: () -> Unit = {},
     filterAction: () -> Unit = {}
@@ -122,7 +125,8 @@ fun Toolbar(
     CustomDatePicker(
         show = isCalendarShown,
         dismiss = { isCalendarShown = !isCalendarShown },
-        onDatePick = { calendarAction.invoke(it) }
+        onDatePick = { calendarAction.invoke(it) },
+        dateValidator = dateValidator
     )
 
     TopAppBar(
@@ -169,14 +173,6 @@ fun Toolbar(
             }
         },
         actions = {
-            if (actionState.showFavorite) {
-                IconButton(onClick = { favoriteAction.invoke() }) {
-                    Icon(
-                        imageVector = Icons.Default.Favorite,
-                        contentDescription = stringResource(R.string.calendar)
-                    )
-                }
-            }
             if (actionState.showCalendar) {
                 IconButton(onClick = { isCalendarShown = !isCalendarShown }) {
                     Icon(

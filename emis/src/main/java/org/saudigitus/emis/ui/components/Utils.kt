@@ -1,7 +1,6 @@
 package org.saudigitus.emis.ui.components
 
-import android.content.Context
-import android.widget.Toast
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.AlertDialog
-import androidx.compose.material.Button
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.Text
 import androidx.compose.material3.DatePicker
@@ -42,6 +40,7 @@ import org.saudigitus.emis.R
 import org.saudigitus.emis.ui.theme.light_error
 import org.saudigitus.emis.ui.theme.light_info
 import org.saudigitus.emis.utils.DateHelper
+import org.saudigitus.emis.utils.Test
 
 @Composable
 fun NoResults(
@@ -77,11 +76,12 @@ fun NoResults(
 fun CustomDatePicker(
     show: Boolean = false,
     dismiss: () -> Unit,
-    onDatePick: (date: String) -> Unit
+    onDatePick: (date: String) -> Unit,
+    dateValidator: (Long) -> Boolean = { true }
 ) {
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = null,
-        initialDisplayMode = DisplayMode.Picker
+        initialDisplayMode = DisplayMode.Picker,
     )
 
     var selectedDate by remember {
@@ -128,7 +128,8 @@ fun CustomDatePicker(
             DatePicker(
                 state = datePickerState,
                 title = {},
-                showModeToggle = false
+                showModeToggle = false,
+                dateValidator = dateValidator
             )
         }
     }
@@ -163,6 +164,7 @@ fun FavoriteAlertDialog(
                     contentColor = Color(0xFF2C98F0),
                     containerColor = Color.White,
                     title = "Yes"
+                    /**  TODO("SET String resource") */
                 )
             },
             dismissButton = {
@@ -173,6 +175,7 @@ fun FavoriteAlertDialog(
                     contentColor = Color(0xFF2C98F0),
                     containerColor = Color.White,
                     title = "Cancel"
+                    /**  TODO("SET String resource") */
                 )
             }
         )

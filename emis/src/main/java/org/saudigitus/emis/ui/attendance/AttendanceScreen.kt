@@ -48,6 +48,8 @@ import org.saudigitus.emis.ui.components.Toolbar
 import org.saudigitus.emis.ui.components.ToolbarActionState
 import org.saudigitus.emis.ui.theme.light_success
 import org.saudigitus.emis.utils.Constants.ABSENT
+import org.saudigitus.emis.utils.DateHelper
+import org.saudigitus.emis.utils.Test
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,6 +66,7 @@ fun AttendanceScreen(
     val infoCard by viewModel.infoCard.collectAsStateWithLifecycle()
     val reasonOfAbsence by viewModel.reasonOfAbsence.collectAsStateWithLifecycle()
     val absence by viewModel.absenceStateCache.collectAsStateWithLifecycle()
+    val schoolCalendar by viewModel.schoolCalendar.collectAsStateWithLifecycle()
 
     var isAbsent by remember { mutableStateOf(false) }
     var isAttendanceCompleted by remember { mutableStateOf(false) }
@@ -135,6 +138,15 @@ fun AttendanceScreen(
                 ),
                 calendarAction = {
                     viewModel.setAttendanceDate(it)
+                },
+                dateValidator = {
+                    val date = DateHelper.stringToLocalDate(DateHelper.formatDate(it)!!)
+
+                   (!DateHelper.isWeekend(date) && schoolCalendar?.weekDays?.saturday == false &&
+                       schoolCalendar?.weekDays?.sunday == false) &&
+                       schoolCalendar?.holidays?.let { holiday ->
+                           DateHelper.isHoliday(holiday, it)
+                       } == true
                 }
             )
         },
@@ -176,7 +188,8 @@ fun AttendanceScreen(
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState) {
                 Snackbar(
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
                         .padding(horizontal = 16.dp),
                     containerColor = light_success,
                     contentColor = Color.White

@@ -1,5 +1,6 @@
 package org.saudigitus.emis.ui.attendance
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -11,12 +12,14 @@ import org.dhis2.commons.data.SearchTeiModel
 import org.dhis2.commons.date.DateUtils
 import org.saudigitus.emis.data.local.DataManager
 import org.saudigitus.emis.data.model.Attendance
+import org.saudigitus.emis.data.model.CalendarConfig
 import org.saudigitus.emis.data.model.dto.Absence
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
 import org.saudigitus.emis.data.model.dto.withBtnSettings
 import org.saudigitus.emis.ui.components.InfoCard
 import org.saudigitus.emis.ui.components.Item
 import org.saudigitus.emis.ui.components.ToolbarHeaders
+import org.saudigitus.emis.utils.Constants
 import org.saudigitus.emis.utils.Constants.ABSENT
 import org.saudigitus.emis.utils.Constants.KEY
 import org.saudigitus.emis.utils.Constants.LATE
@@ -81,6 +84,16 @@ class AttendanceViewModel
 
     private val _absenceStateCache = MutableStateFlow<List<Absence>>(emptyList())
     val absenceStateCache: StateFlow<List<Absence>> = _absenceStateCache
+
+    private val _schoolCalendar = MutableStateFlow<CalendarConfig?>(null)
+    val schoolCalendar: StateFlow<CalendarConfig?> = _schoolCalendar
+
+
+    init {
+        viewModelScope.launch {
+            _schoolCalendar.value = repository.dateValidation(Constants.CALENDAR_KEY)
+        }
+    }
 
     private fun setConfig(program: String) {
         viewModelScope.launch {
