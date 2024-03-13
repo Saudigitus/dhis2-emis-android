@@ -3,6 +3,7 @@ package org.saudigitus.emis.data.local
 import org.dhis2.commons.data.SearchTeiModel
 import org.hisp.dhis.android.core.dataelement.DataElement
 import org.hisp.dhis.android.core.option.Option
+import org.saudigitus.emis.data.model.CalendarConfig
 import org.saudigitus.emis.data.model.EMISConfigItem
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
 
@@ -43,4 +44,6 @@ interface DataManager {
         teis: List<String>,
         date: String?
     ): List<AttendanceEntity>
+
+    suspend fun dateValidation(id: String): CalendarConfig
 }

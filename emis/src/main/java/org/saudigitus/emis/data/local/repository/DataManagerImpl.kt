@@ -18,6 +18,7 @@ import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttribute
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttributeValue
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityInstance
 import org.saudigitus.emis.data.local.DataManager
+import org.saudigitus.emis.data.model.CalendarConfig
 import org.saudigitus.emis.data.model.EMISConfig
 import org.saudigitus.emis.data.model.EMISConfigItem
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
@@ -216,6 +217,17 @@ class DataManagerImpl
                 eventTransform(it, dataElement, reasonDataElement)
             }
     }
+
+    override suspend fun dateValidation(id: String): CalendarConfig =
+        withContext(Dispatchers.IO) {
+            val dataStore = d2.dataStoreModule()
+                .dataStore()
+                .byNamespace().eq("semis")
+                .byKey().eq(id)
+                .one().blockingGet()
+
+            return@withContext EMISConfig.schoolCalendarJson(dataStore.value())
+        }
 
     private fun eventTransform(
         event: Event,
