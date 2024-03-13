@@ -106,6 +106,7 @@ uiautomator = "2.2.0"
 
 datastore = "1.0.0"
 ktxCollectionsImmutable = "0.3.5"
+uiTextAndroid = "1.6.3"
 
 [libraries]
 gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "gradle" }
@@ -271,7 +272,8 @@ dispatcher-dispatchBOM = { group = "com.rickbusarow.dispatch", name = "dispatch-
 dispatcher-dispatchCore = { group = "com.rickbusarow.dispatch", name = "dispatch-core" }
 dispatcher-dispatchEspresso = { group = "com.rickbusarow.dispatch", name = "dispatch-android-espresso", version = "1.0.0-beta10" }
 
-deprecated-autoValueParcel = { group = "com.ryanharter.auto.value", name = "auto-value-parcel", version.ref = "autovalueparcel" } #TODO: Remove alongside AutoValue
+deprecated-autoValueParcel = { group = "com.ryanharter.auto.value", name = "auto-value-parcel", version.ref = "autovalueparcel" }
+androidx-ui-text-android = { group = "androidx.compose.ui", name = "ui-text-android", version.ref = "uiTextAndroid" } #TODO: Remove alongside AutoValue
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }

@@ -90,6 +90,7 @@ android {
 dependencies {
 
     implementation(project(":commons"))
+    implementation(project(":compose-table"))
 
     implementation(libs.androidx.coreKtx)
     implementation(platform(libs.kotlin.bom))
@@ -111,6 +112,7 @@ dependencies {
     implementation(libs.datastore)
     implementation(libs.kotlin.serialization.json)
     implementation(libs.kotlinx.collections.immutable)
+    implementation(libs.androidx.ui.text.android)
 
     kapt(libs.dagger.hilt.android.compiler)
 
