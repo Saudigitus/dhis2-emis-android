@@ -93,7 +93,7 @@ fun ReasonForAbsenceDialog(
         )
         LazyColumn(
             modifier = Modifier.fillMaxWidth()
-                .fillMaxHeight(.5f)
+                .fillMaxHeight(.75f)
         ) {
             itemsIndexed(reasons) { index, option ->
                 Row(
