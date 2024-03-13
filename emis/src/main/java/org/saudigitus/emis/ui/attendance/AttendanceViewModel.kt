@@ -347,9 +347,9 @@ class AttendanceViewModel
     }
 
     fun getSummary(): Triple<String, String, String> {
-        val presence = "${attendanceCache.count { it.value == PRESENT }}"
-        val lateness = "${attendanceCache.count { it.value == LATE }}"
-        val absence = "${attendanceCache.count { it.value == ABSENT }}"
+        val presence = "${attendanceCache.count { it.value.equals(PRESENT, true) }}"
+        val lateness = "${attendanceCache.count { it.value.equals(LATE, true) }}"
+        val absence = "${attendanceCache.count { it.value.equals(ABSENT, true) }}"
 
         return Triple(presence, lateness, absence)
     }
