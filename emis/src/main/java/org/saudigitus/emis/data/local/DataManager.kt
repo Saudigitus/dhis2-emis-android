@@ -45,5 +45,5 @@ interface DataManager {
         date: String?
     ): List<AttendanceEntity>
 
-    suspend fun dateValidation(id: String): CalendarConfig
+    suspend fun dateValidation(id: String): CalendarConfig?
 }
