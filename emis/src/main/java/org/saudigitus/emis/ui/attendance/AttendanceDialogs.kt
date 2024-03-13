@@ -7,12 +7,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
@@ -88,26 +91,31 @@ fun ReasonForAbsenceDialog(
             color = Color.LightGray.copy(.75f),
             thickness = .5.dp
         )
-        reasons.forEachIndexed { index, option ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 5.dp)
-                    .clickable {
-                        selectedIndex = index
-                        onItemClick(option)
-                    },
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                RadioButton(
-                    selected = selectedIndex == index,
-                    onClick = {
-                        selectedIndex = index
-                        onItemClick(option)
-                    }
-                )
-                Text(text = option.itemName)
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth()
+                .fillMaxHeight(.5f)
+        ) {
+            itemsIndexed(reasons) { index, option ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 5.dp)
+                        .clickable {
+                            selectedIndex = index
+                            onItemClick(option)
+                        },
+                    horizontalArrangement = Arrangement.Start,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadioButton(
+                        selected = selectedIndex == index,
+                        onClick = {
+                            selectedIndex = index
+                            onItemClick(option)
+                        }
+                    )
+                    Text(text = option.itemName)
+                }
             }
         }
         Divider(
@@ -139,7 +147,8 @@ fun AttendanceSummaryDialog(
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = title,
-            modifier = Modifier.padding(horizontal = 16.dp)
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
                 .align(Alignment.Start),
             color = Color.Black.copy(.75f),
             softWrap = true,
