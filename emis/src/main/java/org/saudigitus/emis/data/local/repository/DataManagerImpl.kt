@@ -218,15 +218,19 @@ class DataManagerImpl
             }
     }
 
-    override suspend fun dateValidation(id: String): CalendarConfig =
+    override suspend fun dateValidation(id: String): CalendarConfig? =
         withContext(Dispatchers.IO) {
-            val dataStore = d2.dataStoreModule()
-                .dataStore()
-                .byNamespace().eq("semis")
-                .byKey().eq(id)
-                .one().blockingGet()
+            return@withContext try {
+                val dataStore = d2.dataStoreModule()
+                    .dataStore()
+                    .byNamespace().eq("semis")
+                    .byKey().eq(id)
+                    .one().blockingGet()
 
-            return@withContext EMISConfig.schoolCalendarJson(dataStore.value())
+                EMISConfig.schoolCalendarJson(dataStore.value())
+            } catch (_: Exception) {
+                null
+            }
         }
 
     private fun eventTransform(
