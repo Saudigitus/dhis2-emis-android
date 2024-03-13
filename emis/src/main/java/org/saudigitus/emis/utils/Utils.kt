@@ -49,7 +49,7 @@ object Utils {
     }
 
 
-    fun getColorByAttendanceType(type: String) = when (type) {
+    fun getColorByAttendanceType(type: String) = when (type.lowercase()) {
         PRESENT -> { GREEN }
         LATE -> { ORANGE }
         ABSENT -> { RED }
