@@ -273,7 +273,6 @@ dispatcher-dispatchCore = { group = "com.rickbusarow.dispatch", name = "dispatch
 dispatcher-dispatchEspresso = { group = "com.rickbusarow.dispatch", name = "dispatch-android-espresso", version = "1.0.0-beta10" }
 
 deprecated-autoValueParcel = { group = "com.ryanharter.auto.value", name = "auto-value-parcel", version.ref = "autovalueparcel" }
-androidx-ui-text-android = { group = "androidx.compose.ui", name = "ui-text-android", version.ref = "uiTextAndroid" } #TODO: Remove alongside AutoValue
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
