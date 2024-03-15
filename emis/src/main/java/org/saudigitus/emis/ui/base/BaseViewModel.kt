@@ -1,0 +1,53 @@
+package org.saudigitus.emis.ui.base
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import org.dhis2.commons.data.SearchTeiModel
+import org.saudigitus.emis.data.local.DataManager
+import org.saudigitus.emis.data.model.Attendance
+import org.saudigitus.emis.data.model.CalendarConfig
+import org.saudigitus.emis.ui.components.ToolbarHeaders
+import org.saudigitus.emis.utils.Constants
+import org.saudigitus.emis.utils.DateHelper
+
+abstract class BaseViewModel(
+    private val repository: DataManager
+) : ViewModel() {
+
+    protected val _teis = MutableStateFlow<List<SearchTeiModel>>(emptyList())
+    val teis: StateFlow<List<SearchTeiModel>> = _teis
+
+    protected val _datastoreAttendance = MutableStateFlow<Attendance?>(null)
+    protected val datastoreAttendance: StateFlow<Attendance?> = _datastoreAttendance
+
+    protected val _toolbarHeaders = MutableStateFlow(
+        ToolbarHeaders(
+            title = "",
+            subtitle = DateHelper.formatDateWithWeekDay("${DateHelper.formatDate(System.currentTimeMillis())}")
+        )
+    )
+    val toolbarHeaders: StateFlow<ToolbarHeaders> = _toolbarHeaders
+
+    private val _schoolCalendar = MutableStateFlow<CalendarConfig?>(null)
+    val schoolCalendar: StateFlow<CalendarConfig?> = _schoolCalendar
+
+    protected val _eventDate = MutableStateFlow(DateHelper.formatDate(System.currentTimeMillis()) ?: "")
+    val eventDate: StateFlow<String> = _eventDate
+
+    protected val _program = MutableStateFlow("")
+    val program: StateFlow<String> = _program
+
+    init {
+        viewModelScope.launch {
+            _schoolCalendar.value = repository.dateValidation(Constants.CALENDAR_KEY)
+        }
+    }
+
+    abstract fun setConfig(program: String)
+    abstract fun setProgram(program: String)
+    abstract fun setTeis(teis: List<SearchTeiModel>)
+    abstract fun setDate(date: String)
+}
