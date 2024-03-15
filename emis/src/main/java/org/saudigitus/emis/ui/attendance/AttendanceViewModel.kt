@@ -1,7 +1,5 @@
 package org.saudigitus.emis.ui.attendance
 
-import android.util.Log
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,14 +10,13 @@ import org.dhis2.commons.data.SearchTeiModel
 import org.dhis2.commons.date.DateUtils
 import org.saudigitus.emis.data.local.DataManager
 import org.saudigitus.emis.data.model.Attendance
-import org.saudigitus.emis.data.model.CalendarConfig
 import org.saudigitus.emis.data.model.dto.Absence
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
 import org.saudigitus.emis.data.model.dto.withBtnSettings
+import org.saudigitus.emis.ui.base.BaseViewModel
 import org.saudigitus.emis.ui.components.InfoCard
 import org.saudigitus.emis.ui.components.Item
 import org.saudigitus.emis.ui.components.ToolbarHeaders
-import org.saudigitus.emis.utils.Constants
 import org.saudigitus.emis.utils.Constants.ABSENT
 import org.saudigitus.emis.utils.Constants.KEY
 import org.saudigitus.emis.utils.Constants.LATE
@@ -37,16 +34,10 @@ import javax.inject.Inject
 class AttendanceViewModel
 @Inject constructor(
     private val repository: DataManager
-) : ViewModel() {
-
-    private val _teis = MutableStateFlow<List<SearchTeiModel>>(emptyList())
-    val teis: StateFlow<List<SearchTeiModel>> = _teis
+) : BaseViewModel(repository) {
 
     private val _attendanceOptions = MutableStateFlow<List<AttendanceOption>>(emptyList())
     val attendanceOptions: StateFlow<List<AttendanceOption>> = _attendanceOptions
-
-    private val _datastoreAttendance = MutableStateFlow<Attendance?>(null)
-    private val datastoreAttendance: StateFlow<Attendance?> = _datastoreAttendance
 
     private val _attendanceStatus = MutableStateFlow<List<AttendanceEntity>>(emptyList())
     val attendanceStatus: StateFlow<List<AttendanceEntity>> = _attendanceStatus
@@ -61,18 +52,6 @@ class AttendanceViewModel
         MutableStateFlow<List<AttendanceActionButtonState>>(emptyList())
     val attendanceBtnState: StateFlow<List<AttendanceActionButtonState>> = _attendanceBtnState
 
-    private val _toolbarHeaders = MutableStateFlow(ToolbarHeaders(
-        title = "Attendance",
-        subtitle = DateHelper.formatDateWithWeekDay("${DateHelper.formatDate(System.currentTimeMillis())}")
-    ))
-    val toolbarHeaders: StateFlow<ToolbarHeaders> = _toolbarHeaders
-
-    private val _program = MutableStateFlow("")
-    val program: StateFlow<String> = _program
-
-    private val _eventDate = MutableStateFlow(DateHelper.formatDate(System.currentTimeMillis()) ?: "")
-    val eventDate: StateFlow<String> = _eventDate
-
     private val _infoCard = MutableStateFlow(InfoCard())
     val infoCard: StateFlow<InfoCard> = _infoCard
 
@@ -85,17 +64,15 @@ class AttendanceViewModel
     private val _absenceStateCache = MutableStateFlow<List<Absence>>(emptyList())
     val absenceStateCache: StateFlow<List<Absence>> = _absenceStateCache
 
-    private val _schoolCalendar = MutableStateFlow<CalendarConfig?>(null)
-    val schoolCalendar: StateFlow<CalendarConfig?> = _schoolCalendar
-
-
     init {
-        viewModelScope.launch {
-            _schoolCalendar.value = repository.dateValidation(Constants.CALENDAR_KEY)
+        _toolbarHeaders.update {
+            it.copy(
+                title = "Attendance"
+            )
         }
     }
 
-    private fun setConfig(program: String) {
+    override fun setConfig(program: String) {
         viewModelScope.launch {
             val config = repository.getConfig(KEY)?.find { it.program == program }
 
@@ -107,11 +84,11 @@ class AttendanceViewModel
         }
     }
 
-    fun setTeis(teis: List<SearchTeiModel>) {
+    override fun setTeis(teis: List<SearchTeiModel>) {
         _teis.value = teis
     }
 
-    fun setProgram(program: String) {
+    override fun setProgram(program: String) {
         _program.value = program
 
         setConfig(program)
@@ -129,7 +106,7 @@ class AttendanceViewModel
         _attendanceStep.value = attendanceStep
     }
 
-    fun setAttendanceDate(date: String) {
+    override fun setDate(date: String) {
         _eventDate.value = date
         viewModelScope.launch {
             attendanceEvents(date)
