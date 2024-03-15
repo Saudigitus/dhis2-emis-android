@@ -22,7 +22,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -45,7 +44,7 @@ fun <T> DropdownField(
     onClick: (T) -> Unit
 ) {
     var isExpanded by rememberSaveable { mutableStateOf(false) }
-    var selectedIndex by rememberSaveable { mutableIntStateOf(-1) }
+    var selectedIndex by rememberSaveable { mutableStateOf(-1) }
     var selectedText by rememberSaveable { mutableStateOf("") }
 
     var textFieldSize by remember { mutableStateOf(Size.Zero) }
