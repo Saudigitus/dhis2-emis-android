@@ -6,21 +6,10 @@ import org.saudigitus.emis.ui.form.Field
 import org.saudigitus.emis.ui.form.FormData
 import org.saudigitus.emis.ui.form.FormField
 
-sealed interface MarksUiState {
-    data class Screen(
-        val toolbarHeaders: ToolbarHeaders,
-        private var attendanceDate: String,
-        val students: List<SearchTeiModel>,
-    ): MarksUiState {
-        fun setDate(date: String) {
-            attendanceDate = date
-        }
-    }
-
-    data class MarksForm(
-        val marksState: List<Field>,
-        val marksKey: String,
-        val marksFields: List<FormField>,
-        val marksData: List<FormData>?,
-    ): MarksUiState
-}
+data class MarksUiState(
+    val toolbarHeaders: ToolbarHeaders,
+    val students: List<SearchTeiModel> = emptyList(),
+    val marksState: List<Field> = emptyList(),
+    val marksFields: List<FormField> = emptyList(),
+    val marksData: List<FormData>? = emptyList(),
+)
