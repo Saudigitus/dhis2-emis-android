@@ -33,16 +33,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import org.dhis2.commons.data.SearchTeiModel
 import org.hisp.dhis.android.core.common.ValueType
 import org.saudigitus.emis.R
+import org.saudigitus.emis.ui.components.InfoCard
 import org.saudigitus.emis.ui.components.MetadataItem
+import org.saudigitus.emis.ui.components.ShowCard
 import org.saudigitus.emis.ui.components.Toolbar
 import org.saudigitus.emis.ui.components.ToolbarActionState
-import org.saudigitus.emis.ui.components.ToolbarHeaders
-import org.saudigitus.emis.ui.form.Field
-import org.saudigitus.emis.ui.form.FormData
-import org.saudigitus.emis.ui.form.FormField
 import org.saudigitus.emis.ui.theme.light_success
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -50,13 +47,19 @@ import org.saudigitus.emis.ui.theme.light_success
 fun MarksScreen(
     state: MarksUiState,
     onNavBack: () -> Unit,
+    infoCard: InfoCard,
     setMarksState: (
         key: String,
         dataElement: String,
         value: String,
         valueType: ValueType?
     ) -> Unit,
-    onNext: (Triple<String, String?, ValueType?>) -> Unit,
+    setDate: (String) -> Unit,
+    onNext: (
+        tei: String,
+        ou: String,
+        fieldData: Triple<String, String?, ValueType?>
+    ) -> Unit,
     onSave: () -> Unit,
     dateValidator: (Long) -> Boolean = { true }
 ) {
@@ -66,7 +69,7 @@ fun MarksScreen(
     Scaffold(
         topBar = {
             Toolbar(
-                headers = (state as MarksUiState.Screen).toolbarHeaders,
+                headers = state.toolbarHeaders,
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color(0xFF2C98F0),
                     navigationIconContentColor = Color.White,
@@ -80,7 +83,7 @@ fun MarksScreen(
                     filterVisibility = false,
                     showCalendar = true
                 ),
-                calendarAction = state::setDate,
+                calendarAction = setDate,
                 dateValidator = dateValidator
             )
         },
@@ -158,11 +161,11 @@ fun MarksScreen(
                 verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
                 horizontalAlignment = Alignment.Start
             ) {
-                //ShowCard(infoCard)
+                ShowCard(infoCard)
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                 ) {
-                    items((state as MarksUiState.Screen).students) { student ->
+                    items(state.students) { student ->
                         MetadataItem(
                             displayName = "${
                                 student.attributeValues?.values?.toList()?.get(2)?.value()
@@ -170,15 +173,23 @@ fun MarksScreen(
                             attrValue = "${
                                 student.attributeValues?.values?.toList()?.get(0)?.value()
                             }",
-                            enableClickAction = false,
+                            enableClickAction = true,
                             onClick = {}
                         ) {
                             MarksForm(
-                                state = (state as MarksUiState.MarksForm).marksState,
-                                key = state.marksKey,
+                                modifier = Modifier.fillMaxWidth(.35f)
+                                    .align(Alignment.End),
+                                state = state.marksState,
+                                key = student.uid(),
                                 fields = state.marksFields,
                                 formData = state.marksData,
-                                onNext = onNext,
+                                onNext = {
+                                     onNext.invoke(
+                                         student.uid(),
+                                         student.tei.organisationUnit() ?: "",
+                                         it
+                                     )
+                                },
                                 setFormState = setMarksState
                             )
                         }
