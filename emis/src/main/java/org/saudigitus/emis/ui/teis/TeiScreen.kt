@@ -54,7 +54,6 @@ import org.saudigitus.emis.data.model.OU
 fun TeiScreen(
     viewModel: TeiViewModel,
     onBack: () -> Unit,
-    navToFavorite: () -> Unit,
     navToAttendance: () -> Unit
 ) {
     var displayFilters by remember { mutableStateOf(true) }
@@ -90,7 +89,6 @@ fun TeiScreen(
                     syncVisibility = false,
                     showFavorite = true
                 ),
-                favoriteAction = navToFavorite,
                 filterAction = { displayFilters = !displayFilters }
             )
         },
