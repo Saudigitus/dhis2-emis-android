@@ -91,7 +91,7 @@ fun AttendanceScreen(
             },
             onDone = {
                 isAbsent = false
-                viewModel.saveAbsenceState()
+                viewModel.save()
             }
         )
     }
