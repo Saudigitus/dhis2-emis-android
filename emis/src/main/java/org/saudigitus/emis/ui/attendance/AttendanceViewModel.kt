@@ -6,7 +6,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.dhis2.commons.data.SearchTeiModel
 import org.dhis2.commons.date.DateUtils
 import org.saudigitus.emis.data.local.DataManager
 import org.saudigitus.emis.data.model.Attendance
@@ -14,9 +13,7 @@ import org.saudigitus.emis.data.model.dto.Absence
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
 import org.saudigitus.emis.data.model.dto.withBtnSettings
 import org.saudigitus.emis.ui.base.BaseViewModel
-import org.saudigitus.emis.ui.components.InfoCard
 import org.saudigitus.emis.ui.components.Item
-import org.saudigitus.emis.ui.components.ToolbarHeaders
 import org.saudigitus.emis.utils.Constants.ABSENT
 import org.saudigitus.emis.utils.Constants.KEY
 import org.saudigitus.emis.utils.Constants.LATE
@@ -36,6 +33,9 @@ class AttendanceViewModel
     private val repository: DataManager
 ) : BaseViewModel(repository) {
 
+    private val _datastoreAttendance = MutableStateFlow<Attendance?>(null)
+    private val datastoreAttendance: StateFlow<Attendance?> = _datastoreAttendance
+
     private val _attendanceOptions = MutableStateFlow<List<AttendanceOption>>(emptyList())
     val attendanceOptions: StateFlow<List<AttendanceOption>> = _attendanceOptions
 
@@ -51,9 +51,6 @@ class AttendanceViewModel
     private val _attendanceBtnState =
         MutableStateFlow<List<AttendanceActionButtonState>>(emptyList())
     val attendanceBtnState: StateFlow<List<AttendanceActionButtonState>> = _attendanceBtnState
-
-    private val _infoCard = MutableStateFlow(InfoCard())
-    val infoCard: StateFlow<InfoCard> = _infoCard
 
     private val attendanceCache = mutableSetOf<AttendanceEntity>()
     private var attendanceBtnStateCache = mutableListOf(AttendanceActionButtonState())
@@ -84,10 +81,6 @@ class AttendanceViewModel
         }
     }
 
-    override fun setTeis(teis: List<SearchTeiModel>) {
-        _teis.value = teis
-    }
-
     override fun setProgram(program: String) {
         _program.value = program
 
@@ -96,10 +89,6 @@ class AttendanceViewModel
         viewModelScope.launch {
             attendanceEvents()
         }
-    }
-
-    fun setInfoCard(infoCard: InfoCard) {
-        _infoCard.value = infoCard
     }
 
     fun setAttendanceStep(attendanceStep: ButtonStep) {
@@ -306,7 +295,7 @@ class AttendanceViewModel
             }
         }
     }
-    fun saveAbsenceState() {
+    override fun save() {
         setAttendance(
             index = absenceState.value.index,
             ou = absenceState.value.ou,
