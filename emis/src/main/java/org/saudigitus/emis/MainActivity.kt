@@ -6,6 +6,7 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -19,6 +20,8 @@ import org.saudigitus.emis.ui.attendance.AttendanceScreen
 import org.saudigitus.emis.ui.attendance.AttendanceViewModel
 import org.saudigitus.emis.ui.favorites.FavoriteViewModel
 import org.saudigitus.emis.ui.favorites.SaveFavoriteFilterScreen
+import org.saudigitus.emis.ui.marks.MarksScreen
+import org.saudigitus.emis.ui.marks.MarksViewModel
 import org.saudigitus.emis.ui.teis.TeiScreen
 import org.saudigitus.emis.ui.teis.TeiViewModel
 import org.saudigitus.emis.ui.theme.EMISAndroidTheme
@@ -51,12 +54,8 @@ class MainActivity : FragmentActivity() {
                             TeiScreen(
                                 viewModel = viewModel,
                                 onBack = { finish() },
-                                navToFavorite = {
-                                    navController.navigate(AppRoutes.FAVORITE_ROUTE)
-                                }
-
                             ) {
-                                navController.navigate(AppRoutes.ATTENDANCE_ROUTE)
+                                navController.navigate(AppRoutes.MARKS_ROUTE)
                             }
                         }
                         composable(AppRoutes.ATTENDANCE_ROUTE) {
@@ -70,13 +69,27 @@ class MainActivity : FragmentActivity() {
                                 navController.navigateUp()
                             }
                         }
-                        composable(AppRoutes.FAVORITE_ROUTE) {
-                            val favoriteViewModel: FavoriteViewModel = hiltViewModel()
-                            SaveFavoriteFilterScreen(
-                                viewModel, favoriteViewModel
-                            ){
-                                navController.navigateUp();
-                            }
+                        composable(AppRoutes.MARKS_ROUTE) {
+                            val marksViewModel = hiltViewModel<MarksViewModel>()
+                            val uiState by marksViewModel.uiState.collectAsStateWithLifecycle()
+                            val infoCard by marksViewModel.infoCard.collectAsStateWithLifecycle()
+
+                            marksViewModel.setProgram(intent?.extras?.getString(Constants.PROGRAM_UID) ?: "")
+                            marksViewModel.setTeis(
+                                viewModel.teis.collectAsStateWithLifecycle().value,
+                                marksViewModel::updateTEISList
+                            )
+                            marksViewModel.setInfoCard(viewModel.infoCard.collectAsStateWithLifecycle().value)
+
+                            MarksScreen(
+                                state = uiState,
+                                onNavBack = navController::navigateUp,
+                                infoCard = infoCard,
+                                setMarksState = marksViewModel::marksState,
+                                setDate = marksViewModel::setDate,
+                                onNext = marksViewModel::onClickNext,
+                                onSave = marksViewModel::save
+                            )
                         }
                     }
                 }
