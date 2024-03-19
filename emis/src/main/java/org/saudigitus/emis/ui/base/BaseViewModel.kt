@@ -7,8 +7,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.dhis2.commons.data.SearchTeiModel
 import org.saudigitus.emis.data.local.DataManager
-import org.saudigitus.emis.data.model.Attendance
 import org.saudigitus.emis.data.model.CalendarConfig
+import org.saudigitus.emis.ui.components.InfoCard
 import org.saudigitus.emis.ui.components.ToolbarHeaders
 import org.saudigitus.emis.utils.Constants
 import org.saudigitus.emis.utils.DateHelper
@@ -17,11 +17,8 @@ abstract class BaseViewModel(
     private val repository: DataManager
 ) : ViewModel() {
 
-    protected val _teis = MutableStateFlow<List<SearchTeiModel>>(emptyList())
+    private val _teis = MutableStateFlow<List<SearchTeiModel>>(emptyList())
     val teis: StateFlow<List<SearchTeiModel>> = _teis
-
-    protected val _datastoreAttendance = MutableStateFlow<Attendance?>(null)
-    protected val datastoreAttendance: StateFlow<Attendance?> = _datastoreAttendance
 
     protected val _toolbarHeaders = MutableStateFlow(
         ToolbarHeaders(
@@ -40,14 +37,33 @@ abstract class BaseViewModel(
     protected val _program = MutableStateFlow("")
     val program: StateFlow<String> = _program
 
+    private val _infoCard = MutableStateFlow(InfoCard())
+    val infoCard: StateFlow<InfoCard> = _infoCard
+
     init {
         viewModelScope.launch {
             _schoolCalendar.value = repository.dateValidation(Constants.CALENDAR_KEY)
         }
     }
 
-    abstract fun setConfig(program: String)
+    protected abstract fun setConfig(program: String)
     abstract fun setProgram(program: String)
-    abstract fun setTeis(teis: List<SearchTeiModel>)
     abstract fun setDate(date: String)
+    abstract fun save()
+
+    fun setTeis(teis: List<SearchTeiModel>) {
+        _teis.value = teis
+    }
+
+    fun setTeis(
+        teis: List<SearchTeiModel>,
+        run: () -> Unit
+    ) {
+        _teis.value = teis
+        run()
+    }
+
+    fun setInfoCard(infoCard: InfoCard) {
+        _infoCard.value = infoCard
+    }
 }
