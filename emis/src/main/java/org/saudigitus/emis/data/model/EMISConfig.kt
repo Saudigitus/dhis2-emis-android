@@ -21,9 +21,11 @@ class EMISConfig {
                 )
         } else null
 
-        fun schoolCalendarJson(json: String?): CalendarConfig =
-            translateJsonToObject()
-                .readValue(json, CalendarConfig::class.java)
+        fun schoolCalendarJson(json: String?): CalendarConfig? =
+            if (json != null) {
+                translateJsonToObject()
+                    .readValue(json, CalendarConfig::class.java)
+            } else null
 
     }
 }

@@ -141,11 +141,13 @@ fun AttendanceScreen(
                 dateValidator = {
                     val date = DateHelper.stringToLocalDate(DateHelper.formatDate(it)!!)
 
-                   (!DateHelper.isWeekend(date) && schoolCalendar?.weekDays?.saturday == false &&
-                       schoolCalendar?.weekDays?.sunday == false) &&
-                       schoolCalendar?.holidays?.let { holiday ->
-                           DateHelper.isHoliday(holiday, it)
-                       } == true
+                    if (schoolCalendar != null) {
+                        (!DateHelper.isWeekend(date) && schoolCalendar?.weekDays?.saturday == false &&
+                            schoolCalendar?.weekDays?.sunday == false) &&
+                            schoolCalendar?.holidays?.let { holiday ->
+                                DateHelper.isHoliday(holiday, it)
+                            } == true
+                    } else true
                 }
             )
         },
@@ -244,10 +246,10 @@ fun AttendanceScreen(
                     items(students) { student ->
                         MetadataItem(
                             displayName = "${
-                                student.attributeValues?.values?.toList()?.get(2)?.value()
-                            } ${student.attributeValues?.values?.toList()?.get(1)?.value()}",
+                                student.attributeValues?.values?.toList()?.getOrNull(2)?.value()
+                            } ${student.attributeValues?.values?.toList()?.getOrNull(1)?.value()}",
                             attrValue = "${
-                                student.attributeValues?.values?.toList()?.get(0)?.value()
+                                student.attributeValues?.values?.toList()?.getOrNull(0)?.value()
                             }",
                             enableClickAction = false,
                             onClick = {}
@@ -263,7 +265,7 @@ fun AttendanceScreen(
                                     btnState = attendanceBtnState,
                                     actions = attendanceOptions
                                 ) { index, tei, attendance ->
-                                    if (attendance != ABSENT) {
+                                    if (attendance.lowercase() != ABSENT) {
                                         viewModel.setAttendance(
                                             index = index,
                                             ou = student.tei.organisationUnit() ?: "",

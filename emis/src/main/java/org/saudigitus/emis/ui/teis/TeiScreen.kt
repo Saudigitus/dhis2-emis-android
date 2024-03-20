@@ -212,10 +212,10 @@ fun TeiScreen(
                         items(students) { student ->
                             MetadataItem(
                                 displayName = "${
-                                    student.attributeValues?.values?.toList()?.get(2)?.value()
-                                } ${student.attributeValues?.values?.toList()?.get(1)?.value()}",
+                                    student.attributeValues?.values?.toList()?.getOrNull(2)?.value()
+                                } ${student.attributeValues?.values?.toList()?.getOrNull(1)?.value()}",
                                 attrValue = "${
-                                    student.attributeValues?.values?.toList()?.get(0)?.value()
+                                    student.attributeValues?.values?.toList()?.getOrNull(0)?.value()
                                 }"
                             )
                         }

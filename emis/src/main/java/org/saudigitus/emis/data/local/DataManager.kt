@@ -5,7 +5,10 @@ import org.hisp.dhis.android.core.dataelement.DataElement
 import org.hisp.dhis.android.core.option.Option
 import org.saudigitus.emis.data.model.CalendarConfig
 import org.saudigitus.emis.data.model.EMISConfigItem
+import org.saudigitus.emis.data.model.ProgramStage
+import org.saudigitus.emis.data.model.Subject
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
+import org.saudigitus.emis.ui.components.Item
 
 interface DataManager {
 
@@ -45,5 +48,9 @@ interface DataManager {
         date: String?
     ): List<AttendanceEntity>
 
-    suspend fun dateValidation(id: String): CalendarConfig
+    suspend fun dateValidation(id: String): CalendarConfig?
+
+    suspend fun getSubjects(stage: String): List<Subject>
+
+    suspend fun getTerms(stages: List<ProgramStage>): List<Item>
 }

@@ -22,6 +22,8 @@ import org.saudigitus.emis.ui.favorites.FavoriteViewModel
 import org.saudigitus.emis.ui.favorites.SaveFavoriteFilterScreen
 import org.saudigitus.emis.ui.marks.MarksScreen
 import org.saudigitus.emis.ui.marks.MarksViewModel
+import org.saudigitus.emis.ui.subjects.SubjectScreen
+import org.saudigitus.emis.ui.subjects.SubjectViewModel
 import org.saudigitus.emis.ui.teis.TeiScreen
 import org.saudigitus.emis.ui.teis.TeiViewModel
 import org.saudigitus.emis.ui.theme.EMISAndroidTheme
@@ -55,7 +57,7 @@ class MainActivity : FragmentActivity() {
                                 viewModel = viewModel,
                                 onBack = { finish() },
                             ) {
-                                navController.navigate(AppRoutes.MARKS_ROUTE)
+                                navController.navigate(AppRoutes.SUBJECT_ROUTE)
                             }
                         }
                         composable(AppRoutes.ATTENDANCE_ROUTE) {
@@ -89,6 +91,18 @@ class MainActivity : FragmentActivity() {
                                 setDate = marksViewModel::setDate,
                                 onNext = marksViewModel::onClickNext,
                                 onSave = marksViewModel::save
+                            )
+                        }
+                        composable(AppRoutes.SUBJECT_ROUTE) {
+                            val subjectViewModel = hiltViewModel<SubjectViewModel>()
+                            val state by subjectViewModel.uiState.collectAsStateWithLifecycle()
+                            subjectViewModel.setConfig(intent?.extras?.getString(Constants.PROGRAM_UID) ?: "")
+
+                            SubjectScreen(
+                                state = state,
+                                onBack = navController::navigateUp,
+                                onFilterClick = subjectViewModel::performOnFilterClick,
+                                onClick = subjectViewModel::performOnClick
                             )
                         }
                     }

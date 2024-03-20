@@ -21,7 +21,10 @@ import org.saudigitus.emis.data.local.DataManager
 import org.saudigitus.emis.data.model.CalendarConfig
 import org.saudigitus.emis.data.model.EMISConfig
 import org.saudigitus.emis.data.model.EMISConfigItem
+import org.saudigitus.emis.data.model.ProgramStage
+import org.saudigitus.emis.data.model.Subject
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
+import org.saudigitus.emis.ui.components.Item
 import org.saudigitus.emis.utils.Constants
 import org.saudigitus.emis.utils.DateHelper
 import org.saudigitus.emis.utils.eventsWithTrackedDataValues
@@ -218,16 +221,50 @@ class DataManagerImpl
             }
     }
 
-    override suspend fun dateValidation(id: String): CalendarConfig =
+    override suspend fun dateValidation(id: String): CalendarConfig? =
         withContext(Dispatchers.IO) {
-            val dataStore = d2.dataStoreModule()
-                .dataStore()
-                .byNamespace().eq("semis")
-                .byKey().eq(id)
-                .one().blockingGet()
+            return@withContext try {
+                val dataStore = d2.dataStoreModule()
+                    .dataStore()
+                    .byNamespace().eq("semis")
+                    .byKey().eq(id)
+                    .one().blockingGet()
 
-            return@withContext EMISConfig.schoolCalendarJson(dataStore.value())
+                EMISConfig.schoolCalendarJson(dataStore.value())
+            } catch (_: Exception) {
+                null
+            }
         }
+
+    override suspend fun getSubjects(stage: String) = withContext(Dispatchers.IO) {
+        return@withContext d2.programModule().programStageDataElements()
+            .byProgramStage().eq(stage)
+            .blockingGet()
+            .mapNotNull { stageDl ->
+                val dl = d2.dataElement( stageDl.dataElement()?.uid() ?: "")
+
+                Subject(
+                    uid = dl.uid(),
+                    code = dl.code(),
+                    displayName = dl.displayFormName()
+                )
+            }
+    }
+
+    override suspend fun getTerms(stages: List<ProgramStage>) = withContext(Dispatchers.IO) {
+        val stagesIds = stages.mapNotNull { it.programStage }
+
+        return@withContext d2.programModule().programStages()
+            .byUid().`in`(stagesIds)
+            .blockingGet()
+            .mapNotNull {
+                Item(
+                    id = it.uid(),
+                    itemName = it.displayName() ?: "",
+                    code = it.code()
+                )
+            }
+    }
 
     private fun eventTransform(
         event: Event,
