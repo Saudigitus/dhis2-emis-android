@@ -186,6 +186,12 @@ fun DropDown(
         selectedItem = data?.get(selectedItemIndex)!!.itemName
     }
 
+    if (selectedItemName.isNotEmpty()) {
+        val item = data?.find { it.itemName == selectedItemName }
+        selectedItemIndex = data?.indexOf(item) ?: -1
+        selectedItem = item?.itemName ?: ""
+    }
+
     val paddingValue = if (selectedItemIndex >= 0) {
         4.dp
     } else {
