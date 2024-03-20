@@ -6,6 +6,7 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -19,6 +20,8 @@ import org.saudigitus.emis.ui.attendance.AttendanceScreen
 import org.saudigitus.emis.ui.attendance.AttendanceViewModel
 import org.saudigitus.emis.ui.favorites.FavoriteViewModel
 import org.saudigitus.emis.ui.favorites.SaveFavoriteFilterScreen
+import org.saudigitus.emis.ui.subjects.SubjectScreen
+import org.saudigitus.emis.ui.subjects.SubjectViewModel
 import org.saudigitus.emis.ui.teis.TeiScreen
 import org.saudigitus.emis.ui.teis.TeiViewModel
 import org.saudigitus.emis.ui.theme.EMISAndroidTheme
@@ -56,7 +59,7 @@ class MainActivity : FragmentActivity() {
                                 }
 
                             ) {
-                                navController.navigate(AppRoutes.ATTENDANCE_ROUTE)
+                                navController.navigate(AppRoutes.SUBJECT_ROUTE)
                             }
                         }
                         composable(AppRoutes.ATTENDANCE_ROUTE) {
@@ -77,6 +80,18 @@ class MainActivity : FragmentActivity() {
                             ){
                                 navController.navigateUp();
                             }
+                        }
+                        composable(AppRoutes.SUBJECT_ROUTE) {
+                            val subjectViewModel = hiltViewModel<SubjectViewModel>()
+                            val state by subjectViewModel.uiState.collectAsStateWithLifecycle()
+                            subjectViewModel.setConfig(intent?.extras?.getString(Constants.PROGRAM_UID) ?: "")
+
+                            SubjectScreen(
+                                state = state,
+                                onBack = navController::navigateUp,
+                                onFilterClick = subjectViewModel::performOnFilterClick,
+                                onClick = subjectViewModel::performOnClick
+                            )
                         }
                     }
                 }
