@@ -49,7 +49,6 @@ import org.saudigitus.emis.ui.components.ToolbarActionState
 import org.saudigitus.emis.ui.theme.light_success
 import org.saudigitus.emis.utils.Constants.ABSENT
 import org.saudigitus.emis.utils.DateHelper
-import org.saudigitus.emis.utils.Test
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -92,7 +91,7 @@ fun AttendanceScreen(
             },
             onDone = {
                 isAbsent = false
-                viewModel.saveAbsenceState()
+                viewModel.save()
             }
         )
     }
@@ -137,7 +136,7 @@ fun AttendanceScreen(
                     showCalendar = true
                 ),
                 calendarAction = {
-                    viewModel.setAttendanceDate(it)
+                    viewModel.setDate(it)
                 },
                 dateValidator = {
                     val date = DateHelper.stringToLocalDate(DateHelper.formatDate(it)!!)

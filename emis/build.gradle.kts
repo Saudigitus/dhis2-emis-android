@@ -90,6 +90,8 @@ android {
 dependencies {
 
     implementation(project(":commons"))
+    implementation(project(":compose-table"))
+    implementation(project(":form"))
 
     implementation(libs.androidx.coreKtx)
     implementation(platform(libs.kotlin.bom))
