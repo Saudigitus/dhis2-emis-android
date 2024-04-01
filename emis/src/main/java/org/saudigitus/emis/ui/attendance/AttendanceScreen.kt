@@ -59,7 +59,7 @@ fun AttendanceScreen(
     val students by viewModel.teis.collectAsStateWithLifecycle()
     val attendanceOptions by viewModel.attendanceOptions.collectAsStateWithLifecycle()
     val attendanceBtnState by viewModel.attendanceBtnState.collectAsStateWithLifecycle()
-    val attendanceStep by viewModel.attendanceStep.collectAsStateWithLifecycle()
+    val attendanceStep by viewModel.buttonStep.collectAsStateWithLifecycle()
     val attendanceStatus by viewModel.attendanceStatus.collectAsStateWithLifecycle()
     val toolbarHeaders by viewModel.toolbarHeaders.collectAsStateWithLifecycle()
     val infoCard by viewModel.infoCard.collectAsStateWithLifecycle()
@@ -101,7 +101,7 @@ fun AttendanceScreen(
             title = stringResource(R.string.attendance_summary),
             data = viewModel.getSummary(),
             themeColor = Color(0xFF2C98F0),
-            onCancel = { viewModel.setAttendanceStep(ButtonStep.HOLD_SAVING) }
+            onCancel = { viewModel.setButtonStep(ButtonStep.HOLD_SAVING) }
         ) {
             viewModel.clearCache()
             viewModel.refreshOnSave()
@@ -179,9 +179,9 @@ fun AttendanceScreen(
                 },
                 onClick = {
                     if (attendanceStep == ButtonStep.HOLD_SAVING) {
-                        viewModel.setAttendanceStep(ButtonStep.SAVING)
+                        viewModel.setButtonStep(ButtonStep.SAVING)
                     } else {
-                        viewModel.setAttendanceStep(ButtonStep.HOLD_SAVING)
+                        viewModel.setButtonStep(ButtonStep.HOLD_SAVING)
                     }
                 }
             )
