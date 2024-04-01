@@ -43,7 +43,9 @@ fun InputField(
             imeAction = ImeAction.Done
         ),
         colors = TextFieldDefaults.textFieldColors(
-            backgroundColor = Color.Transparent
+            backgroundColor = Color.Transparent,
+            focusedIndicatorColor = Color(0xFF2C98F0),
+            cursorColor = Color(0xFF2C98F0)
         ),
         visualTransformation =  if (inputType?.toKeyBoardInputType()?.toKeyboardType() == KeyboardType.Password) {
             PasswordVisualTransformation()
