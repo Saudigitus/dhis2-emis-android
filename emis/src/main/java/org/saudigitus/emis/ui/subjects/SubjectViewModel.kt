@@ -53,8 +53,4 @@ class SubjectViewModel
             }
         }
     }
-
-    fun performOnClick(dataElement: String) {
-
-    }
 }
