@@ -8,13 +8,15 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.dhis2.form.model.ActionType
+import org.dhis2.form.model.RowAction
 import org.hisp.dhis.android.core.common.ValueType
 import org.saudigitus.emis.data.local.DataManager
 import org.saudigitus.emis.data.local.repository.FormRepositoryImpl
-import org.saudigitus.emis.data.model.Performance
+import org.saudigitus.emis.data.model.EventTuple
+import org.saudigitus.emis.ui.attendance.ButtonStep
 import org.saudigitus.emis.ui.base.BaseViewModel
 import org.saudigitus.emis.ui.form.Field
-import org.saudigitus.emis.utils.Constants
 import org.saudigitus.emis.utils.DateHelper
 import javax.inject.Inject
 
@@ -24,9 +26,6 @@ class MarksViewModel
     private val repository: DataManager,
     private val formRepositoryImpl: FormRepositoryImpl
 ): BaseViewModel(repository) {
-
-    private val _datastorePerformance = MutableStateFlow<Performance?>(null)
-    private val datastorePerformance: StateFlow<Performance?> = _datastorePerformance
 
     private val viewModelState = MutableStateFlow(
         MarksUiState(
@@ -42,6 +41,12 @@ class MarksViewModel
             viewModelState.value
         )
 
+    private val _marksCache = MutableStateFlow<List<EventTuple>>(emptyList())
+    val marksCache: StateFlow<List<EventTuple>> = _marksCache
+
+    private val _programStage = MutableStateFlow("")
+    private val programStage: StateFlow<String> = _programStage
+
     init {
         _toolbarHeaders.update {
             it.copy(
@@ -54,19 +59,9 @@ class MarksViewModel
         }
     }
 
-    override fun setConfig(program: String) {
-        viewModelScope.launch {
-            val config = repository.getConfig(Constants.KEY)?.find { it.program == program }
+    override fun setConfig(program: String) {  }
 
-            if (config != null) {
-                _datastorePerformance.value = config.performance
-            }
-        }
-    }
-
-    override fun setProgram(program: String) {
-       setConfig(program)
-    }
+    override fun setProgram(program: String) {  }
 
     override fun setDate(date: String) {
         _toolbarHeaders.update {
@@ -78,7 +73,14 @@ class MarksViewModel
     }
 
     override fun save() {
-        TODO("Not yet implemented")
+        viewModelScope.launch {
+            if (buttonStep.value == ButtonStep.HOLD_SAVING) {
+                setButtonStep(ButtonStep.SAVING)
+            } else {
+                marksCache.value.forEach { formRepositoryImpl.save(it) }
+                setButtonStep(ButtonStep.HOLD_SAVING)
+            }
+        }
     }
 
     fun onClickNext(
@@ -86,13 +88,33 @@ class MarksViewModel
         ou: String,
         fieldData: Triple<String, String?, ValueType?>
     ) {
-        save()
+        val data = mutableListOf<EventTuple>()
+        data.addAll(marksCache.value)
+
+        val eventTuple = EventTuple(
+            ou,
+            program.value,
+            programStage.value,
+            tei,
+            RowAction(
+                id = fieldData.first,
+                type = ActionType.ON_NEXT,
+                value = fieldData.second,
+                valueType = fieldData.third
+            ),
+            eventDate.value
+        )
+
+        data.add(eventTuple)
+
+        _marksCache.value = data
     }
 
-    private fun getFields(stage: String) {
+    fun getFields(stage: String, dl: String) {
         viewModelScope.launch {
+            _programStage.value = stage
             viewModelState.update {
-                it.copy(marksFields = formRepositoryImpl.keyboardInputTypeByStage(stage))
+                it.copy(marksFields = formRepositoryImpl.keyboardInputTypeByStage(stage, dl))
             }
         }
     }
