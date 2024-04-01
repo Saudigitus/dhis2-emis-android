@@ -45,9 +45,6 @@ class AttendanceViewModel
     private val _reasonOfAbsence = MutableStateFlow<List<Item>>(emptyList())
     val reasonOfAbsence: StateFlow<List<Item>> = _reasonOfAbsence
 
-    private val _attendanceStep = MutableStateFlow(ButtonStep.EDITING)
-    val attendanceStep: StateFlow<ButtonStep> = _attendanceStep
-
     private val _attendanceBtnState =
         MutableStateFlow<List<AttendanceActionButtonState>>(emptyList())
     val attendanceBtnState: StateFlow<List<AttendanceActionButtonState>> = _attendanceBtnState
@@ -89,10 +86,6 @@ class AttendanceViewModel
         viewModelScope.launch {
             attendanceEvents()
         }
-    }
-
-    fun setAttendanceStep(attendanceStep: ButtonStep) {
-        _attendanceStep.value = attendanceStep
     }
 
     override fun setDate(date: String) {
@@ -327,7 +320,7 @@ class AttendanceViewModel
     }
 
     fun refreshOnSave() {
-        setAttendanceStep(ButtonStep.EDITING)
+        setButtonStep(ButtonStep.EDITING)
         viewModelScope.launch {
             attendanceEvents(eventDate.value)
         }
