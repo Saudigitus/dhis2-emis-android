@@ -36,10 +36,11 @@ fun SubjectScreen(
     state: SubjectUIState,
     onBack: () -> Unit,
     onFilterClick: (String) -> Unit,
-    onClick: (String) -> Unit
+    onClick: (stage: String, dl: String) -> Unit
 ) {
 
     var displayFilters by remember { mutableStateOf(true) }
+    var selectedFilters by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = {
@@ -81,7 +82,10 @@ fun SubjectScreen(
                         leadingIcon = Icons.Default.Pin,
                         data = state.filters,
                         selectedItemName = state.filters.getOrNull(0)?.itemName ?: "",
-                        onItemClick = { onFilterClick.invoke(it.id) }
+                        onItemClick = {
+                            selectedFilters = it.id
+                            onFilterClick.invoke(it.id)
+                        }
                     )
                 }
             }
@@ -108,7 +112,7 @@ fun SubjectScreen(
                     items(state.subjects) { subject ->
                         SubjectItem(
                             displayName = subject.displayName ?: "-",
-                            onClick = { onClick.invoke(subject.uid) }
+                            onClick = { onClick.invoke(selectedFilters, subject.uid) }
                         )
                     }
                 }
