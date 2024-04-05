@@ -20,6 +20,7 @@ import org.saudigitus.emis.ui.attendance.AttendanceScreen
 import org.saudigitus.emis.ui.attendance.AttendanceViewModel
 import org.saudigitus.emis.ui.favorites.FavoriteViewModel
 import org.saudigitus.emis.ui.favorites.SaveFavoriteFilterScreen
+import org.saudigitus.emis.ui.home.HomeScreen
 import org.saudigitus.emis.ui.marks.MarksScreen
 import org.saudigitus.emis.ui.marks.MarksViewModel
 import org.saudigitus.emis.ui.subjects.SubjectScreen
@@ -53,7 +54,7 @@ class MainActivity : FragmentActivity() {
                         startDestination = AppRoutes.TEI_LIST_ROUTE
                     ) {
                         composable(AppRoutes.TEI_LIST_ROUTE) {
-                            TeiScreen(
+                            HomeScreen(
                                 viewModel = viewModel,
                                 onBack = { finish() },
                             ) {
