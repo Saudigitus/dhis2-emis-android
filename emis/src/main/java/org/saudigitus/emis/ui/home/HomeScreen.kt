@@ -30,6 +30,7 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.dhis2.commons.Constants
+import org.saudigitus.emis.AppRoutes
 import org.saudigitus.emis.R
 import org.saudigitus.emis.data.model.OU
 import org.saudigitus.emis.ui.components.DropDown
@@ -39,21 +40,19 @@ import org.saudigitus.emis.ui.components.ShowCard
 import org.saudigitus.emis.ui.components.Toolbar
 import org.saudigitus.emis.ui.components.ToolbarActionState
 import org.saudigitus.emis.ui.teis.FilterType
-import org.saudigitus.emis.ui.teis.TeiViewModel
 import org.saudigitus.emis.utils.getByType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    viewModel: TeiViewModel,
+    viewModel: HomeViewModel,
     onBack: () -> Unit,
-    navTo: () -> Unit
+    navTo: (route: String) -> Unit
 ) {
 
     var displayFilters by remember { mutableStateOf(true) }
     val dataElementFilters by viewModel.dataElementFilters.collectAsStateWithLifecycle()
     val filterState by viewModel.filterState.collectAsStateWithLifecycle()
-    val students by viewModel.teis.collectAsStateWithLifecycle()
     val toolbarHeaders by viewModel.toolbarHeader.collectAsStateWithLifecycle()
     val programSettings by viewModel.programSettings.collectAsStateWithLifecycle()
     val infoCard by viewModel.infoCard.collectAsStateWithLifecycle()
@@ -112,7 +111,6 @@ fun HomeScreen(
                             data =  schoolOptions,
                             selectedItemName =  schoolOptions[0].itemName,
                             onItemClick = {
-                                viewModel.setGradeFilter(it.id)
                                 viewModel.setSchool(OU(uid= it.id, displayName = it.itemName))
                             }
                         )
@@ -132,12 +130,7 @@ fun HomeScreen(
                         leadingIcon = ImageVector.vectorResource(R.drawable.ic_school),
                         data = gradeOptions.ifEmpty { dataElementFilters.getByType(FilterType.GRADE)?.data },
                         selectedItemName = filterState.grade?.itemName ?: "",
-                        onItemClick = {
-                            if(gradeOptions.isNotEmpty()){
-                                viewModel.setSectionFilter(it.code.toString())
-                            }
-                            viewModel.setGrade(it)
-                        }
+                        onItemClick = viewModel::setGrade
                     )
 
                     DropDown(
@@ -184,7 +177,7 @@ fun HomeScreen(
                             icon = painterResource(R.drawable.s_calendar),
                             label = stringResource(R.string.attendance),
                             syncTime = "2 hours ago",
-                            onClick = navTo
+                            onClick = { navTo.invoke(AppRoutes.ATTENDANCE_ROUTE) }
                         )
                     }
                     item {
@@ -193,7 +186,7 @@ fun HomeScreen(
                             icon = painterResource(R.drawable.s_calendar),
                             label = stringResource(R.string.absenteeism),
                             syncTime = "2 hours ago",
-                            onClick = navTo
+                            onClick = { navTo.invoke(AppRoutes.ABSENTEEISM_ROUTE) }
                         )
                     }
                     item {
@@ -202,7 +195,7 @@ fun HomeScreen(
                             icon = painterResource(R.drawable.performance),
                             label = stringResource(R.string.performance),
                             syncTime = "2 hours ago",
-                            onClick = navTo
+                            onClick = { navTo.invoke(AppRoutes.PERFORMANCE_ROUTE) }
                         )
                     }
                 }
