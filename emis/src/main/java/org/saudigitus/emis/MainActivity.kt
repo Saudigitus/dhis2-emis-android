@@ -56,7 +56,7 @@ class MainActivity : FragmentActivity() {
                                 viewModel = viewModel,
                                 onBack = { finish() },
                             ) {
-                                navController.navigate(AppRoutes.SUBJECT_ROUTE)
+                                navController.navigate(it)
                             }
                         }
                         composable(AppRoutes.TEI_LIST_ROUTE) {
