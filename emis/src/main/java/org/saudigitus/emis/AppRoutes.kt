@@ -1,6 +1,7 @@
 package org.saudigitus.emis
 
 object AppRoutes {
+    const val HOME_ROUTE = "home"
     const val TEI_LIST_ROUTE = "tei_listing"
     const val ATTENDANCE_ROUTE = "attendance"
     const val MARKS_ROUTE = "marks"

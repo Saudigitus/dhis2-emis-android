@@ -51,10 +51,18 @@ class MainActivity : FragmentActivity() {
                 ) {
                     NavHost(
                         navController = navController,
-                        startDestination = AppRoutes.TEI_LIST_ROUTE
+                        startDestination = AppRoutes.HOME_ROUTE
                     ) {
-                        composable(AppRoutes.TEI_LIST_ROUTE) {
+                        composable(AppRoutes.HOME_ROUTE) {
                             HomeScreen(
+                                viewModel = viewModel,
+                                onBack = { finish() },
+                            ) {
+                                navController.navigate(AppRoutes.SUBJECT_ROUTE)
+                            }
+                        }
+                        composable(AppRoutes.TEI_LIST_ROUTE) {
+                            TeiScreen(
                                 viewModel = viewModel,
                                 onBack = { finish() },
                             ) {
