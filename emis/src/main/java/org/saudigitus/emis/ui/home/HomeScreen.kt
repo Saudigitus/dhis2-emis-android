@@ -195,7 +195,7 @@ fun HomeScreen(
                             icon = painterResource(R.drawable.performance),
                             label = stringResource(R.string.performance),
                             syncTime = "2 hours ago",
-                            onClick = { navTo.invoke(AppRoutes.PERFORMANCE_ROUTE) }
+                            onClick = { navTo.invoke(AppRoutes.SUBJECT_ROUTE) }
                         )
                     }
                 }
