@@ -47,31 +47,21 @@ import org.saudigitus.emis.ui.components.Toolbar
 import org.saudigitus.emis.ui.components.ToolbarActionState
 import org.saudigitus.emis.utils.getByType
 import org.saudigitus.emis.data.model.OU
+import org.saudigitus.emis.ui.home.HomeViewModel
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TeiScreen(
-    viewModel: TeiViewModel,
+    viewModel: HomeViewModel,
     onBack: () -> Unit,
     navToAttendance: () -> Unit
 ) {
     var displayFilters by remember { mutableStateOf(true) }
-    val dataElementFilters by viewModel.dataElementFilters.collectAsStateWithLifecycle()
     val filterState by viewModel.filterState.collectAsStateWithLifecycle()
     val students by viewModel.teis.collectAsStateWithLifecycle()
     val toolbarHeaders by viewModel.toolbarHeader.collectAsStateWithLifecycle()
-    val programSettings by viewModel.programSettings.collectAsStateWithLifecycle()
     val infoCard by viewModel.infoCard.collectAsStateWithLifecycle()
-    val defaultConfig by viewModel.defaultConfig.collectAsStateWithLifecycle()
-
-    val schoolOptions by viewModel.schoolOptions.collectAsStateWithLifecycle()
-    val gradeOptions by viewModel.gradeOptions.collectAsStateWithLifecycle()
-
-    if(schoolOptions.isNotEmpty()){
-        viewModel.setGradeFilter(schoolOptions[0].id)
-        viewModel.setSchool(OU(uid= schoolOptions[0].id, displayName = schoolOptions[0].itemName))
-    }
 
     Scaffold(
         topBar = {
@@ -124,66 +114,6 @@ fun TeiScreen(
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start
         ) {
-            AnimatedVisibility(visible = displayFilters) {
-                Column(
-                    modifier = Modifier.padding(bottom = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top),
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    DropDownWithSelectionByCode(
-                        placeholder = dataElementFilters.getByType(FilterType.ACADEMIC_YEAR)?.displayName
-                            ?: stringResource(R.string.academic_year),
-                        leadingIcon = ImageVector.vectorResource(R.drawable.ic_book),
-                        data = dataElementFilters.getByType(FilterType.ACADEMIC_YEAR)?.data,
-                        selectedCodeItem = filterState.academicYear?.code ?: defaultConfig?.currentAcademicYear ?: "",
-                        onItemClick = viewModel::setAcademicYear
-                    )
-
-                    if(schoolOptions.isNotEmpty()) {
-                        DropDown(
-                            placeholder = stringResource(R.string.school),
-                            leadingIcon = ImageVector.vectorResource(R.drawable.ic_location_on),
-                            data =  schoolOptions,
-                            selectedItemName =  schoolOptions[0].itemName,
-                            onItemClick = {
-                                viewModel.setGradeFilter(it.id)
-                                viewModel.setSchool(OU(uid= it.id, displayName = it.itemName))
-                            }
-                        )
-                    } else {
-                        DropDownOu(
-                            placeholder = stringResource(R.string.school),
-                            leadingIcon = ImageVector.vectorResource(R.drawable.ic_location_on),
-                            selectedSchool = filterState.school,
-                            program = programSettings?.getString(Constants.PROGRAM_UID) ?: "",
-                            onItemClick =  viewModel::setSchool
-                        )
-                    }
-
-                    DropDown(
-                        placeholder = dataElementFilters.getByType(FilterType.GRADE)?.displayName
-                            ?: stringResource(R.string.grade),
-                        leadingIcon = ImageVector.vectorResource(R.drawable.ic_school),
-                        data = gradeOptions.ifEmpty { dataElementFilters.getByType(FilterType.GRADE)?.data },
-                        selectedItemName = filterState.grade?.itemName ?: "",
-                        onItemClick = {
-                            if(gradeOptions.isNotEmpty()){
-                                viewModel.setSectionFilter(it.code.toString())
-                            }
-                            viewModel.setGrade(it)
-                        }
-                    )
-
-                    DropDown(
-                        placeholder = dataElementFilters.getByType(FilterType.SECTION)?.displayName
-                            ?: stringResource(R.string.cls),
-                        leadingIcon = ImageVector.vectorResource(R.drawable.ic_category),
-                        data = dataElementFilters.getByType(FilterType.SECTION)?.data,
-                        selectedItemName = filterState.section?.itemName ?: "",
-                        onItemClick = viewModel::setSection
-                    )
-                }
-            }
             Column(
                 modifier = Modifier
                     .fillMaxSize()
