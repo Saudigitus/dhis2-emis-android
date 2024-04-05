@@ -22,6 +22,7 @@ import androidx.compose.material.icons.rounded.School
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -221,16 +222,19 @@ data class InfoCard(
     val teiCount: Int = 0
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShowCard(
-    infoCard: InfoCard
+    infoCard: InfoCard,
+    onClick: () -> Unit = {}
 ){
     Card (
         shape = RoundedCornerShape(0.dp),
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        onClick = onClick
     ){
         Column(modifier = Modifier
             .fillMaxWidth()

@@ -54,11 +54,8 @@ import org.saudigitus.emis.ui.home.HomeViewModel
 @Composable
 fun TeiScreen(
     viewModel: HomeViewModel,
-    onBack: () -> Unit,
-    navToAttendance: () -> Unit
+    onBack: () -> Unit
 ) {
-    var displayFilters by remember { mutableStateOf(true) }
-    val filterState by viewModel.filterState.collectAsStateWithLifecycle()
     val students by viewModel.teis.collectAsStateWithLifecycle()
     val toolbarHeaders by viewModel.toolbarHeader.collectAsStateWithLifecycle()
     val infoCard by viewModel.infoCard.collectAsStateWithLifecycle()
@@ -77,33 +74,9 @@ fun TeiScreen(
                 disableNavigation = false,
                 actionState = ToolbarActionState(
                     syncVisibility = false,
-                    showFavorite = true
-                ),
-                filterAction = { displayFilters = !displayFilters }
-            )
-        },
-        floatingActionButton = {
-            if(filterState.isNotNull() && students.isNotEmpty()) {
-                ExtendedFloatingActionButton(
-                    text = {
-                        Text(
-                            text = stringResource(R.string.attendance),
-                            color = Color(0xFF2C98F0),
-                            style = LocalTextStyle.current.copy(
-                                fontFamily = FontFamily(Font(R.font.rubik_medium))
-                            )
-                        )
-                    },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Default.CalendarMonth,
-                            contentDescription = null,
-                            tint = Color(0xFF2C98F0)
-                        )
-                    },
-                    onClick = { navToAttendance.invoke() }
+                    showFavorite = false
                 )
-            }
+            )
         }
     ) { paddingValues ->
         Column(
@@ -130,9 +103,7 @@ fun TeiScreen(
                 verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
                 horizontalAlignment = Alignment.Start
             ) {
-                if (filterState.isNull() && students.isEmpty()) {
-                    NoResults(message = stringResource(R.string.start_search))
-                } else if (!filterState.isNull() && students.isEmpty()) {
+                if (students.isEmpty()) {
                     NoResults(message = stringResource(R.string.search_no_results))
                 } else {
                     ShowCard(infoCard)
