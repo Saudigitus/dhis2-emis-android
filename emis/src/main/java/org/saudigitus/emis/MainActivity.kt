@@ -18,21 +18,19 @@ import dagger.hilt.android.AndroidEntryPoint
 import org.dhis2.commons.Constants
 import org.saudigitus.emis.ui.attendance.AttendanceScreen
 import org.saudigitus.emis.ui.attendance.AttendanceViewModel
-import org.saudigitus.emis.ui.favorites.FavoriteViewModel
-import org.saudigitus.emis.ui.favorites.SaveFavoriteFilterScreen
 import org.saudigitus.emis.ui.home.HomeScreen
 import org.saudigitus.emis.ui.marks.MarksScreen
 import org.saudigitus.emis.ui.marks.MarksViewModel
 import org.saudigitus.emis.ui.subjects.SubjectScreen
 import org.saudigitus.emis.ui.subjects.SubjectViewModel
 import org.saudigitus.emis.ui.teis.TeiScreen
-import org.saudigitus.emis.ui.teis.TeiViewModel
+import org.saudigitus.emis.ui.home.HomeViewModel
 import org.saudigitus.emis.ui.theme.EMISAndroidTheme
 
 @AndroidEntryPoint
 class MainActivity : FragmentActivity() {
 
-    private val viewModel: TeiViewModel by viewModels()
+    private val viewModel: HomeViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,7 +78,7 @@ class MainActivity : FragmentActivity() {
                                 navController.navigateUp()
                             }
                         }
-                        composable(AppRoutes.MARKS_ROUTE) {
+                        composable(AppRoutes.PERFORMANCE_ROUTE) {
                             val marksViewModel = hiltViewModel<MarksViewModel>()
                             val uiState by marksViewModel.uiState.collectAsStateWithLifecycle()
                             val infoCard by marksViewModel.infoCard.collectAsStateWithLifecycle()
