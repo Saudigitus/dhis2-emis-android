@@ -4,4 +4,6 @@ data class Subject(
     val uid: String,
     val code: String?,
     val displayName: String?
-)
+) {
+    override fun toString() = displayName ?: ""
+}
