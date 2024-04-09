@@ -22,4 +22,6 @@
     <string name="attendance_summary">Attendance summary</string>
     <string name="attendance_saved">Attendance saved sucessful</string>
     <string name="select_term">Select term</string>
+    <string name="absenteeism">Absenteeism</string>
+    <string name="performance">Performance</string>
 </resources>
