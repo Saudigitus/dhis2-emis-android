@@ -8,6 +8,7 @@ import kotlinx.coroutines.launch
 import org.dhis2.commons.data.SearchTeiModel
 import org.saudigitus.emis.data.local.DataManager
 import org.saudigitus.emis.data.model.CalendarConfig
+import org.saudigitus.emis.ui.attendance.ButtonStep
 import org.saudigitus.emis.ui.components.InfoCard
 import org.saudigitus.emis.ui.components.ToolbarHeaders
 import org.saudigitus.emis.utils.Constants
@@ -40,6 +41,10 @@ abstract class BaseViewModel(
     private val _infoCard = MutableStateFlow(InfoCard())
     val infoCard: StateFlow<InfoCard> = _infoCard
 
+    protected val _buttonStep = MutableStateFlow(ButtonStep.EDITING)
+    val buttonStep: StateFlow<ButtonStep> = _buttonStep
+
+
     init {
         viewModelScope.launch {
             _schoolCalendar.value = repository.dateValidation(Constants.CALENDAR_KEY)
@@ -65,5 +70,9 @@ abstract class BaseViewModel(
 
     fun setInfoCard(infoCard: InfoCard) {
         _infoCard.value = infoCard
+    }
+
+    fun setButtonStep(buttonStep: ButtonStep) {
+        _buttonStep.value = buttonStep
     }
 }
