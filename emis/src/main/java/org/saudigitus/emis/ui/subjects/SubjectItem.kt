@@ -22,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import org.saudigitus.emis.R
 import org.saudigitus.emis.ui.components.MetadataIcon
 import org.saudigitus.emis.ui.components.TitleSubtitleComponent
-import org.saudigitus.emis.ui.components.TitleSubtitleDefaults
 
 @Composable
 fun SubjectItem(
@@ -49,7 +48,8 @@ fun SubjectItem(
             MetadataIcon(
                 backgroundColor = color ?: MaterialTheme.colorScheme.primary,
                 painter = painterResource(R.drawable.subject_icon),
-                colorFilter = ColorFilter.tint(Color.White)
+                colorFilter = ColorFilter.tint(Color.White),
+                paddingAll = 3.dp
             )
             Spacer(modifier = Modifier.size(15.dp))
             TitleSubtitleComponent(
