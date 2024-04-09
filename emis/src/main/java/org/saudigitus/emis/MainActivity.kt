@@ -77,9 +77,12 @@ class MainActivity : FragmentActivity() {
                             AttendanceScreen(attendanceViewModel, navController::navigateUp)
                         }
                         composable(
-                            route = "${AppRoutes.PERFORMANCE_ROUTE}/{stage}/{subjectName}",
+                            route = "${AppRoutes.PERFORMANCE_ROUTE}/{stage}/{dataElement}/{subjectName}",
                             arguments = listOf(
                                 navArgument("stage") {
+                                    type = NavType.StringType
+                                },
+                                navArgument("dataElement") {
                                     type = NavType.StringType
                                 },
                                 navArgument("subjectName") {
@@ -90,23 +93,31 @@ class MainActivity : FragmentActivity() {
                             val performanceViewModel = hiltViewModel<PerformanceViewModel>()
                             val uiState by performanceViewModel.uiState.collectAsStateWithLifecycle()
                             val infoCard by performanceViewModel.infoCard.collectAsStateWithLifecycle()
+                            val stats by performanceViewModel.cache.collectAsStateWithLifecycle()
+                            val teis by viewModel.teis.collectAsStateWithLifecycle()
+                            val performanceStep by performanceViewModel.buttonStep.collectAsStateWithLifecycle()
+
+                            val stage = it.arguments?.getString("stage") ?: ""
+                            val dl = it.arguments?.getString("dataElement") ?: ""
 
                             performanceViewModel.setProgram(intent?.extras?.getString(Constants.PROGRAM_UID) ?: "")
-                            performanceViewModel.loadSubjects(it.arguments?.getString("stage") ?: "")
-                            performanceViewModel.setTeis(
-                                viewModel.teis.collectAsStateWithLifecycle().value,
-                                performanceViewModel::updateTEISList
-                            )
+                            performanceViewModel.loadSubjects(stage)
+                            performanceViewModel.setTeis(teis, performanceViewModel::updateTEISList)
                             performanceViewModel.setInfoCard(viewModel.infoCard.collectAsStateWithLifecycle().value)
+                            performanceViewModel.getFields(stage, dl)
 
                             PerformanceScreen(
                                 state = uiState,
                                 onNavBack = navController::navigateUp,
                                 infoCard = infoCard,
                                 defaultSelection = it.arguments?.getString("subjectName") ?: "",
-                                setMarksState = performanceViewModel::fieldState,
+                                setPerformanceState = performanceViewModel::fieldState,
+                                performanceStats = Pair("${stats.size}", "${teis.size.minus(stats.size)}"),
+                                performanceStep = performanceStep,
                                 setDate = performanceViewModel::setDate,
                                 onNext = performanceViewModel::onClickNext,
+                                step = performanceViewModel::setButtonStep,
+                                onFilterClick = performanceViewModel::updateFields,
                                 onSave = performanceViewModel::save
                             )
                         }
@@ -122,8 +133,8 @@ class MainActivity : FragmentActivity() {
                                 onBack = navController::navigateUp,
                                 onFilterClick = subjectViewModel::performOnFilterClick,
                                 infoCard = infoCard,
-                                onClick = { _, subjectName ->
-                                    navController.navigate("${AppRoutes.PERFORMANCE_ROUTE}/$stage/$subjectName")
+                                onClick = { subjectId, subjectName ->
+                                    navController.navigate("${AppRoutes.PERFORMANCE_ROUTE}/$stage/$subjectId/$subjectName")
                                 }
                             )
                         }
