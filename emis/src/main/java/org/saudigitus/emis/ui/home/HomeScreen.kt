@@ -47,6 +47,7 @@ import org.saudigitus.emis.utils.getByType
 fun HomeScreen(
     viewModel: HomeViewModel,
     onBack: () -> Unit,
+    navToTeiList: () -> Unit,
     navTo: (route: String) -> Unit
 ) {
 
@@ -159,7 +160,10 @@ fun HomeScreen(
                 verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
                 horizontalAlignment = Alignment.Start
             ) {
-                ShowCard(infoCard)
+                ShowCard(
+                    infoCard = infoCard,
+                    onClick = navToTeiList
+                )
 
                 LazyVerticalGrid(
                     modifier = Modifier.fillMaxSize(),

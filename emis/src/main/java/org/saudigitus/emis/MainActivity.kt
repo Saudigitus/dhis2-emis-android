@@ -55,17 +55,15 @@ class MainActivity : FragmentActivity() {
                             HomeScreen(
                                 viewModel = viewModel,
                                 onBack = { finish() },
-                            ) {
-                                navController.navigate(it)
-                            }
+                                navToTeiList = { navController.navigate(AppRoutes.TEI_LIST_ROUTE) },
+                                navTo = navController::navigate
+                            )
                         }
                         composable(AppRoutes.TEI_LIST_ROUTE) {
                             TeiScreen(
                                 viewModel = viewModel,
-                                onBack = { finish() },
-                            ) {
-                                navController.navigate(AppRoutes.SUBJECT_ROUTE)
-                            }
+                                onBack = navController::navigateUp,
+                            )
                         }
                         composable(AppRoutes.ATTENDANCE_ROUTE) {
                             val attendanceViewModel: AttendanceViewModel = hiltViewModel()
@@ -74,9 +72,7 @@ class MainActivity : FragmentActivity() {
                             attendanceViewModel.setTeis(viewModel.teis.collectAsStateWithLifecycle().value)
                             attendanceViewModel.setInfoCard(viewModel.infoCard.collectAsStateWithLifecycle().value)
 
-                            AttendanceScreen(attendanceViewModel) {
-                                navController.navigateUp()
-                            }
+                            AttendanceScreen(attendanceViewModel, navController::navigateUp)
                         }
                         composable(AppRoutes.PERFORMANCE_ROUTE) {
                             val marksViewModel = hiltViewModel<MarksViewModel>()
