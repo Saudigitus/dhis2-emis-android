@@ -246,6 +246,7 @@ class DataManagerImpl
                 Subject(
                     uid = dl.uid(),
                     code = dl.code(),
+                    color = dl.style().color(),
                     displayName = dl.displayFormName()
                 )
             }
