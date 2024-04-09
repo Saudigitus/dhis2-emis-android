@@ -1,4 +1,4 @@
-package org.saudigitus.emis.ui.performance
+package org.saudigitus.emis.ui.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Spacer
@@ -7,30 +7,24 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.twotone.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
-import org.saudigitus.emis.R
-import org.saudigitus.emis.data.model.Subject
-import org.saudigitus.emis.ui.components.DropDown
-import org.saudigitus.emis.ui.components.InfoCard
-import org.saudigitus.emis.ui.components.ShowCard
 
 @Composable
-fun PerformanceDetails(
+fun <T>DetailsWithOptions(
     modifier: Modifier = Modifier,
     infoCard: InfoCard,
-    subjects: List<Subject>,
+    placeholder: String,
+    leadingIcon: ImageVector,
+    trailingIcon: ImageVector? = null,
+    data: List<T>,
     defaultSelection: String = "",
-    onItemClick: (Subject) -> Unit
+    onItemClick: (T) -> Unit
 ) {
     Card(
         modifier = modifier,
@@ -49,10 +43,10 @@ fun PerformanceDetails(
             thickness = .9.dp
         )
         DropDown(
-            placeholder = stringResource(R.string.subject),
-            leadingIcon = ImageVector.vectorResource(R.drawable.ic_category),
-            trailingIcon = Icons.TwoTone.Edit,
-            data = subjects,
+            placeholder = placeholder,
+            leadingIcon = leadingIcon,
+            trailingIcon = trailingIcon,
+            data = data,
             elevation = 1.dp,
             selectedItemName = defaultSelection,
             onItemClick = onItemClick

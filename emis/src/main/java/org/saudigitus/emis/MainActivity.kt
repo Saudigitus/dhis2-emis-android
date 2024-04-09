@@ -114,12 +114,14 @@ class MainActivity : FragmentActivity() {
                             val subjectViewModel = hiltViewModel<SubjectViewModel>()
                             val state by subjectViewModel.uiState.collectAsStateWithLifecycle()
                             val stage by subjectViewModel.programStage.collectAsStateWithLifecycle()
-                            subjectViewModel.setConfig(intent?.extras?.getString(Constants.PROGRAM_UID) ?: "")
+                            val infoCard by viewModel.infoCard.collectAsStateWithLifecycle()
+                            subjectViewModel.setProgram(intent?.extras?.getString(Constants.PROGRAM_UID) ?: "")
 
                             SubjectScreen(
                                 state = state,
                                 onBack = navController::navigateUp,
                                 onFilterClick = subjectViewModel::performOnFilterClick,
+                                infoCard = infoCard,
                                 onClick = { _, subjectName ->
                                     navController.navigate("${AppRoutes.PERFORMANCE_ROUTE}/$stage/$subjectName")
                                 }
