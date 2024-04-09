@@ -1,4 +1,4 @@
-package org.saudigitus.emis.ui.marks
+package org.saudigitus.emis.ui.performance
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -44,10 +44,11 @@ import org.saudigitus.emis.ui.theme.light_success
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MarksScreen(
-    state: MarksUiState,
+fun PerformanceScreen(
+    state: PerformanceUiState,
     onNavBack: () -> Unit,
     infoCard: InfoCard,
+    defaultSelection: String = "",
     setMarksState: (
         key: String,
         dataElement: String,
@@ -161,7 +162,13 @@ fun MarksScreen(
                 verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
                 horizontalAlignment = Alignment.Start
             ) {
-                ShowCard(infoCard)
+                PerformanceDetails(
+                    modifier = Modifier.fillMaxWidth(),
+                    infoCard = infoCard,
+                    subjects = state.subjects,
+                    defaultSelection = defaultSelection,
+                    onItemClick = { _ -> }
+                )
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                 ) {
@@ -176,13 +183,13 @@ fun MarksScreen(
                             enableClickAction = true,
                             onClick = {}
                         ) {
-                            MarksForm(
+                            PerformanceForm(
                                 modifier = Modifier.fillMaxWidth(.35f)
                                     .align(Alignment.End),
-                                state = state.marksState,
+                                state = state.fieldsState,
                                 key = student.uid(),
-                                fields = state.marksFields,
-                                formData = state.marksData,
+                                fields = state.formFields,
+                                formData = state.formData,
                                 onNext = {
                                      onNext.invoke(
                                          student.uid(),
