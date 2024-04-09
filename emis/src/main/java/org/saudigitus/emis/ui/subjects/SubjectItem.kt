@@ -28,6 +28,7 @@ import org.saudigitus.emis.ui.components.TitleSubtitleDefaults
 fun SubjectItem(
     displayName: String,
     attrValue: String? = null,
+    color: Color?,
     onClick: () -> Unit = {}
 ) {
     Column(
@@ -46,8 +47,8 @@ fun SubjectItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             MetadataIcon(
-                backgroundColor = MaterialTheme.colorScheme.primary,
-                painter = painterResource(R.drawable.ic_book2),
+                backgroundColor = color ?: MaterialTheme.colorScheme.primary,
+                painter = painterResource(R.drawable.subject_icon),
                 colorFilter = ColorFilter.tint(Color.White)
             )
             Spacer(modifier = Modifier.size(15.dp))
@@ -55,9 +56,6 @@ fun SubjectItem(
                 modifier = Modifier.weight(1f, true),
                 title = displayName,
                 subtitle = attrValue,
-                fontDefaults = TitleSubtitleDefaults(
-                    titleColor = Color.Black.copy(.75f)
-                )
             )
         }
         Divider(
