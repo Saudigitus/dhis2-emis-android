@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.twotone.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -20,16 +21,22 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -38,6 +45,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import org.hisp.dhis.android.core.common.ValueType
 import org.saudigitus.emis.R
+import org.saudigitus.emis.ui.attendance.ButtonStep
 import org.saudigitus.emis.ui.components.DetailsWithOptions
 import org.saudigitus.emis.ui.components.InfoCard
 import org.saudigitus.emis.ui.components.MetadataItem
@@ -52,23 +60,49 @@ fun PerformanceScreen(
     onNavBack: () -> Unit,
     infoCard: InfoCard,
     defaultSelection: String = "",
-    setMarksState: (
+    setPerformanceState: (
         key: String,
         dataElement: String,
         value: String,
         valueType: ValueType?
     ) -> Unit,
     setDate: (String) -> Unit,
+    performanceStats: Pair<String, String>,
     onNext: (
         tei: String,
         ou: String,
         fieldData: Triple<String, String?, ValueType?>
     ) -> Unit,
+    performanceStep: ButtonStep,
+    step: (ButtonStep) -> Unit,
+    onFilterClick: (dataElement: String) -> Unit,
     onSave: () -> Unit,
     dateValidator: (Long) -> Boolean = { true }
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
+    var isCompleted by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
+    if (performanceStep == ButtonStep.SAVING) {
+        PerformanceSummaryDialog(
+            title = stringResource(R.string.performance_summary),
+            data = performanceStats,
+            themeColor = Color(0xFF2C98F0),
+            onCancel = { step.invoke(ButtonStep.HOLD_SAVING) }
+        ) {
+            onSave()
+            isCompleted = true
+        }
+    }
+
+    if (isCompleted) {
+        LaunchedEffect(key1 = snackbarHostState) {
+            snackbarHostState.showSnackbar(
+                message = context.getString(R.string.marks_saved),
+                duration = SnackbarDuration.Short
+            )
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -95,7 +129,11 @@ fun PerformanceScreen(
             ExtendedFloatingActionButton(
                 text = {
                     Text(
-                        text = stringResource(R.string.save),
+                        text = if (performanceStep == ButtonStep.EDITING) {
+                            stringResource(R.string.update)
+                        } else {
+                            stringResource(R.string.save)
+                        },
                         color = Color(0xFF2C98F0),
                         style = LocalTextStyle.current.copy(
                             fontFamily = FontFamily(Font(R.font.rubik_medium))
@@ -104,7 +142,11 @@ fun PerformanceScreen(
                 },
                 icon = {
                     Icon(
-                        imageVector = Icons.Default.Save,
+                        imageVector = if (performanceStep == ButtonStep.EDITING) {
+                            Icons.Default.Edit
+                        } else {
+                            Icons.Default.Save
+                        },
                         contentDescription = null,
                         tint = Color(0xFF2C98F0)
                     )
@@ -173,7 +215,7 @@ fun PerformanceScreen(
                     trailingIcon = Icons.TwoTone.Edit,
                     data = state.subjects,
                     defaultSelection = defaultSelection,
-                    onItemClick = { _ -> }
+                    onItemClick = { onFilterClick.invoke(it.uid) }
                 )
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
@@ -181,12 +223,10 @@ fun PerformanceScreen(
                     items(state.students) { student ->
                         MetadataItem(
                             displayName = "${
-                                student.attributeValues?.values?.toList()?.get(2)?.value()
-                            } ${student.attributeValues?.values?.toList()?.get(1)?.value()}",
-                            attrValue = "${
-                                student.attributeValues?.values?.toList()?.get(0)?.value()
-                            }",
-                            enableClickAction = true,
+                                student.attributeValues?.values?.toList()?.getOrNull(2)?.value() ?: "-"
+                            } ${student.attributeValues?.values?.toList()?.getOrNull(1)?.value() ?: ""}",
+                            attrValue = student.attributeValues?.values?.toList()?.getOrNull(0)?.value() ?: "-",
+                            enableClickAction = performanceStep == ButtonStep.HOLD_SAVING,
                             onClick = {}
                         ) {
                             PerformanceForm(
@@ -203,7 +243,7 @@ fun PerformanceScreen(
                                          it
                                      )
                                 },
-                                setFormState = setMarksState
+                                setFormState = setPerformanceState
                             )
                         }
                     }
