@@ -23,6 +23,9 @@ class SubjectViewModel
     )
     val uiState: StateFlow<SubjectUIState> = _uiState
 
+    private val _programStage = MutableStateFlow("")
+    val programStage: StateFlow<String> = _programStage
+
     fun setConfig(program: String) {
         viewModelScope.launch {
             val config = repository.getConfig(Constants.KEY)?.find { it.program == program }
@@ -47,14 +50,11 @@ class SubjectViewModel
     }
 
     fun performOnFilterClick(stage: String) {
+        _programStage.value = stage
         viewModelScope.launch {
             _uiState.update {
                 it.copy(subjects = repository.getSubjects(stage))
             }
         }
-    }
-
-    fun performOnClick(dataElement: String) {
-
     }
 }
