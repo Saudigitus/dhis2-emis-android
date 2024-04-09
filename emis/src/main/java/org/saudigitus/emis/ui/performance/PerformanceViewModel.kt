@@ -1,4 +1,4 @@
-package org.saudigitus.emis.ui.marks
+package org.saudigitus.emis.ui.performance
 
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,7 +19,7 @@ import org.saudigitus.emis.utils.DateHelper
 import javax.inject.Inject
 
 @HiltViewModel
-class MarksViewModel
+class PerformanceViewModel
 @Inject constructor(
     private val repository: DataManager,
     private val formRepositoryImpl: FormRepositoryImpl
@@ -29,7 +29,7 @@ class MarksViewModel
     private val datastorePerformance: StateFlow<Performance?> = _datastorePerformance
 
     private val viewModelState = MutableStateFlow(
-        MarksUiState(
+        PerformanceUiState(
             toolbarHeaders = this.toolbarHeaders.value,
             students = this.teis.value
         )
@@ -45,7 +45,7 @@ class MarksViewModel
     init {
         _toolbarHeaders.update {
             it.copy(
-                title = "Marks",
+                title = "Performance",
                 subtitle = DateHelper.formatDateWithWeekDay(this.eventDate.value)
             )
         }
@@ -66,6 +66,14 @@ class MarksViewModel
 
     override fun setProgram(program: String) {
        setConfig(program)
+    }
+
+    fun loadSubjects(stage: String) {
+        viewModelScope.launch {
+            viewModelState.update {
+                it.copy(subjects = repository.getSubjects(stage))
+            }
+        }
     }
 
     override fun setDate(date: String) {
@@ -92,7 +100,7 @@ class MarksViewModel
     private fun getFields(stage: String) {
         viewModelScope.launch {
             viewModelState.update {
-                it.copy(marksFields = formRepositoryImpl.keyboardInputTypeByStage(stage))
+                it.copy(formFields = formRepositoryImpl.keyboardInputTypeByStage(stage))
             }
         }
     }
@@ -103,7 +111,7 @@ class MarksViewModel
         }
     }
 
-    fun marksState(
+    fun fieldState(
         key: String,
         dataElement: String,
         value: String,
@@ -111,7 +119,7 @@ class MarksViewModel
     ) {
         val junkData = mutableListOf<Field>()
 
-        val formState = viewModelState.value.marksState
+        val formState = viewModelState.value.fieldsState
 
         if (formState.isNotEmpty()) {
             junkData.addAll(formState)
@@ -142,7 +150,7 @@ class MarksViewModel
         }
 
         viewModelState.update {
-            it.copy(marksState = junkData)
+            it.copy(fieldsState = junkData)
         }
     }
 }
