@@ -36,7 +36,7 @@ fun SubjectScreen(
     state: SubjectUIState,
     onBack: () -> Unit,
     onFilterClick: (String) -> Unit,
-    onClick: (String) -> Unit
+    onClick: (String, String) -> Unit
 ) {
 
     var displayFilters by remember { mutableStateOf(true) }
@@ -108,7 +108,7 @@ fun SubjectScreen(
                     items(state.subjects) { subject ->
                         SubjectItem(
                             displayName = subject.displayName ?: "-",
-                            onClick = { onClick.invoke(subject.uid) }
+                            onClick = { onClick.invoke(subject.uid, subject.displayName ?: "-") }
                         )
                     }
                 }
