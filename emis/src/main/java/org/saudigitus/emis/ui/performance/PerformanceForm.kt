@@ -1,4 +1,4 @@
-package org.saudigitus.emis.ui.marks
+package org.saudigitus.emis.ui.performance
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -22,7 +22,7 @@ import org.saudigitus.emis.ui.form.FormField
 import org.saudigitus.emis.ui.form.InputField
 
 @Composable
-fun MarksForm(
+fun PerformanceForm(
     modifier: Modifier = Modifier,
     state: List<Field>,
     key: String,
