@@ -11,16 +11,18 @@ import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import dagger.hilt.android.AndroidEntryPoint
 import org.dhis2.commons.Constants
 import org.saudigitus.emis.ui.attendance.AttendanceScreen
 import org.saudigitus.emis.ui.attendance.AttendanceViewModel
 import org.saudigitus.emis.ui.home.HomeScreen
-import org.saudigitus.emis.ui.marks.MarksScreen
-import org.saudigitus.emis.ui.marks.MarksViewModel
+import org.saudigitus.emis.ui.performance.PerformanceScreen
+import org.saudigitus.emis.ui.performance.PerformanceViewModel
 import org.saudigitus.emis.ui.subjects.SubjectScreen
 import org.saudigitus.emis.ui.subjects.SubjectViewModel
 import org.saudigitus.emis.ui.teis.TeiScreen
@@ -74,38 +76,53 @@ class MainActivity : FragmentActivity() {
 
                             AttendanceScreen(attendanceViewModel, navController::navigateUp)
                         }
-                        composable(AppRoutes.PERFORMANCE_ROUTE) {
-                            val marksViewModel = hiltViewModel<MarksViewModel>()
-                            val uiState by marksViewModel.uiState.collectAsStateWithLifecycle()
-                            val infoCard by marksViewModel.infoCard.collectAsStateWithLifecycle()
-
-                            marksViewModel.setProgram(intent?.extras?.getString(Constants.PROGRAM_UID) ?: "")
-                            marksViewModel.setTeis(
-                                viewModel.teis.collectAsStateWithLifecycle().value,
-                                marksViewModel::updateTEISList
+                        composable(
+                            route = "${AppRoutes.PERFORMANCE_ROUTE}/{stage}/{subjectName}",
+                            arguments = listOf(
+                                navArgument("stage") {
+                                    type = NavType.StringType
+                                },
+                                navArgument("subjectName") {
+                                    type = NavType.StringType
+                                },
                             )
-                            marksViewModel.setInfoCard(viewModel.infoCard.collectAsStateWithLifecycle().value)
+                        ) {
+                            val performanceViewModel = hiltViewModel<PerformanceViewModel>()
+                            val uiState by performanceViewModel.uiState.collectAsStateWithLifecycle()
+                            val infoCard by performanceViewModel.infoCard.collectAsStateWithLifecycle()
 
-                            MarksScreen(
+                            performanceViewModel.setProgram(intent?.extras?.getString(Constants.PROGRAM_UID) ?: "")
+                            performanceViewModel.loadSubjects(it.arguments?.getString("stage") ?: "")
+                            performanceViewModel.setTeis(
+                                viewModel.teis.collectAsStateWithLifecycle().value,
+                                performanceViewModel::updateTEISList
+                            )
+                            performanceViewModel.setInfoCard(viewModel.infoCard.collectAsStateWithLifecycle().value)
+
+                            PerformanceScreen(
                                 state = uiState,
                                 onNavBack = navController::navigateUp,
                                 infoCard = infoCard,
-                                setMarksState = marksViewModel::marksState,
-                                setDate = marksViewModel::setDate,
-                                onNext = marksViewModel::onClickNext,
-                                onSave = marksViewModel::save
+                                defaultSelection = it.arguments?.getString("subjectName") ?: "",
+                                setMarksState = performanceViewModel::fieldState,
+                                setDate = performanceViewModel::setDate,
+                                onNext = performanceViewModel::onClickNext,
+                                onSave = performanceViewModel::save
                             )
                         }
                         composable(AppRoutes.SUBJECT_ROUTE) {
                             val subjectViewModel = hiltViewModel<SubjectViewModel>()
                             val state by subjectViewModel.uiState.collectAsStateWithLifecycle()
+                            val stage by subjectViewModel.programStage.collectAsStateWithLifecycle()
                             subjectViewModel.setConfig(intent?.extras?.getString(Constants.PROGRAM_UID) ?: "")
 
                             SubjectScreen(
                                 state = state,
                                 onBack = navController::navigateUp,
                                 onFilterClick = subjectViewModel::performOnFilterClick,
-                                onClick = subjectViewModel::performOnClick
+                                onClick = { _, subjectName ->
+                                    navController.navigate("${AppRoutes.PERFORMANCE_ROUTE}/$stage/$subjectName")
+                                }
                             )
                         }
                     }
