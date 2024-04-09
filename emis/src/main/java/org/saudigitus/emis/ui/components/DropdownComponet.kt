@@ -37,6 +37,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
@@ -52,7 +53,9 @@ data class Item(
     val id: String,
     val itemName: String,
     val code: String? = null
-)
+) {
+    override fun toString() =  itemName
+}
 
 data class DropdownState(
     val filterType: FilterType,
@@ -164,13 +167,15 @@ fun launchOuTreeSelector(
 }
 
 @Composable
-fun DropDown(
+fun <T>DropDown(
     modifier: Modifier = Modifier,
     placeholder: String,
     leadingIcon: ImageVector,
-    data: List<Item>?,
+    trailingIcon: ImageVector? = null,
+    data: List<T>?,
     selectedItemName: String = "",
-    onItemClick: (Item) -> Unit
+    elevation: Dp = 2.dp,
+    onItemClick: (T) -> Unit
 ) {
     var selectedItemIndex by remember { mutableStateOf(-1) }
     var selectedItem by remember { mutableStateOf(selectedItemName) }
@@ -183,13 +188,17 @@ fun DropDown(
     if (selectedItemIndex > 0 && onClearSelection) {
         selectedItemIndex = 0
         onClearSelection = false
-        selectedItem = data?.get(selectedItemIndex)!!.itemName
+        selectedItem = "${data?.get(selectedItemIndex)}"
     }
 
     if (selectedItemName.isNotEmpty()) {
-        val item = data?.find { it.itemName == selectedItemName }
+        val item = data?.find { "$it" == selectedItemName }
         selectedItemIndex = data?.indexOf(item) ?: -1
-        selectedItem = item?.itemName ?: ""
+        selectedItem = item.toString().ifEmpty { "" }
+
+        if (item != null) {
+            onItemClick.invoke(item)
+        }
     }
 
     val paddingValue = if (selectedItemIndex >= 0) {
@@ -214,7 +223,7 @@ fun DropDown(
                     textFieldSize = coordinates.size.toSize()
                 }
                 .shadow(
-                    elevation = 2.dp,
+                    elevation = elevation,
                     ambientColor = Color.Black.copy(alpha = 0.1f),
                     shape = RoundedCornerShape(30.dp),
                     clip = false
@@ -237,15 +246,22 @@ fun DropDown(
             },
             trailingIcon = {
                 IconButton(onClick = { expand = !expand }) {
-
-                    Icon(
-                        imageVector = if (!expand)
-                            Icons.Default.ArrowDropDown
-                        else
-                            Icons.Default.ArrowDropUp,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+                    if (trailingIcon != null) {
+                        Icon(
+                            imageVector = trailingIcon,
+                            contentDescription = null,
+                            tint = Color(0xFF2C98F0)
+                        )
+                    } else {
+                        Icon(
+                            imageVector = if (!expand)
+                                Icons.Default.ArrowDropDown
+                            else
+                                Icons.Default.ArrowDropUp,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             },
             interactionSource = interactionSource,
@@ -280,7 +296,7 @@ fun DropDown(
                             .padding(paddingValue),
                         text = {
                             Text(
-                                text = item.itemName,
+                                text = "$item",
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 softWrap = true,
@@ -292,13 +308,13 @@ fun DropDown(
                         onClick = {
                             onItemClick(item)
                             expand = !expand
-                            selectedItem = item.itemName
+                            selectedItem = "$item"
                             selectedItemIndex = index
                         },
                         leadingIcon = {
                             Icon(
                                 imageVector = leadingIcon,
-                                contentDescription = item.itemName,
+                                contentDescription = "$item",
                                 tint = Color(0xFF2C98F0)
                             )
                         }

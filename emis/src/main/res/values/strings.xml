@@ -24,4 +24,5 @@
     <string name="select_term">Select term</string>
     <string name="absenteeism">Absenteeism</string>
     <string name="performance">Performance</string>
+    <string name="subject">Subject</string>
 </resources>

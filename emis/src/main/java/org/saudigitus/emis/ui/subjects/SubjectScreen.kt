@@ -1,15 +1,16 @@
 package org.saudigitus.emis.ui.subjects
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Pin
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -25,8 +26,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import org.dhis2.commons.resources.ColorUtils
 import org.saudigitus.emis.R
-import org.saudigitus.emis.ui.components.DropDown
+import org.saudigitus.emis.ui.components.DetailsWithOptions
+import org.saudigitus.emis.ui.components.InfoCard
 import org.saudigitus.emis.ui.components.Toolbar
 import org.saudigitus.emis.ui.components.ToolbarActionState
 
@@ -36,10 +39,12 @@ fun SubjectScreen(
     state: SubjectUIState,
     onBack: () -> Unit,
     onFilterClick: (String) -> Unit,
-    onClick: (String) -> Unit
+    infoCard: InfoCard,
+    onClick: (String, String) -> Unit
 ) {
 
     var displayFilters by remember { mutableStateOf(true) }
+    var selected by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = {
@@ -70,21 +75,6 @@ fun SubjectScreen(
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start
         ) {
-            AnimatedVisibility(visible = displayFilters) {
-                Column(
-                    modifier = Modifier.padding(bottom = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top),
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    DropDown(
-                        placeholder = stringResource(R.string.select_term),
-                        leadingIcon = Icons.Default.Pin,
-                        data = state.filters,
-                        selectedItemName = state.filters.getOrNull(0)?.itemName ?: "",
-                        onItemClick = { onFilterClick.invoke(it.id) }
-                    )
-                }
-            }
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -101,6 +91,18 @@ fun SubjectScreen(
                 verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
                 horizontalAlignment = Alignment.Start
             ) {
+                DetailsWithOptions(
+                    modifier = Modifier.fillMaxWidth(),
+                    infoCard = infoCard,
+                    placeholder = stringResource(R.string.select_term),
+                    leadingIcon = Icons.Default.Event,
+                    data = state.filters,
+                    defaultSelection = state.filters.getOrNull(0)?.itemName ?: "",
+                    onItemClick = {
+                        selected = it.itemName
+                        onFilterClick.invoke(it.id)
+                    }
+                )
                 LazyColumn(
                     modifier = Modifier.fillMaxSize()
                         .padding(vertical = 12.dp),
@@ -108,7 +110,11 @@ fun SubjectScreen(
                     items(state.subjects) { subject ->
                         SubjectItem(
                             displayName = subject.displayName ?: "-",
-                            onClick = { onClick.invoke(subject.uid) }
+                            attrValue = selected,
+                            color = if (subject.color != null) {
+                                Color(ColorUtils.parseColor(subject.color))
+                            } else null,
+                            onClick = { onClick.invoke(subject.uid, subject.displayName ?: "-") }
                         )
                     }
                 }

@@ -1,4 +1,4 @@
-package org.saudigitus.emis.ui.marks
+package org.saudigitus.emis.ui.performance
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.twotone.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -28,26 +29,29 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import org.hisp.dhis.android.core.common.ValueType
 import org.saudigitus.emis.R
+import org.saudigitus.emis.ui.components.DetailsWithOptions
 import org.saudigitus.emis.ui.components.InfoCard
 import org.saudigitus.emis.ui.components.MetadataItem
-import org.saudigitus.emis.ui.components.ShowCard
 import org.saudigitus.emis.ui.components.Toolbar
 import org.saudigitus.emis.ui.components.ToolbarActionState
 import org.saudigitus.emis.ui.theme.light_success
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MarksScreen(
-    state: MarksUiState,
+fun PerformanceScreen(
+    state: PerformanceUiState,
     onNavBack: () -> Unit,
     infoCard: InfoCard,
+    defaultSelection: String = "",
     setMarksState: (
         key: String,
         dataElement: String,
@@ -161,7 +165,16 @@ fun MarksScreen(
                 verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
                 horizontalAlignment = Alignment.Start
             ) {
-                ShowCard(infoCard)
+                DetailsWithOptions(
+                    modifier = Modifier.fillMaxWidth(),
+                    infoCard = infoCard,
+                    placeholder = stringResource(R.string.subject),
+                    leadingIcon = ImageVector.vectorResource(R.drawable.ic_category),
+                    trailingIcon = Icons.TwoTone.Edit,
+                    data = state.subjects,
+                    defaultSelection = defaultSelection,
+                    onItemClick = { _ -> }
+                )
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                 ) {
@@ -176,13 +189,13 @@ fun MarksScreen(
                             enableClickAction = true,
                             onClick = {}
                         ) {
-                            MarksForm(
+                            PerformanceForm(
                                 modifier = Modifier.fillMaxWidth(.35f)
                                     .align(Alignment.End),
-                                state = state.marksState,
+                                state = state.fieldsState,
                                 key = student.uid(),
-                                fields = state.marksFields,
-                                formData = state.marksData,
+                                fields = state.formFields,
+                                formData = state.formData,
                                 onNext = {
                                      onNext.invoke(
                                          student.uid(),
