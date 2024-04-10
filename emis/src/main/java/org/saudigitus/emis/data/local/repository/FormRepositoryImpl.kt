@@ -11,6 +11,7 @@ import org.hisp.dhis.android.core.common.ValueType
 import org.hisp.dhis.android.core.event.Event
 import org.hisp.dhis.android.core.event.EventCreateProjection
 import org.saudigitus.emis.data.local.FormRepository
+import org.saudigitus.emis.data.model.EventTuple
 import org.saudigitus.emis.data.model.Option
 import org.saudigitus.emis.data.model.Saving
 import org.saudigitus.emis.ui.form.FormData
@@ -69,28 +70,28 @@ class FormRepositoryImpl
     }
 
     override suspend fun save(
-        saving: Saving
+        eventTuple: EventTuple
     ): Unit = withContext(Dispatchers.IO) {
         try {
             val uid = eventUid(
-                saving.tei,
-                saving.ou,
-                saving.program,
-                saving.programStage,
-                saving.date
+                eventTuple.tei,
+                eventTuple.ou,
+                eventTuple.program,
+                eventTuple.programStage,
+                eventTuple.date
             ) ?: createEventProjection(
-                saving.tei,
-                saving.ou,
-                saving.program,
-                saving.programStage,
+                eventTuple.tei,
+                eventTuple.ou,
+                eventTuple.program,
+                eventTuple.programStage,
             )
 
             d2.trackedEntityModule().trackedEntityDataValues()
-                .value(uid, saving.rowAction.id)
-                .blockingSet(saving.rowAction.value)
+                .value(uid, eventTuple.rowAction.id)
+                .blockingSet(eventTuple.rowAction.value)
 
             val repository = d2.eventModule().events().uid(uid)
-            repository.setEventDate(Date.valueOf(saving.date))
+            repository.setEventDate(Date.valueOf(eventTuple.date))
 
             repository.blockingGet()
         } catch (e: Exception) {
@@ -99,10 +100,12 @@ class FormRepositoryImpl
     }
 
     override suspend fun keyboardInputTypeByStage(
-        stage: String
-    ): List<FormField> = withContext(Dispatchers.IO) {
+        stage: String,
+        dl: String
+    ) = withContext(Dispatchers.IO) {
         d2.programModule().programStageDataElements()
             .byProgramStage().eq(stage)
+            .byDataElement().eq(dl)
             .blockingGet()
             .map { stageDls ->
                 FormField(
