@@ -33,6 +33,7 @@ fun HomeItem(
     icon: Painter,
     label: String,
     syncTime: String,
+    enabled: Boolean = true,
     onClick: () -> Unit
 ) {
     Card(
@@ -40,6 +41,7 @@ fun HomeItem(
         border = BorderStroke(width = 0.85.dp, color = Color.LightGray.copy(.85f)),
         elevation = 3.dp,
         shape = RoundedCornerShape(16.dp),
+        enabled = enabled,
         onClick = onClick
     ) {
         Column(
