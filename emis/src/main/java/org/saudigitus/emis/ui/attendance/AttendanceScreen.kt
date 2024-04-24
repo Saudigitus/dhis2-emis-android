@@ -69,6 +69,7 @@ fun AttendanceScreen(
 
     var isAbsent by remember { mutableStateOf(false) }
     var isAttendanceCompleted by remember { mutableStateOf(false) }
+    var launchBulkAssign by remember { mutableStateOf(false) }
 
     var cachedTEIId by remember { mutableStateOf("") }
 
@@ -118,6 +119,13 @@ fun AttendanceScreen(
         }
     }
 
+    if (launchBulkAssign) {
+        BulkAssignComponent(
+            onDismissRequest = { launchBulkAssign = false },
+            onClear = {  }
+        )
+    }
+
     Scaffold(
         topBar = {
             Toolbar(
@@ -128,16 +136,14 @@ fun AttendanceScreen(
                     titleContentColor = Color.White,
                     actionIconContentColor = Color.White
                 ),
-                navigationAction = { onBack.invoke() },
+                navigationAction = onBack::invoke,
                 disableNavigation = false,
                 actionState = ToolbarActionState(
                     syncVisibility = false,
                     filterVisibility = false,
                     showCalendar = true
                 ),
-                calendarAction = {
-                    viewModel.setDate(it)
-                },
+                calendarAction = viewModel::setDate,
                 dateValidator = {
                     val date = DateHelper.stringToLocalDate(DateHelper.formatDate(it)!!)
 
@@ -239,7 +245,12 @@ fun AttendanceScreen(
                 verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
                 horizontalAlignment = Alignment.Start
             ) {
-                ShowCard(infoCard)
+                ShowCard(
+                    infoCard,
+                    false,
+                    enabledIconButton = attendanceStep == ButtonStep.HOLD_SAVING,
+                    onIconClick = { launchBulkAssign = true }
+                )
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                 ) {
