@@ -16,7 +16,7 @@ import org.saudigitus.emis.data.model.Registration
 import org.saudigitus.emis.ui.base.BaseViewModel
 import org.saudigitus.emis.ui.components.DropdownState
 import org.saudigitus.emis.ui.components.InfoCard
-import org.saudigitus.emis.ui.components.Item
+import org.saudigitus.emis.ui.components.DropdownItem
 import org.saudigitus.emis.ui.components.ToolbarHeaders
 import org.saudigitus.emis.ui.teis.FilterState
 import org.saudigitus.emis.ui.teis.FilterType
@@ -47,11 +47,11 @@ class HomeViewModel
     private val _toolbarHeader = MutableStateFlow(ToolbarHeaders(""))
     val toolbarHeader: StateFlow<ToolbarHeaders> = _toolbarHeader
 
-    private val _schoolOptions = MutableStateFlow<List<Item>>(emptyList())
-    val schoolOptions:  StateFlow<List<Item>> = _schoolOptions
+    private val _schoolOptions = MutableStateFlow<List<DropdownItem>>(emptyList())
+    val schoolOptions:  StateFlow<List<DropdownItem>> = _schoolOptions
 
-    private val _gradeOptions = MutableStateFlow<List<Item>>(emptyList())
-    val gradeOptions:  StateFlow<List<Item>> = _gradeOptions
+    private val _gradeOptions = MutableStateFlow<List<DropdownItem>>(emptyList())
+    val gradeOptions:  StateFlow<List<DropdownItem>> = _gradeOptions
 
 
     override fun setConfig(program: String) {
@@ -135,7 +135,7 @@ class HomeViewModel
         }
     }
 
-    fun setAcademicYear(academicYear: Item?) {
+    fun setAcademicYear(academicYear: DropdownItem?) {
         _filterState.update {
             it.copy(academicYear = academicYear)
         }
@@ -170,25 +170,19 @@ class HomeViewModel
         getTeis()
     }
 
-    fun setGrade(grade: Item?) {
+    fun setGrade(grade: DropdownItem?) {
         _filterState.update {
             it.copy(grade = grade)
         }
         getTeis()
     }
 
-    fun setSection(section: Item?) {
+    fun setSection(section: DropdownItem?) {
         _filterState.update {
             it.copy(section = section)
         }
         getTeis()
     }
 
-    private suspend fun options(uid: String) = repository.getOptions(uid).map {
-        Item(
-            id = it.uid(),
-            itemName =  "${it.displayName()}",
-            code = it.code()
-        )
-    }
+    private suspend fun options(uid: String) = repository.getOptions(uid)
 }

@@ -1,13 +1,13 @@
 package org.saudigitus.emis.ui.teis
 
 import org.saudigitus.emis.data.model.OU
-import org.saudigitus.emis.ui.components.Item
+import org.saudigitus.emis.ui.components.DropdownItem
 
 data class FilterState(
-    val academicYear: Item? = null,
+    val academicYear: DropdownItem? = null,
     val school: OU? = null,
-    val grade: Item? = null,
-    val section: Item? = null
+    val grade: DropdownItem? = null,
+    val section: DropdownItem? = null
 ) {
     fun isNull() = academicYear == null &&
     school == null && grade == null &&
