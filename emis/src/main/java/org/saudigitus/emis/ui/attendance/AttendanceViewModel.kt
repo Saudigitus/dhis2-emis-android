@@ -3,6 +3,7 @@ package org.saudigitus.emis.ui.attendance
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -114,14 +115,13 @@ class AttendanceViewModel
         date: String? = DateHelper.formatDate(DateUtils.getInstance().today.time)
     ) {
         teis.collect {
-            val teiKeys = it.map { teiModel -> teiModel.tei.uid() }
             try {
                 _attendanceStatus.value = repository.getAttendanceEvent(
                     program = program.value,
                     programStage = datastoreAttendance.value?.programStage ?: "",
                     dataElement = datastoreAttendance.value?.status ?: "",
                     reasonDataElement = datastoreAttendance.value?.absenceReason ?: "",
-                    teis = teiKeys,
+                    teis = teiUIds.value,
                     date = date.toString()
                 )
 
@@ -196,12 +196,32 @@ class AttendanceViewModel
         }
     }
 
+    fun bulkAttendance(
+        index: Int,
+        value: String,
+        reasonOfAbsence: String? = null,
+    ) {
+        viewModelScope.launch(Dispatchers.Default) {
+            teiUIds.value.forEach {
+                setAttendance(
+                    index = index,
+                    ou = ou.value,
+                    tei = it,
+                    value = value,
+                    reasonOfAbsence = reasonOfAbsence,
+                    hasPersisted = false
+                )
+            }
+        }
+    }
+
     fun setAttendance(
         index: Int,
         ou: String,
         tei: String,
         value: String,
-        reasonOfAbsence: String? = null
+        reasonOfAbsence: String? = null,
+        hasPersisted: Boolean = true
     ) {
         _attendanceBtnState.value = getAttendanceUiState(index, tei, value)
 
@@ -223,13 +243,15 @@ class AttendanceViewModel
             attendanceCache.add(attendance)
         }
 
-        viewModelScope.launch {
-            repository.save(
-                ou = ou,
-                program = program.value,
-                programStage = datastoreAttendance.value?.programStage ?: "",
-                attendance = attendance
-            )
+        if (hasPersisted) {
+            viewModelScope.launch {
+                repository.save(
+                    ou = ou,
+                    program = program.value,
+                    programStage = datastoreAttendance.value?.programStage ?: "",
+                    attendance = attendance
+                )
+            }
         }
     }
 
