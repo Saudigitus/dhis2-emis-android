@@ -33,6 +33,7 @@ import org.saudigitus.emis.utils.DateHelper
 import org.saudigitus.emis.utils.Utils
 import org.saudigitus.emis.utils.eventsWithTrackedDataValues
 import org.saudigitus.emis.utils.optionByOptionSet
+import org.saudigitus.emis.utils.optionsByOptionSetAndCode
 import timber.log.Timber
 import java.sql.Date
 import javax.inject.Inject
@@ -148,13 +149,31 @@ class DataManagerImpl
         }
     }
 
+    override suspend fun getOptionsByCode(
+        dataElement: String,
+        codes: List<String>
+    ): List<DropdownItem> = withContext(Dispatchers.IO) {
+        val optionSet = d2.dataElement(dataElement).optionSetUid()
+
+        return@withContext d2.optionsByOptionSetAndCode(optionSet, codes).map {
+            DropdownItem(
+                id = it.uid(),
+                itemName = "${it.displayName()}",
+                code = it.code() ?: "",
+                sortOrder = it.sortOrder()
+            )
+        }
+    }
+
     override suspend fun getAttendanceOptions(
         program: String
     ) = withContext(Dispatchers.IO) {
         val config = getConfig(Constants.KEY)?.find { it.program == program }
             ?.attendance ?: return@withContext emptyList()
 
-        return@withContext getOptions("${config.status}").mapNotNull {
+        val optionsCode = config.attendanceStatus?.mapNotNull { it.code } ?: emptyList()
+
+        return@withContext getOptionsByCode("${config.status}", optionsCode).mapNotNull {
             val status = config.attendanceStatus?.find { status ->
                 status.code == it.code
             }

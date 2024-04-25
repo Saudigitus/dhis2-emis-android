@@ -1,6 +1,7 @@
 package org.saudigitus.emis.ui.attendance
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -16,13 +17,9 @@ import org.saudigitus.emis.data.model.dto.Absence
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
 import org.saudigitus.emis.ui.base.BaseViewModel
 import org.saudigitus.emis.ui.components.DropdownItem
-import org.saudigitus.emis.utils.Constants.ABSENT
 import org.saudigitus.emis.utils.Constants.KEY
-import org.saudigitus.emis.utils.Constants.LATE
-import org.saudigitus.emis.utils.Constants.PRESENT
 import org.saudigitus.emis.utils.DateHelper
 import org.saudigitus.emis.utils.Utils.WHITE
-import org.saudigitus.emis.utils.Utils.getColorByAttendanceType
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -170,7 +167,8 @@ class AttendanceViewModel
     private fun getAttendanceUiState(
         index: Int,
         tei: String,
-        value: String
+        value: String,
+        color: Color?
     ): MutableList<AttendanceActionButtonState> {
         val uiCache = attendanceBtnStateCache.find { it.btnId == tei }
 
@@ -178,7 +176,7 @@ class AttendanceViewModel
             index = index,
             tei = tei,
             attendanceValue = value,
-            containerColor = Color(getColorByAttendanceType(value))
+            containerColor = color ?: Color.LightGray
         )
 
         if (uiCache == null) {
@@ -222,9 +220,10 @@ class AttendanceViewModel
         tei: String,
         value: String,
         reasonOfAbsence: String? = null,
-        hasPersisted: Boolean = true
+        color: Color? = null,
+        hasPersisted: Boolean = true,
     ) {
-        _attendanceBtnState.value = getAttendanceUiState(index, tei, value)
+        _attendanceBtnState.value = getAttendanceUiState(index, tei, value, color)
 
         val attendance = AttendanceEntity(
             tei = tei,
@@ -325,12 +324,15 @@ class AttendanceViewModel
         }
     }
 
-    fun getSummary(): Triple<String, String, String> {
-        val presence = "${attendanceCache.count { it.value.equals(PRESENT, true) }}"
-        val lateness = "${attendanceCache.count { it.value.equals(LATE, true) }}"
-        val absence = "${attendanceCache.count { it.value.equals(ABSENT, true) }}"
+    fun getSummary(): List<Triple<Int, ImageVector?, Color?>> {
+        val summaries = attendanceOptions.value.map { Triple(it.code, it.icon, it.color) }
+            .map { status ->
+                val count = attendanceCache.count { it.value.equals(status.first, true) }
 
-        return Triple(presence, lateness, absence)
+                Triple(count, status.second, status.third)
+            }
+
+        return summaries
     }
 
     fun clearCache() {
