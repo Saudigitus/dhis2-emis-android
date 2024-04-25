@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -303,6 +304,25 @@ class AttendanceViewModel
         cache.add(absenceState.value)
 
         _absenceStateCache.value = cache
+    }
+
+    fun bulkSave() {
+        viewModelScope.launch {
+            async {
+                attendanceCache.forEach { attendance ->
+                    repository.save(
+                        ou = ou.value,
+                        program = program.value,
+                        programStage = datastoreAttendance.value?.programStage ?: "",
+                        attendance = attendance
+                    )
+                }
+            }.await()
+
+            clearCache()
+            setAttendanceStep(ButtonStep.EDITING)
+            attendanceEvents(eventDate.value)
+        }
     }
 
     fun getSummary(): Triple<String, String, String> {

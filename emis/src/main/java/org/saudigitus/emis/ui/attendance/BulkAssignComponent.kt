@@ -26,30 +26,29 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.launch
 import org.saudigitus.emis.R
-import org.saudigitus.emis.utils.Test.attendanceStatus
+import org.saudigitus.emis.utils.Utils
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BulkAssignComponent(
     onDismissRequest: () -> Unit,
+    attendanceOptions: List<AttendanceOption>,
     onAttendanceStatus: (Pair<Int, String>) -> Unit,
     onClear: () -> Unit,
-    show: () -> Unit
+    onCancel: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(false)
-    val scope = rememberCoroutineScope()
 
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
@@ -79,13 +78,13 @@ fun BulkAssignComponent(
             )
 
             LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                itemsIndexed(attendanceStatus) { index, status ->
+                itemsIndexed(attendanceOptions) { index, option ->
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(
                             containerColor = Color.White
                         ),
-                        onClick = { onAttendanceStatus.invoke(Pair(index, status.second)) }
+                        onClick = { onAttendanceStatus.invoke(Pair(index, option.code!!)) }
                     ) {
                         Row(
                             modifier = Modifier
@@ -95,17 +94,18 @@ fun BulkAssignComponent(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                painter = painterResource(id = status.first),
-                                contentDescription = status.second,
-                                tint = Color(status.third)
+                                imageVector = option.icon ?: ImageVector
+                                    .vectorResource(Utils.getIconByName("${option.iconName}")),
+                                contentDescription = "${option.name}",
+                                tint = option.color ?: Color.LightGray
                             )
                             Text(
-                                text = status.second,
+                                text = "${option.name}",
                                 maxLines = 1,
                                 softWrap = true,
                                 overflow = TextOverflow.Ellipsis,
                                 fontSize =  17.sp,
-                                color = Color(status.third),
+                                color = option.color ?: Color.LightGray,
                                 fontWeight = FontWeight.Bold
                             )
                         }
@@ -129,7 +129,7 @@ fun BulkAssignComponent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
-                    onClick = onClear
+                    onClick = onClear::invoke
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -159,11 +159,7 @@ fun BulkAssignComponent(
                         containerColor = Color.White,
                         contentColor = Color(0xFF2C98F0)
                     ),
-                    onClick = {
-                        scope.launch {
-                            sheetState.hide()
-                        }
-                    }
+                    onClick = onCancel::invoke
                 ) {
                     Text(
                         text = stringResource(R.string.cancel)

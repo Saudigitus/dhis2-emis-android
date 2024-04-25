@@ -70,6 +70,7 @@ fun AttendanceScreen(
     var isAbsent by remember { mutableStateOf(false) }
     var isAttendanceCompleted by remember { mutableStateOf(false) }
     var launchBulkAssign by remember { mutableStateOf(false) }
+    var isBulk by remember { mutableStateOf(false) }
 
     var cachedTEIId by remember { mutableStateOf("") }
 
@@ -104,8 +105,12 @@ fun AttendanceScreen(
             themeColor = Color(0xFF2C98F0),
             onCancel = { viewModel.setAttendanceStep(ButtonStep.HOLD_SAVING) }
         ) {
-            viewModel.clearCache()
-            viewModel.refreshOnSave()
+            if (isBulk) {
+                viewModel.bulkSave()
+            } else {
+                viewModel.clearCache()
+                viewModel.refreshOnSave()
+            }
             isAttendanceCompleted = true
         }
     }
@@ -122,14 +127,16 @@ fun AttendanceScreen(
     if (launchBulkAssign) {
         BulkAssignComponent(
             onDismissRequest = { launchBulkAssign = false },
+            attendanceOptions = attendanceOptions,
             onAttendanceStatus = { status ->
+                isBulk = true
                 viewModel.bulkAttendance(
                     index = status.first,
                     value = status.second.lowercase(),
                 )
             },
             onClear = viewModel::clearCache,
-            show = {}
+            onCancel = { launchBulkAssign = false }
         )
     }
 
