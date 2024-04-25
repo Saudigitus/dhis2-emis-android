@@ -105,6 +105,7 @@ class MainActivity : FragmentActivity() {
                             performanceViewModel.setTeis(teis, performanceViewModel::updateTEISList)
                             performanceViewModel.setInfoCard(viewModel.infoCard.collectAsStateWithLifecycle().value)
                             performanceViewModel.getFields(stage, dl)
+                            performanceViewModel.setDefault("${teis[0].tei.organisationUnit()}", stage, dl)
 
                             PerformanceScreen(
                                 state = uiState,

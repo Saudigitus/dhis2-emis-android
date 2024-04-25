@@ -13,14 +13,12 @@ import org.hisp.dhis.android.core.event.EventCreateProjection
 import org.saudigitus.emis.data.local.FormRepository
 import org.saudigitus.emis.data.model.EventTuple
 import org.saudigitus.emis.data.model.Option
-import org.saudigitus.emis.data.model.Saving
 import org.saudigitus.emis.ui.form.FormData
 import org.saudigitus.emis.ui.form.FormField
 import org.saudigitus.emis.utils.Constants
 import org.saudigitus.emis.utils.DateHelper
 import org.saudigitus.emis.utils.optionByOptionSet
 import timber.log.Timber
-import java.sql.Date
 import javax.inject.Inject
 
 class FormRepositoryImpl
@@ -57,15 +55,13 @@ class FormRepositoryImpl
         tei: String,
         ou: String,
         program: String,
-        programStage: String,
-        date: String
+        programStage: String
     ): String? {
         return d2.eventModule().events()
             .byTrackedEntityInstanceUids(listOf(tei))
             .byProgramUid().eq(program)
             .byOrganisationUnitUid().eq(ou)
             .byProgramStageUid().eq(programStage)
-            .byEventDate().eq(Date.valueOf(date))
             .one().blockingGet()?.uid()
     }
 
@@ -77,8 +73,7 @@ class FormRepositoryImpl
                 eventTuple.tei,
                 eventTuple.ou,
                 eventTuple.program,
-                eventTuple.programStage,
-                eventTuple.date
+                eventTuple.programStage
             ) ?: createEventProjection(
                 eventTuple.tei,
                 eventTuple.ou,
@@ -91,7 +86,6 @@ class FormRepositoryImpl
                 .blockingSet(eventTuple.rowAction.value)
 
             val repository = d2.eventModule().events().uid(uid)
-            repository.setEventDate(Date.valueOf(eventTuple.date))
 
             repository.blockingGet()
         } catch (e: Exception) {
@@ -134,56 +128,54 @@ class FormRepositoryImpl
     }
 
     @Throws(IllegalArgumentException::class)
-    override suspend fun getEventsByDate(
+    override suspend fun getEvents(
         ou: String,
         program: String,
         programStage: String,
         dataElement: String,
-        teis: List<String>,
-        date: String
+        teis: List<String>
     ): List<FormData> = withContext(Dispatchers.IO) {
         return@withContext d2.eventModule().events()
+            .byTrackedEntityInstanceUids(teis)
             .byProgramUid().eq(program)
-            .byOrganisationUnitUid().eq(ou)
             .byProgramStageUid().eq(programStage)
-            .byEventDate().eq(Date.valueOf(date))
             .withTrackedEntityDataValues()
             .blockingGet()
-            .flatMap {
-                eventsTransform(it) ?: listOf()
-            }.requireNoNulls()
+            .mapNotNull {
+                eventsTransform(it, dataElement)
+            }
     }
 
     private suspend fun eventsTransform(
-        event: Event
-    ): List<FormData>? {
+        event: Event,
+        dataElement: String
+    ): FormData? {
+        val dataValue = event.trackedEntityDataValues()?.find { it.dataElement() == dataElement }
         val tei = d2.enrollment(event.enrollment().toString()).trackedEntityInstance() ?: ""
-        val data = event.trackedEntityDataValues()
-            ?.map {
-                val dl = d2.dataElement(it.dataElement() ?: "")
-                val options = this.getOptions(dl.uid())
 
-                FormData(
-                    tei = tei,
-                    dataElement = dl.uid(),
-                    value = it.value(),
-                    date = DateHelper.formatDate(
-                        event.eventDate()?.time ?: DateUtils.getInstance().today.time
-                    ).toString(),
-                    valueType = dl.valueType(),
-                    hasOptions = options.isNotEmpty(),
-                    itemOptions = if (options.isNotEmpty()) {
-                        val opt = options.find { option -> option.code() == it.value() }
+        val dl = d2.dataElement(dataElement)
+        val options = this.getOptions(dataElement)
 
-                        Option(
-                            uid = opt?.uid() ?: "",
-                            code = opt?.code(),
-                            displayName = opt?.displayName()
-                        )
-                    } else null
-                )
-            }
+        return if (dataValue != null) {
+            FormData(
+                tei = tei,
+                dataElement = dl.uid(),
+                value = dataValue.value(),
+                date = DateHelper.formatDate(
+                    event.eventDate()?.time ?: DateUtils.getInstance().today.time
+                ).toString(),
+                valueType = dl.valueType(),
+                hasOptions = options.isNotEmpty(),
+                itemOptions = if (options.isNotEmpty()) {
+                    val opt = options.find { option -> option.code() == dataValue.value() }
 
-        return data
+                    Option(
+                        uid = opt?.uid() ?: "",
+                        code = opt?.code(),
+                        displayName = opt?.displayName()
+                    )
+                } else null
+            )
+        } else null
     }
 }

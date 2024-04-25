@@ -180,7 +180,6 @@ fun HomeScreen(
                             modifier = Modifier.fillMaxWidth(),
                             icon = painterResource(R.drawable.s_calendar),
                             label = stringResource(R.string.attendance),
-                            syncTime = "2 hours ago",
                             enabled = infoCard.hasData(),
                             onClick = { navTo.invoke(AppRoutes.ATTENDANCE_ROUTE) }
                         )
@@ -188,19 +187,8 @@ fun HomeScreen(
                     item {
                         HomeItem(
                             modifier = Modifier.fillMaxWidth(),
-                            icon = painterResource(R.drawable.s_calendar),
-                            label = stringResource(R.string.absenteeism),
-                            syncTime = "2 hours ago",
-                            enabled = infoCard.hasData(),
-                            onClick = { navTo.invoke(AppRoutes.ABSENTEEISM_ROUTE) }
-                        )
-                    }
-                    item {
-                        HomeItem(
-                            modifier = Modifier.fillMaxWidth(),
                             icon = painterResource(R.drawable.performance),
                             label = stringResource(R.string.performance),
-                            syncTime = "2 hours ago",
                             enabled = infoCard.hasData(),
                             onClick = { navTo.invoke(AppRoutes.SUBJECT_ROUTE) }
                         )

@@ -3,6 +3,7 @@ package org.saudigitus.emis.ui.performance
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -219,6 +220,7 @@ fun PerformanceScreen(
                 )
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 108.dp)
                 ) {
                     items(state.students) { student ->
                         MetadataItem(
