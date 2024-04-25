@@ -5,6 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -19,9 +20,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import org.saudigitus.emis.R
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -29,6 +32,7 @@ fun HomeItem(
     modifier: Modifier = Modifier,
     icon: Painter,
     label: String,
+    syncTime: String,
     enabled: Boolean = true,
     onClick: () -> Unit
 ) {
@@ -57,6 +61,15 @@ fun HomeItem(
                     contentDescription = label
                 )
 
+                Text(
+                    text = label,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black.copy(.75f),
+                    fontSize = MaterialTheme.typography.titleMedium.fontSize,
+                    maxLines = 2,
+                    softWrap = true,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
             Divider(
                 modifier = Modifier.fillMaxWidth()
@@ -71,13 +84,16 @@ fun HomeItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = label,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black.copy(.75f),
-                    fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                    maxLines = 2,
+                    text = syncTime,
+                    color = Color.Black.copy(.65f),
                     softWrap = true,
                     overflow = TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.size(16.dp))
+                Image(
+                    modifier = Modifier.size(24.dp),
+                    painter = painterResource(R.drawable.ic_sync_green),
+                    contentDescription = syncTime
                 )
             }
         }

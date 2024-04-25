@@ -21,12 +21,12 @@ import org.dhis2.commons.Constants
 import org.saudigitus.emis.ui.attendance.AttendanceScreen
 import org.saudigitus.emis.ui.attendance.AttendanceViewModel
 import org.saudigitus.emis.ui.home.HomeScreen
+import org.saudigitus.emis.ui.home.HomeViewModel
 import org.saudigitus.emis.ui.performance.PerformanceScreen
 import org.saudigitus.emis.ui.performance.PerformanceViewModel
 import org.saudigitus.emis.ui.subjects.SubjectScreen
 import org.saudigitus.emis.ui.subjects.SubjectViewModel
 import org.saudigitus.emis.ui.teis.TeiScreen
-import org.saudigitus.emis.ui.home.HomeViewModel
 import org.saudigitus.emis.ui.theme.EMISAndroidTheme
 
 @AndroidEntryPoint
@@ -84,8 +84,11 @@ class MainActivity : FragmentActivity() {
                             AttendanceScreen(attendanceViewModel, navController::navigateUp)
                         }
                         composable(
-                            route = "${AppRoutes.PERFORMANCE_ROUTE}/{stage}/{dataElement}/{subjectName}",
+                            route = "${AppRoutes.PERFORMANCE_ROUTE}/{ou}/{stage}/{dataElement}/{subjectName}",
                             arguments = listOf(
+                                navArgument("ou") {
+                                    type = NavType.StringType
+                                },
                                 navArgument("stage") {
                                     type = NavType.StringType
                                 },
@@ -106,13 +109,15 @@ class MainActivity : FragmentActivity() {
 
                             val stage = it.arguments?.getString("stage") ?: ""
                             val dl = it.arguments?.getString("dataElement") ?: ""
+                            val ou = it.arguments?.getString("ou") ?: ""
 
+                            performanceViewModel.setOU(ou)
                             performanceViewModel.setProgram(intent?.extras?.getString(Constants.PROGRAM_UID) ?: "")
                             performanceViewModel.loadSubjects(stage)
                             performanceViewModel.setTeis(teis, performanceViewModel::updateTEISList)
                             performanceViewModel.setInfoCard(viewModel.infoCard.collectAsStateWithLifecycle().value)
                             performanceViewModel.getFields(stage, dl)
-                            performanceViewModel.setDefault("${teis[0].tei.organisationUnit()}", stage, dl)
+                            performanceViewModel.setDefault(stage, dl)
 
                             PerformanceScreen(
                                 state = uiState,
@@ -129,12 +134,20 @@ class MainActivity : FragmentActivity() {
                                 onSave = performanceViewModel::save
                             )
                         }
-                        composable(AppRoutes.SUBJECT_ROUTE) {
+                        composable(
+                            route = "${AppRoutes.SUBJECT_ROUTE}/{ou}",
+                            arguments = listOf(
+                                navArgument("ou") {
+                                    type = NavType.StringType
+                                },
+                            )
+                        ) {
                             val subjectViewModel = hiltViewModel<SubjectViewModel>()
                             val state by subjectViewModel.uiState.collectAsStateWithLifecycle()
                             val stage by subjectViewModel.programStage.collectAsStateWithLifecycle()
                             val infoCard by viewModel.infoCard.collectAsStateWithLifecycle()
                             subjectViewModel.setProgram(intent?.extras?.getString(Constants.PROGRAM_UID) ?: "")
+                            val ou = it.arguments?.getString("ou") ?: ""
 
                             SubjectScreen(
                                 state = state,
@@ -142,7 +155,7 @@ class MainActivity : FragmentActivity() {
                                 onFilterClick = subjectViewModel::performOnFilterClick,
                                 infoCard = infoCard,
                                 onClick = { subjectId, subjectName ->
-                                    navController.navigate("${AppRoutes.PERFORMANCE_ROUTE}/$stage/$subjectId/$subjectName")
+                                    navController.navigate("${AppRoutes.PERFORMANCE_ROUTE}/$ou/$stage/$subjectId/$subjectName")
                                 }
                             )
                         }

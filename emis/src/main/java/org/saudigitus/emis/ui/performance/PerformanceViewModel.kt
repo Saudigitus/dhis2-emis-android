@@ -131,22 +131,19 @@ class PerformanceViewModel
     }
 
     fun setDefault(
-        ou: String,
         stage: String,
         dl: String
     ) {
         viewModelScope.launch {
-            val teiKey = teis.value.mapNotNull { st -> st.tei.uid() }
-
             viewModelState.update {
                 it.copy(
                     formData = formRepositoryImpl
                         .getEvents(
-                            ou = ou,
+                            ou = ou.value,
                             program = program.value,
                             programStage = stage,
                             dataElement = dl,
-                            teis = teiKey,
+                            teis = teiUIds.value,
                         )
                 )
             }
