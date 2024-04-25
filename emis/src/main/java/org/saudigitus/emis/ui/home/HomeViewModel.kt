@@ -166,7 +166,7 @@ class HomeViewModel
         _toolbarHeader.update {
             it.copy(subtitle = subtitle)
         }
-
+        setOU("${ou?.uid}")
         getTeis()
     }
 
