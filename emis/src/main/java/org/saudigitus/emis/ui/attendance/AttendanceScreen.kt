@@ -122,7 +122,14 @@ fun AttendanceScreen(
     if (launchBulkAssign) {
         BulkAssignComponent(
             onDismissRequest = { launchBulkAssign = false },
-            onClear = {  }
+            onAttendanceStatus = { status ->
+                viewModel.bulkAttendance(
+                    index = status.first,
+                    value = status.second.lowercase(),
+                )
+            },
+            onClear = viewModel::clearCache,
+            show = {}
         )
     }
 
