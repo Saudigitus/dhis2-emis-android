@@ -57,7 +57,6 @@ class MainActivity : FragmentActivity() {
                             HomeScreen(
                                 viewModel = viewModel,
                                 onBack = { finish() },
-                                navToTeiList = { navController.navigate(AppRoutes.TEI_LIST_ROUTE) },
                                 navTo = navController::navigate
                             )
                         }
@@ -67,12 +66,20 @@ class MainActivity : FragmentActivity() {
                                 onBack = navController::navigateUp,
                             )
                         }
-                        composable(AppRoutes.ATTENDANCE_ROUTE) {
+                        composable(
+                            route = "${AppRoutes.ATTENDANCE_ROUTE}/{ou}",
+                            arguments = listOf(
+                                navArgument("ou") {
+                                    type = NavType.StringType
+                                }
+                            )
+                        ) {
                             val attendanceViewModel: AttendanceViewModel = hiltViewModel()
 
                             attendanceViewModel.setProgram(intent?.extras?.getString(Constants.PROGRAM_UID) ?: "")
                             attendanceViewModel.setTeis(viewModel.teis.collectAsStateWithLifecycle().value)
                             attendanceViewModel.setInfoCard(viewModel.infoCard.collectAsStateWithLifecycle().value)
+                            attendanceViewModel.setOU(it.arguments?.getString("ou") ?: "")
 
                             AttendanceScreen(attendanceViewModel, navController::navigateUp)
                         }
