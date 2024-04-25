@@ -1,5 +1,7 @@
 package org.saudigitus.emis.ui.attendance
 
+import androidx.compose.ui.graphics.Color
+
 data class AttendanceActionButtonState(
     val btnIndex: Int = -1,
     val btnId: String? = null,
@@ -9,7 +11,7 @@ data class AttendanceActionButtonState(
 
 data class AttendanceButtonSettings(
     val buttonType: String? = null,
-    val containerColor: Long? = null,
+    val containerColor: Color? = null,
     val contentColor: Long? = null
 )
 

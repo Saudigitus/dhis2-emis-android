@@ -1,7 +1,10 @@
 package org.saudigitus.emis.ui.attendance
 
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -11,9 +14,8 @@ import org.saudigitus.emis.data.local.DataManager
 import org.saudigitus.emis.data.model.Attendance
 import org.saudigitus.emis.data.model.dto.Absence
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
-import org.saudigitus.emis.data.model.dto.withBtnSettings
 import org.saudigitus.emis.ui.base.BaseViewModel
-import org.saudigitus.emis.ui.components.Item
+import org.saudigitus.emis.ui.components.DropdownItem
 import org.saudigitus.emis.utils.Constants.ABSENT
 import org.saudigitus.emis.utils.Constants.KEY
 import org.saudigitus.emis.utils.Constants.LATE
@@ -21,9 +23,6 @@ import org.saudigitus.emis.utils.Constants.PRESENT
 import org.saudigitus.emis.utils.DateHelper
 import org.saudigitus.emis.utils.Utils.WHITE
 import org.saudigitus.emis.utils.Utils.getColorByAttendanceType
-import org.saudigitus.emis.utils.Utils.getColorByIconName
-import org.saudigitus.emis.utils.Utils.getDrawableIdByName
-import org.saudigitus.emis.utils.Utils.getIconByName
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -42,8 +41,8 @@ class AttendanceViewModel
     private val _attendanceStatus = MutableStateFlow<List<AttendanceEntity>>(emptyList())
     val attendanceStatus: StateFlow<List<AttendanceEntity>> = _attendanceStatus
 
-    private val _reasonOfAbsence = MutableStateFlow<List<Item>>(emptyList())
-    val reasonOfAbsence: StateFlow<List<Item>> = _reasonOfAbsence
+    private val _reasonOfAbsence = MutableStateFlow<List<DropdownItem>>(emptyList())
+    val reasonOfAbsence: StateFlow<List<DropdownItem>> = _reasonOfAbsence
 
     private val _attendanceStep = MutableStateFlow(ButtonStep.EDITING)
     val attendanceStep: StateFlow<ButtonStep> = _attendanceStep
@@ -76,7 +75,7 @@ class AttendanceViewModel
             if (config != null) {
                 _datastoreAttendance.value = config.attendance
             }
-            getAttendanceOptions(datastoreAttendance.value?.status ?: "")
+            getAttendanceOptions(program)
             getReasonForAbsence(datastoreAttendance.value?.absenceReason ?: "")
         }
     }
@@ -107,46 +106,25 @@ class AttendanceViewModel
         }
     }
 
-    private suspend fun getAttendanceOptions(dataElement: String) {
-        _attendanceOptions.value = repository.getOptions(dataElement).map {
-            val status = datastoreAttendance.value?.attendanceStatus?.find { status ->
-                status.code == it.code()
-            } ?: return
-
-            AttendanceOption(
-                code = it.code(),
-                name = it.displayName() ?: "",
-                dataElement = dataElement,
-                icon = getIconByName("${status.icon}"),
-                hexColor = getColorByIconName("${status.icon}"),
-                actionOrder = it.sortOrder()
-            )
-        }.sortedWith(compareBy { it.actionOrder })
+    private suspend fun getAttendanceOptions(
+        program: String
+    ) {
+        _attendanceOptions.value = repository.getAttendanceOptions(program)
     }
 
     private suspend fun attendanceEvents(
         date: String? = DateHelper.formatDate(DateUtils.getInstance().today.time)
     ) {
         teis.collect {
-            val teiKeys = it.map { teiModel -> teiModel.tei.uid() }
             try {
                 _attendanceStatus.value = repository.getAttendanceEvent(
                     program = program.value,
                     programStage = datastoreAttendance.value?.programStage ?: "",
                     dataElement = datastoreAttendance.value?.status ?: "",
                     reasonDataElement = datastoreAttendance.value?.absenceReason ?: "",
-                    teis = teiKeys,
+                    teis = teiUIds.value,
                     date = date.toString()
-                ).map { attendanceEntity ->
-                    val status = datastoreAttendance.value?.attendanceStatus?.find { status ->
-                        status.code == attendanceEntity.value
-                    } ?: return@collect
-
-                    attendanceEntity.withBtnSettings(
-                        icon = getDrawableIdByName("${status.icon}"),
-                        iconColor = getColorByIconName("${status.icon}")
-                    )
-                }
+                )
 
                 clearCache()
                 attendanceCache.addAll(attendanceStatus.value)
@@ -166,7 +144,7 @@ class AttendanceViewModel
                 attendanceValue = attendance.value,
                 containerColor = attendanceOptions.value.find {
                     it.code == attendance.value
-                }?.hexColor ?: return
+                }?.color ?: Color.Black
             )
         }.toMutableList()
 
@@ -177,7 +155,7 @@ class AttendanceViewModel
         index: Int,
         tei: String,
         attendanceValue: String,
-        containerColor: Long
+        containerColor: Color
     ) = AttendanceActionButtonState(
         btnIndex = index,
         btnId = tei,
@@ -200,7 +178,7 @@ class AttendanceViewModel
             index = index,
             tei = tei,
             attendanceValue = value,
-            containerColor = getColorByAttendanceType(value)
+            containerColor = Color(getColorByAttendanceType(value))
         )
 
         if (uiCache == null) {
@@ -215,11 +193,24 @@ class AttendanceViewModel
 
     private fun getReasonForAbsence(dataElement: String) {
         viewModelScope.launch {
-            _reasonOfAbsence.value = repository.getOptions(dataElement).map {
-                Item(
-                    id = it.uid(),
-                    itemName = "${it.displayName()}",
-                    code = it.code() ?: ""
+            _reasonOfAbsence.value = repository.getOptions(dataElement)
+        }
+    }
+
+    fun bulkAttendance(
+        index: Int,
+        value: String,
+        reasonOfAbsence: String? = null,
+    ) {
+        viewModelScope.launch(Dispatchers.Default) {
+            teiUIds.value.forEach {
+                setAttendance(
+                    index = index,
+                    ou = ou.value,
+                    tei = it,
+                    value = value,
+                    reasonOfAbsence = reasonOfAbsence,
+                    hasPersisted = false
                 )
             }
         }
@@ -230,7 +221,8 @@ class AttendanceViewModel
         ou: String,
         tei: String,
         value: String,
-        reasonOfAbsence: String? = null
+        reasonOfAbsence: String? = null,
+        hasPersisted: Boolean = true
     ) {
         _attendanceBtnState.value = getAttendanceUiState(index, tei, value)
 
@@ -252,13 +244,15 @@ class AttendanceViewModel
             attendanceCache.add(attendance)
         }
 
-        viewModelScope.launch {
-            repository.save(
-                ou = ou,
-                program = program.value,
-                programStage = datastoreAttendance.value?.programStage ?: "",
-                attendance = attendance
-            )
+        if (hasPersisted) {
+            viewModelScope.launch {
+                repository.save(
+                    ou = ou,
+                    program = program.value,
+                    programStage = datastoreAttendance.value?.programStage ?: "",
+                    attendance = attendance
+                )
+            }
         }
     }
 
@@ -310,6 +304,25 @@ class AttendanceViewModel
         cache.add(absenceState.value)
 
         _absenceStateCache.value = cache
+    }
+
+    fun bulkSave() {
+        viewModelScope.launch {
+            async {
+                attendanceCache.forEach { attendance ->
+                    repository.save(
+                        ou = ou.value,
+                        program = program.value,
+                        programStage = datastoreAttendance.value?.programStage ?: "",
+                        attendance = attendance
+                    )
+                }
+            }.await()
+
+            clearCache()
+            setAttendanceStep(ButtonStep.EDITING)
+            attendanceEvents(eventDate.value)
+        }
     }
 
     fun getSummary(): Triple<String, String, String> {

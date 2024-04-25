@@ -49,10 +49,11 @@ import org.saudigitus.emis.R
 import org.saudigitus.emis.data.model.OU
 import org.saudigitus.emis.ui.teis.FilterType
 
-data class Item(
+data class DropdownItem(
     val id: String,
     val itemName: String,
-    val code: String? = null
+    val code: String? = null,
+    val sortOrder: Int? = -1
 ) {
     override fun toString() =  itemName
 }
@@ -60,7 +61,7 @@ data class Item(
 data class DropdownState(
     val filterType: FilterType,
     val displayName: String,
-    val data: List<Item>
+    val data: List<DropdownItem>
 )
 
 @Composable
@@ -331,9 +332,9 @@ fun DropDownWithSelectionByCode(
     modifier: Modifier = Modifier,
     placeholder: String,
     leadingIcon: ImageVector,
-    data: List<Item>?,
+    data: List<DropdownItem>?,
     selectedCodeItem: String = "",
-    onItemClick: (Item) -> Unit
+    onItemClick: (DropdownItem) -> Unit
 ) {
     var selectedItemIndex by remember { mutableStateOf( -1) }
     var selectedItem by remember { mutableStateOf("") }

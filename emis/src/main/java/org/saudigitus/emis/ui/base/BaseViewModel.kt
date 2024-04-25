@@ -21,6 +21,9 @@ abstract class BaseViewModel(
     private val _teis = MutableStateFlow<List<SearchTeiModel>>(emptyList())
     val teis: StateFlow<List<SearchTeiModel>> = _teis
 
+    private val _teiUIds =  MutableStateFlow<List<String>>(emptyList())
+    protected val teiUIds: StateFlow<List<String>> =  _teiUIds
+
     protected val _toolbarHeaders = MutableStateFlow(
         ToolbarHeaders(
             title = "",
@@ -37,6 +40,9 @@ abstract class BaseViewModel(
 
     protected val _program = MutableStateFlow("")
     val program: StateFlow<String> = _program
+
+    protected val _ou = MutableStateFlow("")
+    val ou: StateFlow<String> = _ou
 
     private val _infoCard = MutableStateFlow(InfoCard())
     val infoCard: StateFlow<InfoCard> = _infoCard
@@ -56,8 +62,13 @@ abstract class BaseViewModel(
     abstract fun setDate(date: String)
     abstract fun save()
 
+    fun setOU(ou: String) {
+        _ou.value = ou
+    }
+
     fun setTeis(teis: List<SearchTeiModel>) {
         _teis.value = teis
+        _teiUIds.value = teis.mapNotNull { it.tei.uid() }
     }
 
     fun setTeis(
@@ -65,6 +76,7 @@ abstract class BaseViewModel(
         run: () -> Unit
     ) {
         _teis.value = teis
+        _teiUIds.value = teis.mapNotNull { it.tei.uid() }
         run()
     }
 

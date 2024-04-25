@@ -51,18 +51,18 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import org.saudigitus.emis.R
 import org.saudigitus.emis.ui.components.ActionButtons
-import org.saudigitus.emis.ui.components.Item
+import org.saudigitus.emis.ui.components.DropdownItem
 import org.saudigitus.emis.ui.theme.light_error
 import org.saudigitus.emis.ui.theme.light_success
 import org.saudigitus.emis.ui.theme.light_warning
 
 @Composable
 fun ReasonForAbsenceDialog(
-    reasons: List<Item>,
+    reasons: List<DropdownItem>,
     title: String,
     themeColor: Color,
     selectedItemCode: String? = null,
-    onItemClick: (Item) -> Unit,
+    onItemClick: (DropdownItem) -> Unit,
     onCancel: () -> Unit,
     onDone: () -> Unit
 ) {

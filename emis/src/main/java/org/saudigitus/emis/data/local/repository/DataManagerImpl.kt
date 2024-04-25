@@ -1,5 +1,6 @@
 package org.saudigitus.emis.data.local.repository
 
+import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.dhis2.Bindings.userFriendlyValue
@@ -8,12 +9,12 @@ import org.dhis2.commons.bindings.enrollment
 import org.dhis2.commons.data.SearchTeiModel
 import org.dhis2.commons.date.DateUtils
 import org.dhis2.commons.network.NetworkUtils
+import org.dhis2.commons.resources.ColorUtils
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.arch.repositories.scope.RepositoryScope
 import org.hisp.dhis.android.core.dataelement.DataElement
 import org.hisp.dhis.android.core.event.Event
 import org.hisp.dhis.android.core.event.EventCreateProjection
-import org.hisp.dhis.android.core.option.Option
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttribute
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttributeValue
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityInstance
@@ -24,15 +25,17 @@ import org.saudigitus.emis.data.model.EMISConfigItem
 import org.saudigitus.emis.data.model.ProgramStage
 import org.saudigitus.emis.data.model.Subject
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
-import org.saudigitus.emis.ui.components.Item
+import org.saudigitus.emis.data.model.dto.withBtnSettings
+import org.saudigitus.emis.ui.attendance.AttendanceOption
+import org.saudigitus.emis.ui.components.DropdownItem
 import org.saudigitus.emis.utils.Constants
 import org.saudigitus.emis.utils.DateHelper
+import org.saudigitus.emis.utils.Utils
 import org.saudigitus.emis.utils.eventsWithTrackedDataValues
 import org.saudigitus.emis.utils.optionByOptionSet
 import timber.log.Timber
 import java.sql.Date
 import javax.inject.Inject
-import kotlin.jvm.Throws
 
 class DataManagerImpl
 @Inject constructor(
@@ -132,10 +135,42 @@ class DataManagerImpl
 
     override suspend fun getOptions(
         dataElement: String
-    ): List<Option> = withContext(Dispatchers.IO) {
+    ): List<DropdownItem> = withContext(Dispatchers.IO) {
         val optionSet = d2.dataElement(dataElement).optionSetUid()
 
-        return@withContext d2.optionByOptionSet(optionSet)
+        return@withContext d2.optionByOptionSet(optionSet).map {
+            DropdownItem(
+                id = it.uid(),
+                itemName = "${it.displayName()}",
+                code = it.code() ?: "",
+                sortOrder = it.sortOrder()
+            )
+        }
+    }
+
+    override suspend fun getAttendanceOptions(
+        program: String
+    ) = withContext(Dispatchers.IO) {
+        val config = getConfig(Constants.KEY)?.find { it.program == program }
+            ?.attendance ?: return@withContext emptyList()
+
+        return@withContext getOptions("${config.status}").mapNotNull {
+            val status = config.attendanceStatus?.find { status ->
+                status.code == it.code
+            }
+
+            if (status != null) {
+                AttendanceOption(
+                    code = it.code,
+                    name = it.itemName,
+                    dataElement = "${config.status}",
+                    icon = Utils.dynamicIcons("${status.icon}"),
+                    iconName = "${status.icon}",
+                    color = Color(ColorUtils.parseColor("${status.color}")),
+                    actionOrder = it.sortOrder
+                )
+            } else null
+        }.sortedWith(compareBy { it.actionOrder })
     }
 
     override suspend fun getDataElement(uid: String): DataElement =
@@ -203,6 +238,9 @@ class DataManagerImpl
         teis: List<String>,
         date: String?
     ) = withContext(Dispatchers.IO) {
+        val config = getConfig(Constants.KEY)?.find { it.program == program }
+            ?.attendance ?: return@withContext emptyList()
+
         return@withContext d2.eventModule().events()
             .byTrackedEntityInstanceUids(teis)
             .byProgramUid().eq(program)
@@ -218,6 +256,17 @@ class DataManagerImpl
             .blockingGet()
             .mapNotNull {
                 eventTransform(it, dataElement, reasonDataElement)
+            }
+            .map { attendanceEntity ->
+                val status = config.attendanceStatus?.find { status ->
+                    status.code == attendanceEntity.value
+                }
+
+                attendanceEntity.withBtnSettings(
+                    icon = Utils.dynamicIcons("${status?.icon}"),
+                    iconName = "${status?.icon}",
+                    iconColor = Color(ColorUtils.parseColor("${status?.color}"))
+                )
             }
     }
 
@@ -259,7 +308,7 @@ class DataManagerImpl
             .byUid().`in`(stagesIds)
             .blockingGet()
             .mapNotNull {
-                Item(
+                DropdownItem(
                     id = it.uid(),
                     itemName = it.displayName() ?: "",
                     code = it.code()

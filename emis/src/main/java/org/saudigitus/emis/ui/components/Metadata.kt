@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Rocket
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.rounded.School
 import androidx.compose.material3.Card
@@ -21,6 +22,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -123,7 +125,8 @@ fun MetadataItem(
         horizontalAlignment = Alignment.Start
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
                 .padding(vertical = 8.dp, horizontal = 16.dp),
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
@@ -225,7 +228,10 @@ data class InfoCard(
 @Composable
 fun ShowCard(
     infoCard: InfoCard,
-    onClick: () -> Unit = {}
+    enableTEICount: Boolean = true,
+    enabledIconButton: Boolean =  true,
+    onClick: () -> Unit = {},
+    onIconClick: () -> Unit = {}
 ){
     Card (
         shape = RoundedCornerShape(0.dp),
@@ -262,7 +268,20 @@ fun ShowCard(
                         )
                     }
                 }
-                TEICountComponent(teiCount = infoCard.teiCount)
+                if (enableTEICount) {
+                    TEICountComponent(teiCount = infoCard.teiCount)
+                } else {
+                    IconButton(
+                        onClick = onIconClick,
+                        enabled = enabledIconButton
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Rocket,
+                            contentDescription = null,
+                            tint = Color(0xFF2C98F0)
+                        )
+                    }
+                }
             }
         }
     }

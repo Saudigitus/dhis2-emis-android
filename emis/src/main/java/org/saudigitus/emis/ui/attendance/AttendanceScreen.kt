@@ -69,6 +69,8 @@ fun AttendanceScreen(
 
     var isAbsent by remember { mutableStateOf(false) }
     var isAttendanceCompleted by remember { mutableStateOf(false) }
+    var launchBulkAssign by remember { mutableStateOf(false) }
+    var isBulk by remember { mutableStateOf(false) }
 
     var cachedTEIId by remember { mutableStateOf("") }
 
@@ -103,8 +105,12 @@ fun AttendanceScreen(
             themeColor = Color(0xFF2C98F0),
             onCancel = { viewModel.setAttendanceStep(ButtonStep.HOLD_SAVING) }
         ) {
-            viewModel.clearCache()
-            viewModel.refreshOnSave()
+            if (isBulk) {
+                viewModel.bulkSave()
+            } else {
+                viewModel.clearCache()
+                viewModel.refreshOnSave()
+            }
             isAttendanceCompleted = true
         }
     }
@@ -118,6 +124,22 @@ fun AttendanceScreen(
         }
     }
 
+    if (launchBulkAssign) {
+        BulkAssignComponent(
+            onDismissRequest = { launchBulkAssign = false },
+            attendanceOptions = attendanceOptions,
+            onAttendanceStatus = { status ->
+                isBulk = true
+                viewModel.bulkAttendance(
+                    index = status.first,
+                    value = status.second.lowercase(),
+                )
+            },
+            onClear = viewModel::clearCache,
+            onCancel = { launchBulkAssign = false }
+        )
+    }
+
     Scaffold(
         topBar = {
             Toolbar(
@@ -128,16 +150,14 @@ fun AttendanceScreen(
                     titleContentColor = Color.White,
                     actionIconContentColor = Color.White
                 ),
-                navigationAction = { onBack.invoke() },
+                navigationAction = onBack::invoke,
                 disableNavigation = false,
                 actionState = ToolbarActionState(
                     syncVisibility = false,
                     filterVisibility = false,
                     showCalendar = true
                 ),
-                calendarAction = {
-                    viewModel.setDate(it)
-                },
+                calendarAction = viewModel::setDate,
                 dateValidator = {
                     val date = DateHelper.stringToLocalDate(DateHelper.formatDate(it)!!)
 
@@ -239,7 +259,12 @@ fun AttendanceScreen(
                 verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
                 horizontalAlignment = Alignment.Start
             ) {
-                ShowCard(infoCard)
+                ShowCard(
+                    infoCard,
+                    false,
+                    enabledIconButton = attendanceStep == ButtonStep.HOLD_SAVING,
+                    onIconClick = { launchBulkAssign = true }
+                )
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                 ) {

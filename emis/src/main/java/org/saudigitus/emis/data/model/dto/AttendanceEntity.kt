@@ -1,5 +1,8 @@
 package org.saudigitus.emis.data.model.dto
 
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+
 data class AttendanceEntity(
     val tei: String,
     val dataElement: String,
@@ -11,12 +14,14 @@ data class AttendanceEntity(
 )
 
 data class Settings(
-    val icon: Int,
-    val iconColor: Long
+    val icon: ImageVector? = null,
+    val iconName: String?,
+    val iconColor: Color
 )
 fun AttendanceEntity.withBtnSettings(
-    icon: Int,
-    iconColor: Long
+    icon: ImageVector?,
+    iconName: String?,
+    iconColor: Color
 ) = AttendanceEntity(
     this.tei,
     this.dataElement,
@@ -26,6 +31,7 @@ fun AttendanceEntity.withBtnSettings(
     this.date,
     Settings(
         icon,
+        iconName,
         iconColor
     )
 )

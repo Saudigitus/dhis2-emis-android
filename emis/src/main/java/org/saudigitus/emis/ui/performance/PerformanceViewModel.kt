@@ -55,13 +55,15 @@ class PerformanceViewModel
             )
         }
         viewModelState.update { 
-            it.copy(toolbarHeaders = this.toolbarHeaders.value,)
+            it.copy(toolbarHeaders = this.toolbarHeaders.value)
         }
     }
 
     override fun setConfig(program: String) {}
 
-    override fun setProgram(program: String) {}
+    override fun setProgram(program: String) {
+        _program.value = program
+    }
 
     fun loadSubjects(stage: String) {
         viewModelScope.launch {
@@ -124,6 +126,26 @@ class PerformanceViewModel
             _programStage.value = stage
             viewModelState.update {
                 it.copy(formFields = formRepositoryImpl.keyboardInputTypeByStage(stage, dl))
+            }
+        }
+    }
+
+    fun setDefault(
+        stage: String,
+        dl: String
+    ) {
+        viewModelScope.launch {
+            viewModelState.update {
+                it.copy(
+                    formData = formRepositoryImpl
+                        .getEvents(
+                            ou = ou.value,
+                            program = program.value,
+                            programStage = stage,
+                            dataElement = dl,
+                            teis = teiUIds.value,
+                        )
+                )
             }
         }
     }

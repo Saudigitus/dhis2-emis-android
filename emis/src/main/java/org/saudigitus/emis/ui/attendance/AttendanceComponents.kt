@@ -1,17 +1,13 @@
 package org.saudigitus.emis.ui.attendance
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Help
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,6 +22,7 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
 import org.saudigitus.emis.utils.Utils.WHITE
+import org.saudigitus.emis.utils.Utils.getIconByName
 
 @Composable
 fun AttendanceItemState(
@@ -49,10 +46,12 @@ fun AttendanceItemState(
             if (attendance != null) {
 
                 Icon(
-                    imageVector = ImageVector.vectorResource(attendance.setting?.icon!!),
+                    imageVector = attendance.setting?.icon ?: ImageVector.vectorResource(
+                        getIconByName("${attendance.setting?.iconName}")
+                    ),
                     contentDescription = attendance.value,
                     modifier = Modifier.size(40.dp),
-                    tint = Color(attendance.setting.iconColor)
+                    tint = attendance.setting?.iconColor ?: Color.Black
                 )
             } else {
                 Icon(
@@ -99,21 +98,22 @@ fun AttendanceButtons(
                 },
                 modifier = Modifier.size(40.dp),
                 colors = IconButtonDefaults.iconButtonColors(
-                    containerColor = Color(
-                        getContainerColor(btnState, tei, action.code.toString(), selectedIndex, index)
-                    ),
-                    contentColor = Color(
+                    containerColor =
+                        getContainerColor(btnState, tei, action.code.toString(), selectedIndex, index),
+                    contentColor =
                         if (selectedIndex == index || btnState.isNotEmpty()) {
-                            getContentColor(btnState, tei, action.code.toString(), selectedIndex, index)
-                                ?: action.hexColor ?: WHITE
+                            getContentColor(btnState, tei, action.code.toString(), selectedIndex, index)?.let {
+                                Color(it)
+                            }
+                                ?: action.color ?: Color.White
                         } else {
-                            action.hexColor ?: WHITE
+                            action.color ?: Color.White
                         }
-                    )
+
                 )
             ) {
                 Icon(
-                    imageVector = ImageVector.vectorResource(action.icon),
+                    imageVector = action.icon ?: ImageVector.vectorResource(getIconByName("${action.iconName}")),
                     contentDescription = action.name
                 )
             }
@@ -127,16 +127,16 @@ private fun getContainerColor(
     code: String,
     selectedIndex: Int,
     itemIndex: Int
-): Long {
+): Color {
     val attendance = btnState.find { it.btnId == tei }
 
     return if (attendance != null &&
         attendance.buttonState?.buttonType == code &&
         (attendance.btnIndex == selectedIndex || attendance.btnIndex == itemIndex)
     ) {
-        attendance.buttonState.containerColor ?: 0L
+        attendance.buttonState.containerColor ?: Color.Black
     } else {
-        WHITE
+        Color.White
     }
 }
 

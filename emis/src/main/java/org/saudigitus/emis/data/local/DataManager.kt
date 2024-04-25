@@ -2,13 +2,13 @@ package org.saudigitus.emis.data.local
 
 import org.dhis2.commons.data.SearchTeiModel
 import org.hisp.dhis.android.core.dataelement.DataElement
-import org.hisp.dhis.android.core.option.Option
 import org.saudigitus.emis.data.model.CalendarConfig
 import org.saudigitus.emis.data.model.EMISConfigItem
 import org.saudigitus.emis.data.model.ProgramStage
 import org.saudigitus.emis.data.model.Subject
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
-import org.saudigitus.emis.ui.components.Item
+import org.saudigitus.emis.ui.attendance.AttendanceOption
+import org.saudigitus.emis.ui.components.DropdownItem
 
 interface DataManager {
 
@@ -22,7 +22,11 @@ interface DataManager {
 
     suspend fun getOptions(
         dataElement: String
-    ): List<Option>
+    ): List<DropdownItem>
+
+    suspend fun getAttendanceOptions(
+        program: String
+    ): List<AttendanceOption>
 
     suspend fun getDataElement(uid: String): DataElement
 
@@ -52,5 +56,5 @@ interface DataManager {
 
     suspend fun getSubjects(stage: String): List<Subject>
 
-    suspend fun getTerms(stages: List<ProgramStage>): List<Item>
+    suspend fun getTerms(stages: List<ProgramStage>): List<DropdownItem>
 }
