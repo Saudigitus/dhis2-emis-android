@@ -8,11 +8,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ClearAll
 import androidx.compose.material.icons.filled.Rocket
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -43,7 +44,9 @@ import org.saudigitus.emis.utils.Test.attendanceStatus
 @Composable
 fun BulkAssignComponent(
     onDismissRequest: () -> Unit,
+    onAttendanceStatus: (Pair<Int, String>) -> Unit,
     onClear: () -> Unit,
+    show: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(false)
     val scope = rememberCoroutineScope()
@@ -51,7 +54,8 @@ fun BulkAssignComponent(
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
-        containerColor = Color.White
+        containerColor = Color.White,
+        dragHandle = { BottomSheetDefaults.DragHandle() },
     ) {
         Column(
             modifier = Modifier
@@ -75,13 +79,13 @@ fun BulkAssignComponent(
             )
 
             LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                items(attendanceStatus) { status ->
+                itemsIndexed(attendanceStatus) { index, status ->
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(
                             containerColor = Color.White
                         ),
-                        onClick = {  }
+                        onClick = { onAttendanceStatus.invoke(Pair(index, status.second)) }
                     ) {
                         Row(
                             modifier = Modifier
