@@ -47,7 +47,6 @@ import org.saudigitus.emis.utils.getByType
 fun HomeScreen(
     viewModel: HomeViewModel,
     onBack: () -> Unit,
-    navToTeiList: () -> Unit,
     navTo: (route: String) -> Unit
 ) {
 
@@ -162,7 +161,7 @@ fun HomeScreen(
             ) {
                 ShowCard(
                     infoCard = infoCard,
-                    onClick = navToTeiList
+                    onClick = { navTo.invoke(AppRoutes.TEI_LIST_ROUTE) }
                 )
 
                 LazyVerticalGrid(
@@ -182,7 +181,7 @@ fun HomeScreen(
                             label = stringResource(R.string.attendance),
                             syncTime = "2 hours ago",
                             enabled = infoCard.hasData(),
-                            onClick = { navTo.invoke(AppRoutes.ATTENDANCE_ROUTE) }
+                            onClick = { navTo.invoke("${AppRoutes.ATTENDANCE_ROUTE}/${filterState.school?.uid}") }
                         )
                     }
                     item {
