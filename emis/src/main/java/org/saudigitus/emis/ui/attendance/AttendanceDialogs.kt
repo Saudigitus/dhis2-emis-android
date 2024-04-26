@@ -19,9 +19,7 @@ import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.filled.Help
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.Card
@@ -52,9 +50,6 @@ import androidx.compose.ui.window.DialogProperties
 import org.saudigitus.emis.R
 import org.saudigitus.emis.ui.components.ActionButtons
 import org.saudigitus.emis.ui.components.DropdownItem
-import org.saudigitus.emis.ui.theme.light_error
-import org.saudigitus.emis.ui.theme.light_success
-import org.saudigitus.emis.ui.theme.light_warning
 
 @Composable
 fun ReasonForAbsenceDialog(
@@ -132,7 +127,7 @@ fun ReasonForAbsenceDialog(
 @Composable
 fun AttendanceSummaryDialog(
     title: String,
-    data: Triple<String, String, String>,
+    data: List<Triple<Int, ImageVector?, Color?>>,
     themeColor: Color,
     onCancel: () -> Unit,
     onDone: () -> Unit
@@ -141,7 +136,8 @@ fun AttendanceSummaryDialog(
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = title,
-            modifier = Modifier.padding(horizontal = 16.dp)
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
                 .align(Alignment.Start),
             color = Color.Black.copy(.75f),
             softWrap = true,
@@ -166,23 +162,13 @@ fun AttendanceSummaryDialog(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            SummaryComponent(
-                summary = data.first,
-                containerColor = light_success,
-                icon = Icons.Outlined.Check
-            )
-
-            SummaryComponent(
-                summary = data.second,
-                containerColor = light_warning,
-                icon = Icons.Outlined.Schedule
-            )
-
-            SummaryComponent(
-                summary = data.third,
-                containerColor = light_error,
-                icon = Icons.Outlined.Close
-            )
+            for(summary in data) {
+                SummaryComponent(
+                    summary = "${summary.first}",
+                    containerColor = summary.third ?: Color.LightGray,
+                    icon = summary.second ?: Icons.Default.Help
+                )
+            }
         }
         Divider(
             modifier = Modifier.fillMaxWidth(),

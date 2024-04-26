@@ -3,9 +3,6 @@ package org.saudigitus.emis.utils
 import androidx.compose.material.icons.Icons
 import androidx.compose.ui.graphics.vector.ImageVector
 import org.saudigitus.emis.R
-import org.saudigitus.emis.utils.Constants.ABSENT
-import org.saudigitus.emis.utils.Constants.LATE
-import org.saudigitus.emis.utils.Constants.PRESENT
 
 object Utils {
     const val GREEN = 0xFF81C784
@@ -26,12 +23,5 @@ object Utils {
         method.invoke(null, Icons.Filled) as ImageVector
     } catch (_: Throwable) {
         null
-    }
-
-    fun getColorByAttendanceType(type: String) = when (type.lowercase()) {
-        PRESENT -> { GREEN }
-        LATE -> { ORANGE }
-        ABSENT -> { RED }
-        else -> WHITE
     }
 }

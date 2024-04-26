@@ -27,5 +27,17 @@ fun D2.optionByOptionSet(
     .blockingGet()
 
 
+fun D2.optionsByOptionSetAndCode(
+    optionSet: String,
+    codes: List<String>
+): List<Option> = optionModule()
+    .options()
+    .byCode().`in`(codes)
+    .byOptionSetUid().eq(optionSet)
+    .orderBySortOrder(RepositoryScope.OrderByDirection.ASC)
+    .blockingGet()
+
+
+
 fun List<DropdownState>.getByType(type: FilterType): DropdownState? =
     find { it.filterType == type}

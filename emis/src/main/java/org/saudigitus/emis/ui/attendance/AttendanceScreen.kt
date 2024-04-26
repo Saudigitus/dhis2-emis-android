@@ -289,13 +289,14 @@ fun AttendanceScreen(
                                     tei = student.tei.uid(),
                                     btnState = attendanceBtnState,
                                     actions = attendanceOptions
-                                ) { index, tei, attendance ->
+                                ) { index, tei, attendance, color ->
                                     if (attendance.lowercase() != ABSENT) {
                                         viewModel.setAttendance(
                                             index = index,
                                             ou = student.tei.organisationUnit() ?: "",
                                             tei = tei ?: student.tei.uid(),
-                                            value = attendance
+                                            value = attendance,
+                                            color = color
                                         )
                                     } else {
                                         cachedTEIId = tei ?: student.tei.uid()

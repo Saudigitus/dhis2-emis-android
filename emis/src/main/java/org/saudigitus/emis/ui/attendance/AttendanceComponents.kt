@@ -73,7 +73,8 @@ fun AttendanceButtons(
     onClick: (
         index: Int,
         tei: String?,
-        attendanceState: String
+        attendanceState: String,
+        color: Color
     ) -> Unit
 ) {
     var btnCode by remember { mutableStateOf("") }
@@ -93,7 +94,8 @@ fun AttendanceButtons(
                     onClick.invoke(
                         index,
                         tei,
-                        action.code ?: ""
+                        action.code ?: "",
+                        action.color ?: Color.LightGray
                     )
                 },
                 modifier = Modifier.size(40.dp),

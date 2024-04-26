@@ -9,7 +9,5 @@ object Constants {
     const val DEFAULT = "default"
 
     // attendance status
-    const val PRESENT = "present"
-    const val LATE = "late"
     const val ABSENT = "absent"
 }

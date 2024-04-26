@@ -24,6 +24,11 @@ interface DataManager {
         dataElement: String
     ): List<DropdownItem>
 
+    suspend fun getOptionsByCode(
+        dataElement: String,
+        codes: List<String>
+    ): List<DropdownItem>
+
     suspend fun getAttendanceOptions(
         program: String
     ): List<AttendanceOption>
