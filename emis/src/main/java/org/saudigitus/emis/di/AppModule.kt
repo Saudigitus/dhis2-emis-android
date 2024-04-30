@@ -16,6 +16,7 @@ import org.saudigitus.emis.data.local.FormRepository
 import org.saudigitus.emis.data.local.repository.DataManagerImpl
 import org.saudigitus.emis.data.local.repository.FavoriteConfigRepositoryImpl
 import org.saudigitus.emis.data.local.repository.FormRepositoryImpl
+import org.saudigitus.emis.service.RuleEngineRepository
 import javax.inject.Singleton
 
 @Module
@@ -30,10 +31,15 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun providesRuleEngineRepository(d2: D2) = RuleEngineRepository(d2)
+
+    @Provides
+    @Singleton
     fun providesDataManager(
         d2: D2,
-        networkUtils: NetworkUtils
-    ): DataManager = DataManagerImpl(d2, networkUtils)
+        networkUtils: NetworkUtils,
+        ruleEngineRepository: RuleEngineRepository
+    ): DataManager = DataManagerImpl(d2, networkUtils, ruleEngineRepository)
 
     @Provides
     @Singleton
