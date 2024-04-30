@@ -26,6 +26,7 @@ import org.saudigitus.emis.data.model.ProgramStage
 import org.saudigitus.emis.data.model.Subject
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
 import org.saudigitus.emis.data.model.dto.withBtnSettings
+import org.saudigitus.emis.service.RuleEngineRepository
 import org.saudigitus.emis.ui.attendance.AttendanceOption
 import org.saudigitus.emis.ui.components.DropdownItem
 import org.saudigitus.emis.utils.Constants
@@ -41,7 +42,8 @@ import javax.inject.Inject
 class DataManagerImpl
 @Inject constructor(
     val d2: D2,
-    val networkUtils: NetworkUtils
+    val networkUtils: NetworkUtils,
+    private val ruleRepository: RuleEngineRepository
 ) : DataManager {
     private fun getAttributeOptionCombo() =
         d2.categoryModule().categoryOptionCombos()
