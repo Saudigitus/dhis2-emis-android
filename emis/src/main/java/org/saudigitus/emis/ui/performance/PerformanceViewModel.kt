@@ -50,8 +50,7 @@ class PerformanceViewModel
     init {
         _toolbarHeaders.update {
             it.copy(
-                title = "Performance",
-                subtitle = DateHelper.formatDateWithWeekDay(this.eventDate.value)
+                title = "Performance"
             )
         }
         viewModelState.update { 
