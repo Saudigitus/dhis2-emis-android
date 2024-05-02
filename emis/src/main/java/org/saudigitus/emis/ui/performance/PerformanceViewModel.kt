@@ -7,12 +7,13 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
 import org.dhis2.form.model.ActionType
 import org.dhis2.form.model.RowAction
 import org.hisp.dhis.android.core.common.ValueType
 import org.saudigitus.emis.data.local.DataManager
-import org.saudigitus.emis.data.local.repository.FormRepositoryImpl
+import org.saudigitus.emis.data.local.FormRepository
 import org.saudigitus.emis.data.model.EventTuple
 import org.saudigitus.emis.ui.attendance.ButtonStep
 import org.saudigitus.emis.ui.base.BaseViewModel
@@ -24,7 +25,7 @@ import javax.inject.Inject
 class PerformanceViewModel
 @Inject constructor(
     private val repository: DataManager,
-    private val formRepositoryImpl: FormRepositoryImpl
+    private val formRepository: FormRepository
 ): BaseViewModel(repository) {
 
     private val viewModelState = MutableStateFlow(
@@ -86,7 +87,7 @@ class PerformanceViewModel
             if (buttonStep.value == ButtonStep.HOLD_SAVING) {
                 setButtonStep(ButtonStep.SAVING)
             } else {
-                cache.value.forEach { formRepositoryImpl.save(it) }
+                cache.value.forEach { formRepository.save(it) }
                 setButtonStep(ButtonStep.HOLD_SAVING)
             }
         }
@@ -124,7 +125,7 @@ class PerformanceViewModel
         viewModelScope.launch {
             _programStage.value = stage
             viewModelState.update {
-                it.copy(formFields = formRepositoryImpl.keyboardInputTypeByStage(stage, dl))
+                it.copy(formFields = formRepository.keyboardInputTypeByStage(stage, dl))
             }
         }
     }
@@ -134,9 +135,10 @@ class PerformanceViewModel
         dl: String
     ) {
         viewModelScope.launch {
+            _programStage.value = stage
             viewModelState.update {
                 it.copy(
-                    formData = formRepositoryImpl
+                    formData = formRepository
                         .getEvents(
                             ou = ou.value,
                             program = program.value,
@@ -149,10 +151,19 @@ class PerformanceViewModel
         }
     }
 
-    fun updateFields(dl: String) {
+    fun updateDataFields(dl: String) {
         viewModelScope.launch {
-            viewModelState.update {
-                it.copy(formFields = formRepositoryImpl.keyboardInputTypeByStage(programStage.value, dl))
+            viewModelState.updateAndGet {
+                it.copy(
+                    formData = formRepository
+                        .getEvents(
+                            ou = ou.value,
+                            program = program.value,
+                            programStage = programStage.value,
+                            dataElement = dl,
+                            teis = teiUIds.value,
+                        )
+                )
             }
         }
     }
