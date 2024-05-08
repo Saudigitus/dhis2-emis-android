@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
 import org.dhis2.form.model.ActionType
 import org.dhis2.form.model.RowAction
@@ -48,10 +47,17 @@ class PerformanceViewModel
     private val _programStage = MutableStateFlow("")
     private val programStage: StateFlow<String> = _programStage
 
+    private val _dataElement = MutableStateFlow("")
+    private val dataElement: StateFlow<String> = _dataElement
+
+    private val _saveOnce = MutableStateFlow(0)
+    private val saveOnce: StateFlow<Int> = _saveOnce
+
     init {
         _toolbarHeaders.update {
             it.copy(
-                title = "Performance"
+                title = "Performance",
+                subtitle = null
             )
         }
         viewModelState.update { 
@@ -107,7 +113,7 @@ class PerformanceViewModel
             programStage.value,
             tei,
             RowAction(
-                id = fieldData.first,
+                id = dataElement.value.ifEmpty { fieldData.first },
                 type = ActionType.ON_NEXT,
                 value = fieldData.second,
                 valueType = fieldData.third
@@ -134,26 +140,30 @@ class PerformanceViewModel
         stage: String,
         dl: String
     ) {
-        viewModelScope.launch {
-            _programStage.value = stage
-            viewModelState.update {
-                it.copy(
-                    formData = formRepository
-                        .getEvents(
-                            ou = ou.value,
-                            program = program.value,
-                            programStage = stage,
-                            dataElement = dl,
-                            teis = teiUIds.value,
-                        )
-                )
+        if (saveOnce.value == 0) {
+            _saveOnce.value = 1
+            viewModelScope.launch {
+                _programStage.value = stage
+                viewModelState.update {
+                    it.copy(
+                        formData = formRepository
+                            .getEvents(
+                                ou = ou.value,
+                                program = program.value,
+                                programStage = stage,
+                                dataElement = dl,
+                                teis = teiUIds.value,
+                            )
+                    )
+                }
             }
         }
     }
 
     fun updateDataFields(dl: String) {
         viewModelScope.launch {
-            viewModelState.updateAndGet {
+            _dataElement.value = dl
+            viewModelState.update {
                 it.copy(
                     formData = formRepository
                         .getEvents(
