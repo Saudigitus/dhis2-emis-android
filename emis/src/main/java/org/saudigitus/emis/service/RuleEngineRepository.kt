@@ -68,61 +68,62 @@ open class RuleEngineRepository @Inject constructor(
     }
 
     @Suppress("DEPRECATION")
-    private fun ruleEvents(
+    private suspend fun ruleEvents(
         ou: String,
         program: String
-    ) = d2.eventModule().events()
-        .byOrganisationUnitUid().eq(ou)
-        .byProgramUid().eq(program)
-        .withTrackedEntityDataValues()
-        .blockingGet()
-        .map { event ->
-            RuleEvent.builder()
-                .event(event.uid())
-                .programStage(event.programStage())
-                .programStageName(
-                    d2.programModule().programStages().uid(event.programStage())
-                        .blockingGet()!!.name()
-                )
-                .status(
-                    if (event.status() == EventStatus.VISITED) {
-                        RuleEvent.Status.ACTIVE
-                    } else {
-                        RuleEvent.Status.valueOf(event.status()!!.name)
-                    }
-                )
-                .eventDate(event.eventDate())
-                .dueDate(
-                    if (event.dueDate() != null) {
-                        event.dueDate()
-                    } else {
-                        event.eventDate()
-                    }
-                )
-                .organisationUnit(event.organisationUnit())
-                .organisationUnitCode(
-                    d2.organisationUnitModule().organisationUnits().uid(
-                        event.organisationUnit()
-                    ).blockingGet()!!.code()
-                )
-                .dataValues(
-                    event.trackedEntityDataValues()?.toRuleDataValue(
-                        event,
-                        d2.dataElementModule().dataElements(),
-                        d2.programModule().programRuleVariables(),
-                        d2.optionModule().options()
+    ) = withContext(Dispatchers.IO) {
+        return@withContext d2.eventModule().events()
+            .byOrganisationUnitUid().eq(ou)
+            .byProgramUid().eq(program)
+            .withTrackedEntityDataValues()
+            .blockingGet()
+            .map { event ->
+                RuleEvent.builder()
+                    .event(event.uid())
+                    .programStage(event.programStage())
+                    .programStageName(
+                        d2.programModule().programStages().uid(event.programStage())
+                            .blockingGet()!!.name()
                     )
-                )
-                .build()
-        }
+                    .status(
+                        if (event.status() == EventStatus.VISITED) {
+                            RuleEvent.Status.ACTIVE
+                        } else {
+                            RuleEvent.Status.valueOf(event.status()!!.name)
+                        }
+                    )
+                    .eventDate(event.eventDate())
+                    .dueDate(
+                        if (event.dueDate() != null) {
+                            event.dueDate()
+                        } else {
+                            event.eventDate()
+                        }
+                    )
+                    .organisationUnit(event.organisationUnit())
+                    .organisationUnitCode(
+                        d2.organisationUnitModule().organisationUnits().uid(
+                            event.organisationUnit()
+                        ).blockingGet()!!.code()
+                    )
+                    .dataValues(
+                        event.trackedEntityDataValues()?.toRuleDataValue(
+                            event,
+                            d2.dataElementModule().dataElements(),
+                            d2.programModule().programRuleVariables(),
+                            d2.optionModule().options()
+                        )
+                    )
+                    .build()
+            }
+    }
 
     suspend fun ruleContext(
-        ou: String,
-        program: String,
         ruleVariables: List<RuleVariable>,
         rules: List<Rule>,
         supplementaryData: Map<String, List<String>>,
-        constants: Map<String, String>
+        constants: Map<String, String>,
+        ruleEvents: List<RuleEvent>
     ) = withContext(Dispatchers.IO) {
         return@withContext RuleEngineContext.builder()
             .ruleVariables(ruleVariables)
@@ -132,7 +133,7 @@ open class RuleEngineRepository @Inject constructor(
             .build()
             .toEngineBuilder()
             .triggerEnvironment(TriggerEnvironment.ANDROIDCLIENT)
-            .events(ruleEvents(ou, program))
+            .events(ruleEvents)
             .build()
     }
 
@@ -147,14 +148,14 @@ open class RuleEngineRepository @Inject constructor(
         val ruleVariables = ruleVariables(program)
         val constants = constants()
         val supplementaryData = supplementaryData(ou)
+        val ruleEvents = ruleEvents(ou, program)
 
         return@withContext ruleContext(
-            ou,
-            program,
             ruleVariables,
             rules,
             supplementaryData,
-            constants
+            constants,
+            ruleEvents
         )
         .evaluate()
         .call()
