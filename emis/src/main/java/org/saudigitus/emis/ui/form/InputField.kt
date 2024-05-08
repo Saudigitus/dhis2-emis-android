@@ -88,6 +88,6 @@ fun InputField(
         } else {
             VisualTransformation.None
         },
-        textStyle = TextStyle(fontSize = 25.sp, textAlign = TextAlign.Center)
+        textStyle = TextStyle(fontSize = 22.sp, textAlign = TextAlign.Center)
     )
 }
