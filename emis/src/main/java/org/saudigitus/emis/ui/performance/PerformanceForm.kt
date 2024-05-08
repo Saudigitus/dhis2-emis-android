@@ -11,7 +11,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.unit.dp
 import org.dhis2.composetable.ui.Keyboard
 import org.dhis2.composetable.ui.keyboardAsState
 import org.hisp.dhis.android.core.common.ValueType
@@ -47,7 +46,7 @@ fun PerformanceForm(
 
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.Top),
+        verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         fields.forEach { formField ->
