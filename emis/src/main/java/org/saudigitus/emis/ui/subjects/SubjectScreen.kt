@@ -11,7 +11,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Event
-import androidx.compose.material.icons.filled.Pin
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -60,7 +59,7 @@ fun SubjectScreen(
                 disableNavigation = false,
                 actionState = ToolbarActionState(
                     syncVisibility = false,
-                    filterVisibility = true,
+                    filterVisibility = false,
                     showCalendar = false
                 ),
                 filterAction = { displayFilters = !displayFilters }

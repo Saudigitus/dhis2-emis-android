@@ -261,7 +261,7 @@ fun AttendanceScreen(
             ) {
                 ShowCard(
                     infoCard,
-                    false,
+                    true,
                     enabledIconButton = attendanceStep == ButtonStep.HOLD_SAVING,
                     onIconClick = { launchBulkAssign = true }
                 )

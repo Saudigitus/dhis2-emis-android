@@ -130,7 +130,7 @@ class MainActivity : FragmentActivity() {
                                 setDate = performanceViewModel::setDate,
                                 onNext = performanceViewModel::onClickNext,
                                 step = performanceViewModel::setButtonStep,
-                                onFilterClick = performanceViewModel::updateFields,
+                                onFilterClick = performanceViewModel::updateDataFields,
                                 onSave = performanceViewModel::save
                             )
                         }

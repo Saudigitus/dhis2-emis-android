@@ -84,6 +84,8 @@ fun PerformanceScreen(
     var isCompleted by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
+    var selectedSubject by remember { mutableStateOf(defaultSelection) }
+
     if (performanceStep == ButtonStep.SAVING) {
         PerformanceSummaryDialog(
             title = stringResource(R.string.performance_summary),
@@ -120,7 +122,7 @@ fun PerformanceScreen(
                 actionState = ToolbarActionState(
                     syncVisibility = false,
                     filterVisibility = false,
-                    showCalendar = true
+                    showCalendar = false
                 ),
                 calendarAction = setDate,
                 dateValidator = dateValidator
@@ -215,8 +217,11 @@ fun PerformanceScreen(
                     leadingIcon = ImageVector.vectorResource(R.drawable.ic_category),
                     trailingIcon = Icons.TwoTone.Edit,
                     data = state.subjects,
-                    defaultSelection = defaultSelection,
-                    onItemClick = { onFilterClick.invoke(it.uid) }
+                    defaultSelection = selectedSubject,
+                    onItemClick = {
+                        selectedSubject = it.displayName ?: ""
+                        onFilterClick.invoke(it.uid)
+                    }
                 )
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),

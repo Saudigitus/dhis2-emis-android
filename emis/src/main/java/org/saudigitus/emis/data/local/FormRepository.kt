@@ -8,7 +8,7 @@ import org.saudigitus.emis.ui.form.FormField
 
 interface FormRepository {
     suspend fun save(eventTuple: EventTuple)
-    suspend fun keyboardInputTypeByStage(stage: String, dl: String): List<FormField>?
+    suspend fun keyboardInputTypeByStage(stage: String, dl: String): List<FormField>
     suspend fun getOptions(dataElement: String): List<Option>
     suspend fun getEvents(
         ou: String,
