@@ -126,21 +126,28 @@ fun MetadataItem(
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp, horizontal = 16.dp),
-            horizontalArrangement = Arrangement.Start,
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            RoundedIcon(label = "${displayName[0]}")
-            Spacer(modifier = Modifier.size(15.dp))
-            TitleSubtitleComponent(
-                modifier = Modifier.weight(1f, true),
-                title = displayName,
-                subtitle = "$attrValue",
-                fontDefaults = TitleSubtitleDefaults(
-                    titleColor = Color.Black.copy(.75f)
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(vertical = 8.dp, horizontal = 16.dp),
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RoundedIcon(label = "${displayName[0]}")
+                Spacer(modifier = Modifier.size(15.dp))
+                TitleSubtitleComponent(
+                    modifier = Modifier.weight(1f),
+                    title = displayName,
+                    subtitle = "$attrValue",
+                    fontDefaults = TitleSubtitleDefaults(
+                        titleColor = Color.Black.copy(.75f)
+                    )
                 )
-            )
+            }
 
             content.invoke()
         }
