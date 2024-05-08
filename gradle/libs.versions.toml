@@ -9,10 +9,11 @@ gradle = "8.2.2"
 kotlin = '1.9.21'
 hilt = '2.47'
 hiltCompiler = '1.0.0'
+kotlinBom = "1.9.0"
 androidxComposeBom = "2023.06.01"
-
 androidxNavigation = "2.6.0"
 androidxHiltNavigation = "1.0.0"
+
 jacoco = '0.8.10'
 designSystem = "0.2-20240430.062706-60"
 dhis2sdk = "1.10.0-20240426.151240-44"
@@ -146,9 +147,9 @@ androidx-compose-materialIcons = { group = "androidx.compose.material", name = "
 androidx-compose-material-iconsExtended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "materialIcons" }
 androidx-dynamicanimation = { group = "androidx.dynamicanimation", name = "dynamicanimation", version.ref = "dynamicanimation" }
 
+
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "androidxNavigation" }
 androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "androidxHiltNavigation" }
-
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "androidxComposeBom" }
 kotlin-bom = { group = "org.jetbrains.kotlin", name = "kotlin-bom", version.ref = "kotlinBom" }
 
