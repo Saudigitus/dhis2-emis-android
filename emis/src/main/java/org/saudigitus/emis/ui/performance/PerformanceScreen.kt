@@ -232,7 +232,9 @@ fun PerformanceScreen(
                             onClick = {}
                         ) {
                             PerformanceForm(
-                                modifier = Modifier.fillMaxWidth(.35f)
+                                modifier = Modifier
+                                    .fillMaxWidth(.3f)
+                                    .padding(bottom = 2.dp)
                                     .align(Alignment.End),
                                 state = state.fieldsState,
                                 key = student.uid(),
