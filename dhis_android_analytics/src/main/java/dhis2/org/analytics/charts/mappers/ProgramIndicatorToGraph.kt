@@ -1,6 +1,7 @@
 package dhis2.org.analytics.charts.mappers
 
 import dhis2.org.analytics.charts.data.Graph
+import dhis2.org.analytics.charts.data.GraphFilters
 import dhis2.org.analytics.charts.data.SerieData
 import dhis2.org.analytics.charts.providers.ChartCoordinatesProvider
 import dhis2.org.analytics.charts.providers.PeriodStepProvider
@@ -10,7 +11,7 @@ import org.hisp.dhis.android.core.program.ProgramIndicator
 
 class ProgramIndicatorToGraph(
     private val periodStepProvider: PeriodStepProvider,
-    private val chartCoordinatesProvider: ChartCoordinatesProvider
+    private val chartCoordinatesProvider: ChartCoordinatesProvider,
 ) {
     fun map(
         programIndicator: ProgramIndicator,
@@ -19,7 +20,7 @@ class ProgramIndicatorToGraph(
         stagePeriod: PeriodType,
         selectedRelativePeriod: List<RelativePeriod>?,
         selectedOrgUnits: List<String>?,
-        isDefault: Boolean = false
+        isDefault: Boolean = false,
     ): Graph {
         val coordinates = chartCoordinatesProvider.indicatorCoordinates(
             stageUid,
@@ -27,15 +28,15 @@ class ProgramIndicatorToGraph(
             programIndicator.uid(),
             selectedRelativePeriod,
             selectedOrgUnits,
-            isDefault
+            isDefault,
         )
 
         val serie = if (coordinates.isNotEmpty()) {
             listOf(
                 SerieData(
                     programIndicator.displayName() ?: programIndicator.uid(),
-                    coordinates
-                )
+                    coordinates,
+                ),
             )
         } else {
             emptyList()
@@ -48,8 +49,10 @@ class ProgramIndicatorToGraph(
             eventPeriodType = stagePeriod,
             periodStep = periodStepProvider.periodStep(stagePeriod),
             visualizationUid = "${teiUid}${stageUid}${programIndicator.uid()}",
-            periodToDisplaySelected = selectedRelativePeriod?.firstOrNull(),
-            orgUnitsSelected = selectedOrgUnits ?: emptyList()
+            graphFilters = GraphFilters.Visualization(
+                periodToDisplaySelected = selectedRelativePeriod?.firstOrNull(),
+                orgUnitsSelected = selectedOrgUnits ?: emptyList(),
+            ),
         )
     }
 }

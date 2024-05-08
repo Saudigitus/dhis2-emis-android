@@ -6,13 +6,15 @@ import androidx.lifecycle.ViewModel
 import io.reactivex.Flowable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.processors.PublishProcessor
-import java.util.Date
 import org.dhis2.R
 import org.dhis2.commons.prefs.Preference
 import org.dhis2.commons.prefs.PreferenceProvider
 import org.dhis2.commons.schedulers.SchedulerProvider
 import org.dhis2.commons.schedulers.defaultSubscribe
+import org.dhis2.form.data.EventRepository
+import org.dhis2.form.model.EventMode
 import org.dhis2.ui.dialogs.bottomsheet.FieldWithIssue
+import org.dhis2.usescases.eventsWithoutRegistration.EventIdlingResourceSingleton
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureContract.EventCaptureRepository
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.domain.ConfigureEventCompletionDialog
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.model.EventCaptureInitialInfo
@@ -20,6 +22,7 @@ import org.hisp.dhis.android.core.common.Unit
 import org.hisp.dhis.android.core.common.ValidationStrategy
 import org.hisp.dhis.android.core.event.EventStatus
 import timber.log.Timber
+import java.util.Date
 
 class EventCapturePresenterImpl(
     private val view: EventCaptureContract.View,
@@ -27,7 +30,7 @@ class EventCapturePresenterImpl(
     private val eventCaptureRepository: EventCaptureRepository,
     private val schedulerProvider: SchedulerProvider,
     private val preferences: PreferenceProvider,
-    private val configureEventCompletionDialog: ConfigureEventCompletionDialog
+    private val configureEventCompletionDialog: ConfigureEventCompletionDialog,
 ) : ViewModel(), EventCaptureContract.Presenter {
 
     var compositeDisposable: CompositeDisposable = CompositeDisposable()
@@ -49,32 +52,27 @@ class EventCapturePresenterImpl(
                 .defaultSubscribe(
                     schedulerProvider,
                     { view.showEventIntegrityAlert() },
-                    Timber::e
-                )
+                    Timber::e,
+                ),
         )
         compositeDisposable.add(
             Flowable.zip(
                 eventCaptureRepository.programStageName(),
-                eventCaptureRepository.eventDate(),
                 eventCaptureRepository.orgUnit(),
-                eventCaptureRepository.catOption(),
-                ::EventCaptureInitialInfo
+                ::EventCaptureInitialInfo,
             ).defaultSubscribe(
                 schedulerProvider,
                 { initialInfo ->
                     preferences.setValue(
                         Preference.CURRENT_ORG_UNIT,
-                        initialInfo.organisationUnit.uid()
+                        initialInfo.organisationUnit.uid(),
                     )
                     view.renderInitialInfo(
                         initialInfo.programStageName,
-                        initialInfo.eventDate,
-                        initialInfo.organisationUnit.displayName(),
-                        initialInfo.categoryOption
                     )
                 },
-                Timber::e
-            )
+                Timber::e,
+            ),
         )
         checkExpiration()
     }
@@ -91,8 +89,8 @@ class EventCapturePresenterImpl(
                     .defaultSubscribe(
                         schedulerProvider,
                         this::setHasExpired,
-                        Timber::e
-                    )
+                        Timber::e,
+                    ),
             )
         } else {
             setHasExpired(!eventCaptureRepository.isEventEditable(eventUid))
@@ -112,44 +110,66 @@ class EventCapturePresenterImpl(
         onCompleteMessage: String?,
         errorFields: List<FieldWithIssue>,
         emptyMandatoryFields: Map<String, String>,
-        warningFields: List<FieldWithIssue>
+        warningFields: List<FieldWithIssue>,
+        eventMode: EventMode?,
     ) {
         val eventStatus = eventStatus
         if (eventStatus != EventStatus.ACTIVE) {
             setUpActionByStatus(eventStatus)
         } else {
-            val validationStrategy = eventCaptureRepository.validationStrategy()
-            val canSkipErrorFix = errorFields.isEmpty() or
-                (validationStrategy != ValidationStrategy.ON_UPDATE_AND_INSERT)
+            val canSkipErrorFix = canSkipErrorFix(
+                hasErrorFields = errorFields.isNotEmpty(),
+                hasEmptyMandatoryFields = emptyMandatoryFields.isNotEmpty(),
+                hasEmptyEventCreationMandatoryFields = with(emptyMandatoryFields) {
+                    containsValue(EventRepository.EVENT_DETAILS_SECTION_UID) ||
+                        containsValue(EventRepository.EVENT_CATEGORY_COMBO_SECTION_UID)
+                },
+                eventMode = eventMode,
+                validationStrategy = eventCaptureRepository.validationStrategy(),
+            )
             val eventCompletionDialog = configureEventCompletionDialog.invoke(
                 errorFields,
                 emptyMandatoryFields,
                 warningFields,
                 canComplete,
                 onCompleteMessage,
-                canSkipErrorFix
+                canSkipErrorFix,
             )
-            view.showCompleteActions(
-                canComplete && eventCaptureRepository.isEnrollmentOpen,
-                emptyMandatoryFields,
-                eventCompletionDialog
-            )
+            view.showCompleteActions(eventCompletionDialog)
         }
         view.showNavigationBar()
+    }
+
+    private fun canSkipErrorFix(
+        hasErrorFields: Boolean,
+        hasEmptyMandatoryFields: Boolean,
+        hasEmptyEventCreationMandatoryFields: Boolean,
+        eventMode: EventMode?,
+        validationStrategy: ValidationStrategy,
+    ): Boolean {
+        return when (validationStrategy) {
+            ValidationStrategy.ON_COMPLETE -> when (eventMode) {
+                EventMode.NEW -> !hasEmptyEventCreationMandatoryFields
+                else -> true
+            }
+            ValidationStrategy.ON_UPDATE_AND_INSERT -> !hasErrorFields && !hasEmptyMandatoryFields
+        }
     }
 
     private fun setUpActionByStatus(eventStatus: EventStatus) {
         when (eventStatus) {
             EventStatus.COMPLETED ->
                 if (!hasExpired && !eventCaptureRepository.isEnrollmentCancelled) {
-                    view.SaveAndFinish()
+                    view.saveAndFinish()
                 } else {
                     view.finishDataEntry()
                 }
 
             EventStatus.OVERDUE -> view.attemptToSkip()
             EventStatus.SKIPPED -> view.attemptToReschedule()
-            else -> {}
+            else -> {
+                // No actions for the remaining cases
+            }
         }
     }
 
@@ -158,11 +178,13 @@ class EventCapturePresenterImpl(
     }
 
     override fun completeEvent(addNew: Boolean) {
+        EventIdlingResourceSingleton.increment()
         compositeDisposable.add(
             eventCaptureRepository.completeEvent()
                 .defaultSubscribe(
                     schedulerProvider,
-                    {
+                    onNext = {
+                        EventIdlingResourceSingleton.decrement()
                         if (addNew) {
                             view.restartDataEntry()
                         } else {
@@ -170,24 +192,36 @@ class EventCapturePresenterImpl(
                             view.finishDataEntry()
                         }
                     },
-                    Timber::e
-                )
+                    onError = {
+                        EventIdlingResourceSingleton.decrement()
+                        Timber.e(it)
+                    },
+                ),
         )
     }
 
     override fun deleteEvent() {
+        val programStage = programStage()
+        EventIdlingResourceSingleton.increment()
         compositeDisposable.add(
             eventCaptureRepository.deleteEvent()
                 .defaultSubscribe(
                     schedulerProvider,
-                    { result ->
+                    onNext = { result ->
+                        EventIdlingResourceSingleton.decrement()
                         if (result) {
-                            view.showSnackBar(R.string.event_was_deleted)
+                            view.showSnackBar(R.string.event_label_was_deleted, programStage)
                         }
                     },
-                    Timber::e,
-                    view::finishDataEntry
-                )
+                    onError = {
+                        EventIdlingResourceSingleton.decrement()
+                        Timber.e(it)
+                    },
+                    onComplete = {
+                        EventIdlingResourceSingleton.decrement()
+                        view.finishDataEntry()
+                    },
+                ),
         )
     }
 
@@ -196,10 +230,10 @@ class EventCapturePresenterImpl(
             eventCaptureRepository.updateEventStatus(EventStatus.SKIPPED)
                 .defaultSubscribe(
                     schedulerProvider,
-                    { view.showSnackBar(R.string.event_was_skipped) },
+                    { view.showSnackBar(R.string.event_label_was_skipped, programStage()) },
                     Timber::e,
-                    view::finishDataEntry
-                )
+                    view::finishDataEntry,
+                ),
         )
     }
 
@@ -209,8 +243,8 @@ class EventCapturePresenterImpl(
                 .defaultSubscribe(
                     schedulerProvider,
                     { view.finishDataEntry() },
-                    Timber::e
-                )
+                    Timber::e,
+                ),
         )
     }
 
@@ -238,8 +272,8 @@ class EventCapturePresenterImpl(
                     .defaultSubscribe(
                         schedulerProvider,
                         view::updateNoteBadge,
-                        Timber::e
-                    )
+                        Timber::e,
+                    ),
             )
         } else {
             notesCounterProcessor.onNext(Unit())
@@ -264,4 +298,13 @@ class EventCapturePresenterImpl(
 
     private val eventStatus: EventStatus
         get() = eventCaptureRepository.eventStatus().blockingFirst()
+
+    override fun programStage(): String = eventCaptureRepository.programStage().blockingFirst()
+
+    override fun getEnrollmentUid(): String? {
+        return eventCaptureRepository.getEnrollmentUid()
+    }
+    override fun getTeiUid(): String? {
+        return eventCaptureRepository.getTeiUid()
+    }
 }

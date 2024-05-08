@@ -2,6 +2,7 @@ package dhis2.org.analytics.charts
 
 import dhis2.org.analytics.charts.data.AnalyticResources
 import dhis2.org.analytics.charts.data.Graph
+import dhis2.org.analytics.charts.data.GraphFieldValue
 import dhis2.org.analytics.charts.data.GraphPoint
 import dhis2.org.analytics.charts.data.SerieData
 import dhis2.org.analytics.charts.mappers.AnalyticsTeiSettingsToGraph
@@ -10,7 +11,6 @@ import dhis2.org.analytics.charts.mappers.ProgramIndicatorToGraph
 import dhis2.org.analytics.charts.mappers.VisualizationToGraph
 import dhis2.org.analytics.charts.providers.AnalyticsFilterProvider
 import dhis2.org.analytics.charts.ui.OrgUnitFilterType
-import java.util.Date
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.analytics.AnalyticsException
 import org.hisp.dhis.android.core.analytics.aggregated.DimensionItem
@@ -27,6 +27,7 @@ import org.hisp.dhis.android.core.program.ProgramIndicator
 import org.hisp.dhis.android.core.program.ProgramStage
 import org.hisp.dhis.android.core.program.ProgramStageDataElement
 import org.hisp.dhis.android.core.settings.AnalyticsDhisVisualization
+import org.hisp.dhis.android.core.settings.AnalyticsDhisVisualizationType
 import org.hisp.dhis.android.core.settings.AnalyticsDhisVisualizationsGroup
 import org.hisp.dhis.android.core.settings.AnalyticsDhisVisualizationsSetting
 import org.hisp.dhis.android.core.settings.AnalyticsTeiData
@@ -42,6 +43,7 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import java.util.Date
 
 class ChartsRepositoryTest {
     private val d2: D2 = Mockito.mock(D2::class.java, Mockito.RETURNS_DEEP_STUBS)
@@ -59,7 +61,7 @@ class ChartsRepositoryTest {
         dataElementToGraph,
         programIndicatorToGraph,
         analyticsResources,
-        analyticsFilterProvider
+        analyticsFilterProvider,
     )
 
     @Test
@@ -68,7 +70,7 @@ class ChartsRepositoryTest {
             d2.enrollmentModule()
                 .enrollments()
                 .uid(any())
-                .blockingGet()
+                .blockingGet(),
         ) doReturn Enrollment.builder()
             .uid("enrollmentUid")
             .program("programUid")
@@ -76,7 +78,7 @@ class ChartsRepositoryTest {
             .build()
         val result = repository.getAnalyticsForEnrollment("enrollmentUid")
         assertTrue(
-            result.isEmpty()
+            result.isEmpty(),
         )
     }
 
@@ -85,14 +87,14 @@ class ChartsRepositoryTest {
         mockEnrollmentCall()
         mockAnalyticsSettingsCall(mockedAnalyticsSettings())
         whenever(
-            analyticsTeiSettingsToGraph.map(any(), any(), any(), any(), any(), any(), any())
+            analyticsTeiSettingsToGraph.map(any(), any(), any(), any(), any(), any(), any()),
         ) doReturn mockedSettingsGraphs()
 
         val result = repository.getAnalyticsForEnrollment("enrollmentUid")
         assertTrue(
             result.isNotEmpty() &&
                 result.size == mockedSettingsGraphs().size &&
-                result[0].title == "settings_1"
+                result[0].title == "settings_1",
         )
     }
 
@@ -104,7 +106,7 @@ class ChartsRepositoryTest {
         mockNumericDataElements(false)
 
         whenever(
-            dataElementToGraph.map(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any())
+            dataElementToGraph.map(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any()),
         ) doReturn mockedDataElementGraph()
         mockIndicators(false)
         whenever(
@@ -115,15 +117,15 @@ class ChartsRepositoryTest {
                 any(),
                 anyOrNull(),
                 anyOrNull(),
-                any()
-            )
+                any(),
+            ),
         ) doReturn mockedIndicatorGraph()
         val result = repository.getAnalyticsForEnrollment("enrollmentUid")
         assertTrue(
             result.isNotEmpty() &&
                 result.size == 2 &&
                 result[0].title == "de_graph_1" &&
-                result[1].title == "indicator_graph_1"
+                result[1].title == "indicator_graph_1",
         )
     }
 
@@ -134,14 +136,14 @@ class ChartsRepositoryTest {
         mockRepeatableStagesCall()
         mockNumericDataElements(false)
         whenever(
-            dataElementToGraph.map(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any())
+            dataElementToGraph.map(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any()),
         ) doReturn mockedDataElementGraph()
         mockIndicators(true)
         val result = repository.getAnalyticsForEnrollment("enrollmentUid")
         assertTrue(
             result.isNotEmpty() &&
                 result.size == 1 &&
-                result[0].title == "de_graph_1"
+                result[0].title == "de_graph_1",
         )
     }
 
@@ -153,13 +155,21 @@ class ChartsRepositoryTest {
         mockNumericDataElements(true)
         mockIndicators(false)
         whenever(
-            programIndicatorToGraph.map(any(), any(), any(), any(), anyOrNull(), anyOrNull(), any())
+            programIndicatorToGraph.map(
+                any(),
+                any(),
+                any(),
+                any(),
+                anyOrNull(),
+                anyOrNull(),
+                any(),
+            ),
         ) doReturn mockedIndicatorGraph()
         val result = repository.getAnalyticsForEnrollment("enrollmentUid")
         assertTrue(
             result.isNotEmpty() &&
                 result.size == 1 &&
-                result[0].title == "indicator_graph_1"
+                result[0].title == "indicator_graph_1",
         )
     }
 
@@ -172,7 +182,7 @@ class ChartsRepositoryTest {
         mockIndicators(true)
         val result = repository.getAnalyticsForEnrollment("enrollmentUid")
         assertTrue(
-            result.isEmpty()
+            result.isEmpty(),
         )
     }
 
@@ -180,7 +190,7 @@ class ChartsRepositoryTest {
     fun `Should return visualization groups in home`() {
         val visualizationSetting: AnalyticsDhisVisualizationsSetting = mock()
         whenever(
-            d2.settingModule().analyticsSetting().visualizationsSettings().blockingGet()
+            d2.settingModule().analyticsSetting().visualizationsSettings().blockingGet(),
         ) doReturn visualizationSetting
         repository.getVisualizationGroups(null)
         verify(visualizationSetting).home()
@@ -193,7 +203,7 @@ class ChartsRepositoryTest {
             on { program() } doReturn mapOf(Pair("programUid", listOf(mockedVisualizationGroup)))
         }
         whenever(
-            d2.settingModule().analyticsSetting().visualizationsSettings().blockingGet()
+            d2.settingModule().analyticsSetting().visualizationsSettings().blockingGet(),
         ) doReturn visualizationSetting
         val result = repository.getVisualizationGroups("programUid")
         assertTrue(result == listOf(mockedVisualizationGroup))
@@ -207,7 +217,7 @@ class ChartsRepositoryTest {
             on { dataSet() } doReturn mapOf(Pair("dataSetUid", listOf(mockedVisualizationGroup)))
         }
         whenever(
-            d2.settingModule().analyticsSetting().visualizationsSettings().blockingGet()
+            d2.settingModule().analyticsSetting().visualizationsSettings().blockingGet(),
         ) doReturn visualizationSetting
         val result = repository.getVisualizationGroups("dataSetUid")
         assertTrue(result == listOf(mockedVisualizationGroup))
@@ -215,9 +225,14 @@ class ChartsRepositoryTest {
 
     @Test
     fun `Should return empty list if no visualization configured`() {
+        val emptyVisualizations = AnalyticsDhisVisualizationsSetting.builder()
+            .home(emptyList())
+            .dataSet(emptyMap())
+            .program(emptyMap())
+            .build()
         whenever(
-            d2.settingModule().analyticsSetting().visualizationsSettings().blockingGet()
-        ) doReturn null
+            d2.settingModule().analyticsSetting().visualizationsSettings().blockingGet(),
+        ) doReturn emptyVisualizations
         val result = repository.getVisualizationGroups("dataSetUid")
         assertTrue(result.isEmpty())
     }
@@ -229,7 +244,7 @@ class ChartsRepositoryTest {
             on { dataSet() } doReturn mapOf()
         }
         whenever(
-            d2.settingModule().analyticsSetting().visualizationsSettings().blockingGet()
+            d2.settingModule().analyticsSetting().visualizationsSettings().blockingGet(),
         ) doReturn visualizationSetting
         val result = repository.getVisualizationGroups("uid")
         assertTrue(result.isEmpty())
@@ -248,10 +263,9 @@ class ChartsRepositoryTest {
         repository.getDataSetVisualization("groupUid", "dataSetUid")
         verify(visualizationToGraph).mapToGraph(
             any(),
-            any(),
-            any(),
+            any<Visualization>(),
             anyOrNull(),
-            anyOrNull()
+            anyOrNull(),
         )
     }
 
@@ -267,10 +281,9 @@ class ChartsRepositoryTest {
         repository.getProgramVisualization("groupUid", "programUid")
         verify(visualizationToGraph).mapToGraph(
             any(),
-            any(),
-            any(),
+            any<Visualization>(),
             anyOrNull(),
-            anyOrNull()
+            anyOrNull(),
         )
     }
 
@@ -286,10 +299,9 @@ class ChartsRepositoryTest {
         repository.getHomeVisualization("groupUid")
         verify(visualizationToGraph).mapToGraph(
             any(),
-            any(),
-            any(),
+            any<Visualization>(),
             anyOrNull(),
-            anyOrNull()
+            anyOrNull(),
         )
     }
 
@@ -306,10 +318,9 @@ class ChartsRepositoryTest {
         verify(analyticsResources).analyticsExceptionMessage(any())
         verify(visualizationToGraph).addErrorGraph(
             any(),
-            any(),
+            any<Visualization>(),
             anyOrNull(),
             anyOrNull(),
-            anyOrNull()
         )
     }
 
@@ -318,8 +329,8 @@ class ChartsRepositoryTest {
         val periods: List<RelativePeriod> = mock {
             on { isEmpty() } doReturn false
         }
-        repository.setVisualizationPeriods("uid", periods)
-        verify(analyticsFilterProvider).addPeriodFilter("uid", periods)
+        repository.setVisualizationPeriods("uid", null, periods)
+        verify(analyticsFilterProvider).addPeriodFilter("uid", null, periods)
     }
 
     @Test
@@ -327,36 +338,43 @@ class ChartsRepositoryTest {
         val periods: List<RelativePeriod> = mock {
             on { isEmpty() } doReturn true
         }
-        repository.setVisualizationPeriods("uid", periods)
-        verify(analyticsFilterProvider).removePeriodFilter("uid")
+        repository.setVisualizationPeriods("uid", null, periods)
+        verify(analyticsFilterProvider).removePeriodFilter("uid", null)
     }
 
     @Test
     fun `Should add org unit filter`() {
         val orgUnits: List<OrganisationUnit> = mock()
-        repository.setVisualizationOrgUnits("uid1", emptyList(), OrgUnitFilterType.NONE)
-        verify(analyticsFilterProvider).removeOrgUnitFilter("uid1")
-        repository.setVisualizationOrgUnits("uid", orgUnits, OrgUnitFilterType.ALL)
-        verify(analyticsFilterProvider).addOrgUnitFilter("uid", OrgUnitFilterType.ALL, orgUnits)
-        repository.setVisualizationOrgUnits("uid", orgUnits, OrgUnitFilterType.SELECTION)
+        repository.setVisualizationOrgUnits("uid1", null, emptyList(), OrgUnitFilterType.NONE)
+        verify(analyticsFilterProvider).removeOrgUnitFilter("uid1", null)
+        repository.setVisualizationOrgUnits("uid", null, orgUnits, OrgUnitFilterType.ALL)
         verify(analyticsFilterProvider).addOrgUnitFilter(
             "uid",
-            OrgUnitFilterType.SELECTION,
-            orgUnits
+            null,
+            OrgUnitFilterType.ALL,
+            orgUnits,
         )
-        repository.setVisualizationOrgUnits("uid", emptyList(), OrgUnitFilterType.SELECTION)
-        verify(analyticsFilterProvider).removeOrgUnitFilter("uid")
+        repository.setVisualizationOrgUnits("uid", null, orgUnits, OrgUnitFilterType.SELECTION)
+        verify(analyticsFilterProvider).addOrgUnitFilter(
+            "uid",
+            null,
+            OrgUnitFilterType.SELECTION,
+            orgUnits,
+        )
+        repository.setVisualizationOrgUnits("uid", null, emptyList(), OrgUnitFilterType.SELECTION)
+        verify(analyticsFilterProvider).removeOrgUnitFilter("uid", null)
     }
 
     private fun mockVisualizationSettings(
         settingsUid: String? = null,
         returnProgram: Boolean = false,
         returnDataSet: Boolean = false,
-        returnHome: Boolean = false
+        returnHome: Boolean = false,
     ) {
         val mockedAnalyticsVisualization: AnalyticsDhisVisualization = mock {
             on { name() } doReturn "name"
             on { uid() } doReturn "visualizationUid"
+            on { type() } doReturn AnalyticsDhisVisualizationType.VISUALIZATION
         }
         val mockedVisualizationGroup: AnalyticsDhisVisualizationsGroup = mock {
             on { id() } doReturn "groupUid"
@@ -371,7 +389,7 @@ class ChartsRepositoryTest {
         whenever(
             d2.settingModule().analyticsSetting()
                 .visualizationsSettings()
-                .blockingGet()
+                .blockingGet(),
         ) doReturn visualizationSetting
     }
 
@@ -381,7 +399,7 @@ class ChartsRepositoryTest {
             d2.visualizationModule()
                 .visualizations()
                 .uid("visualizationUid")
-                .blockingGet()
+                .blockingGet(),
         ) doReturn mockedVisualization
     }
 
@@ -389,12 +407,12 @@ class ChartsRepositoryTest {
         relativePeriod: RelativePeriod? = null,
         absoluteOrgUnit: String? = null,
         userOrgUnit: String? = null,
-        analyticsException: AnalyticsException? = null
+        analyticsException: AnalyticsException? = null,
     ) {
         val mockedAnalyticResponse: GridAnalyticsResponse = mock()
         whenever(
             d2.analyticsModule().visualizations()
-                .withVisualization("visualizationUid")
+                .withVisualization("visualizationUid"),
         ) doReturn mock()
         whenever(
             d2.analyticsModule().visualizations()
@@ -403,32 +421,7 @@ class ChartsRepositoryTest {
                     relativePeriod?.let {
                         withPeriods(listOf(DimensionItem.PeriodItem.Relative(relativePeriod)))
                     } ?: this
-                }
-        ) doReturn mock()
-        whenever(
-            d2.analyticsModule().visualizations()
-                .withVisualization("visualizationUid")
-                .run {
-                    relativePeriod?.let {
-                        withPeriods(listOf(DimensionItem.PeriodItem.Relative(relativePeriod)))
-                    } ?: this
-                }.run {
-                    absoluteOrgUnit?.let {
-                        withOrganisationUnits(
-                            listOf(DimensionItem.OrganisationUnitItem.Absolute(absoluteOrgUnit))
-                        )
-                    } ?: this
-                }.run {
-                    userOrgUnit?.let {
-                        withOrganisationUnits(
-                            listOf(
-                                DimensionItem.OrganisationUnitItem.Relative(
-                                    RelativeOrganisationUnit.USER_ORGUNIT
-                                )
-                            )
-                        )
-                    } ?: this
-                }
+                },
         ) doReturn mock()
         whenever(
             d2.analyticsModule().visualizations()
@@ -440,7 +433,32 @@ class ChartsRepositoryTest {
                 }.run {
                     absoluteOrgUnit?.let {
                         withOrganisationUnits(
-                            listOf(DimensionItem.OrganisationUnitItem.Absolute(absoluteOrgUnit))
+                            listOf(DimensionItem.OrganisationUnitItem.Absolute(absoluteOrgUnit)),
+                        )
+                    } ?: this
+                }.run {
+                    userOrgUnit?.let {
+                        withOrganisationUnits(
+                            listOf(
+                                DimensionItem.OrganisationUnitItem.Relative(
+                                    RelativeOrganisationUnit.USER_ORGUNIT,
+                                ),
+                            ),
+                        )
+                    } ?: this
+                },
+        ) doReturn mock()
+        whenever(
+            d2.analyticsModule().visualizations()
+                .withVisualization("visualizationUid")
+                .run {
+                    relativePeriod?.let {
+                        withPeriods(listOf(DimensionItem.PeriodItem.Relative(relativePeriod)))
+                    } ?: this
+                }.run {
+                    absoluteOrgUnit?.let {
+                        withOrganisationUnits(
+                            listOf(DimensionItem.OrganisationUnitItem.Absolute(absoluteOrgUnit)),
                         )
                     } ?: this
                 }
@@ -449,13 +467,13 @@ class ChartsRepositoryTest {
                         withOrganisationUnits(
                             listOf(
                                 DimensionItem.OrganisationUnitItem.Relative(
-                                    RelativeOrganisationUnit.USER_ORGUNIT
-                                )
-                            )
+                                    RelativeOrganisationUnit.USER_ORGUNIT,
+                                ),
+                            ),
                         )
                     } ?: this
                 }
-                .blockingEvaluate()
+                .blockingEvaluate(),
         ) doReturn if (analyticsException == null) {
             Result.Success(mockedAnalyticResponse)
         } else {
@@ -468,7 +486,7 @@ class ChartsRepositoryTest {
             d2.enrollmentModule()
                 .enrollments()
                 .uid(any())
-                .blockingGet()
+                .blockingGet(),
         ) doReturn Enrollment.builder()
             .uid("enrollmentUid")
             .program("programUid")
@@ -476,84 +494,84 @@ class ChartsRepositoryTest {
             .build()
     }
 
-    private fun mockAnalyticsSettingsCall(result: MutableList<AnalyticsTeiSetting>?) {
+    private fun mockAnalyticsSettingsCall(result: List<AnalyticsTeiSetting>?) {
         whenever(
-            d2.settingModule().analyticsSetting().teis()
+            d2.settingModule().analyticsSetting().teis(),
         ) doReturn mock()
         whenever(
             d2.settingModule().analyticsSetting().teis()
-                .byProgram()
+                .byProgram(),
+        ) doReturn mock()
+        whenever(
+            d2.settingModule().analyticsSetting().teis()
+                .byProgram().eq("programUid"),
         ) doReturn mock()
         whenever(
             d2.settingModule().analyticsSetting().teis()
                 .byProgram().eq("programUid")
-        ) doReturn mock()
-        whenever(
-            d2.settingModule().analyticsSetting().teis()
-                .byProgram().eq("programUid")
-                .blockingGet()
-        ) doReturn result
+                .blockingGet(),
+        ) doReturn (result ?: emptyList())
     }
 
     private fun mockRepeatableStagesCall() {
         whenever(
             d2.programModule().programStages()
-                .byProgramUid().eq("programUid")
+                .byProgramUid().eq("programUid"),
         ) doReturn mock()
         whenever(
             d2.programModule().programStages()
                 .byProgramUid().eq("programUid")
-                .byRepeatable()
+                .byRepeatable(),
+        ) doReturn mock()
+        whenever(
+            d2.programModule().programStages()
+                .byProgramUid().eq("programUid")
+                .byRepeatable().eq(true),
         ) doReturn mock()
         whenever(
             d2.programModule().programStages()
                 .byProgramUid().eq("programUid")
                 .byRepeatable().eq(true)
-        ) doReturn mock()
-        whenever(
-            d2.programModule().programStages()
-                .byProgramUid().eq("programUid")
-                .byRepeatable().eq(true)
-                .blockingGet()
+                .blockingGet(),
         ) doReturn listOf(
             ProgramStage.builder()
                 .uid("stage_1")
-                .build()
+                .build(),
         )
     }
 
     private fun mockIndicators(emptyList: Boolean) {
         whenever(
             d2.programModule().programIndicators()
-                .byDisplayInForm().isTrue
+                .byDisplayInForm().isTrue,
         ) doReturn mock()
         whenever(
             d2.programModule().programIndicators()
                 .byDisplayInForm().isTrue
-                .byProgramUid()
+                .byProgramUid(),
         ) doReturn mock()
         whenever(
             d2.programModule().programIndicators()
                 .byDisplayInForm().isTrue
-                .byProgramUid().eq("programUid")
+                .byProgramUid().eq("programUid"),
         ) doReturn mock()
         if (emptyList) {
             whenever(
                 d2.programModule().programIndicators()
                     .byDisplayInForm().isTrue
                     .byProgramUid().eq("programUid")
-                    .blockingGet()
+                    .blockingGet(),
             ) doReturn emptyList()
         } else {
             whenever(
                 d2.programModule().programIndicators()
                     .byDisplayInForm().isTrue
                     .byProgramUid().eq("programUid")
-                    .blockingGet()
+                    .blockingGet(),
             ) doReturn listOf(
                 ProgramIndicator.builder()
                     .uid("indicator_1")
-                    .build()
+                    .build(),
             )
         }
     }
@@ -564,37 +582,37 @@ class ChartsRepositoryTest {
             .build()
         whenever(
             d2.programModule().programStageDataElements()
-                .byProgramStage().eq("stage_1")
+                .byProgramStage().eq("stage_1"),
         ) doReturn mock()
         if (emptyList) {
             whenever(
                 d2.programModule().programStageDataElements()
                     .byProgramStage().eq("stage_1")
-                    .blockingGet()
+                    .blockingGet(),
             ) doReturn listOf()
         } else {
             whenever(
                 d2.programModule().programStageDataElements()
                     .byProgramStage().eq("stage_1")
-                    .blockingGet()
+                    .blockingGet(),
             ) doReturn listOf(
                 ProgramStageDataElement.builder()
                     .uid("psde_uid_1")
                     .dataElement(DataElement.builder().uid("de_1").build())
-                    .build()
+                    .build(),
             )
         }
 
         whenever(
-            d2.dataElementModule().dataElements().uid("de_1")
+            d2.dataElementModule().dataElements().uid("de_1"),
         ) doReturn mock()
         whenever(
             d2.dataElementModule().dataElements().uid("de_1")
-                .blockingGet()
+                .blockingGet(),
         ) doReturn de
     }
 
-    private fun mockedAnalyticsSettings(): MutableList<AnalyticsTeiSetting>? {
+    private fun mockedAnalyticsSettings(): List<AnalyticsTeiSetting> {
         return arrayListOf(
             AnalyticsTeiSetting.builder()
                 .uid("analyticsTeiSettings_1")
@@ -604,7 +622,7 @@ class ChartsRepositoryTest {
                 .period(PeriodType.Weekly)
                 .type(ChartType.LINE)
                 .data(AnalyticsTeiData.builder().build())
-                .build()
+                .build(),
         )
     }
 
@@ -616,56 +634,66 @@ class ChartsRepositoryTest {
                 null,
                 PeriodType.Daily,
                 0L,
-                dhis2.org.analytics.charts.data.ChartType.LINE_CHART
-            )
+                dhis2.org.analytics.charts.data.ChartType.LINE_CHART,
+            ),
         )
     }
 
     private fun mockedDataElementGraph(): Graph {
         return Graph(
-            "de_graph_1",
-            listOf(SerieData("de_field", listOf(GraphPoint(Date(), null, 30f)))),
-            null,
-            PeriodType.Daily,
-            0L,
-            dhis2.org.analytics.charts.data.ChartType.LINE_CHART
+            title = "de_graph_1",
+            series = listOf(
+                SerieData(
+                    "de_field",
+                    listOf(GraphPoint(Date(), null, GraphFieldValue.Numeric(30f))),
+                ),
+            ),
+            periodToDisplayDefault = null,
+            eventPeriodType = PeriodType.Daily,
+            periodStep = 0L,
+            chartType = dhis2.org.analytics.charts.data.ChartType.LINE_CHART,
         )
     }
 
     private fun mockedIndicatorGraph(): Graph {
         return Graph(
             "indicator_graph_1",
-            listOf(SerieData("indicator_field", listOf(GraphPoint(Date(), null, 30f)))),
+            listOf(
+                SerieData(
+                    "indicator_field",
+                    listOf(GraphPoint(Date(), null, GraphFieldValue.Numeric(30f))),
+                ),
+            ),
             null,
             PeriodType.Daily,
             0L,
-            dhis2.org.analytics.charts.data.ChartType.LINE_CHART
+            dhis2.org.analytics.charts.data.ChartType.LINE_CHART,
         )
     }
 
     private fun mockedVisualizationPeriodFilter() {
         whenever(
-            d2.dataStoreModule().localDataStore().value(any()).blockingExists()
+            d2.dataStoreModule().localDataStore().value(any()).blockingExists(),
         ) doReturn false
     }
 
     private fun mockedVisualizationPeriodFilterWithValue(
-        relativePeriods: List<RelativePeriod>? = null
+        relativePeriods: List<RelativePeriod>? = null,
     ) {
         whenever(
-            analyticsFilterProvider.visualizationPeriod(any())
+            analyticsFilterProvider.visualizationPeriod(any()),
         ) doReturn relativePeriods
     }
 
     private fun mockedVisualizationOrgUnitFilterType(orgUnitFilterType: OrgUnitFilterType?) {
         whenever(
-            analyticsFilterProvider.visualizationOrgUnitsType(any())
+            analyticsFilterProvider.visualizationOrgUnitsType(any()),
         ) doReturn orgUnitFilterType
     }
 
     private fun mockedVisualizationOrgUnitFilterWithValue(orgUnits: List<String>? = null) {
         whenever(
-            analyticsFilterProvider.visualizationOrgUnits(any())
+            analyticsFilterProvider.visualizationOrgUnits(any()),
         ) doReturn orgUnits
     }
 }

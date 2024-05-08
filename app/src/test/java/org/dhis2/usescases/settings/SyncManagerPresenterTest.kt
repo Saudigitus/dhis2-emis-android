@@ -1,5 +1,6 @@
 package org.dhis2.usescases.settings
 
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.WorkInfo
 import io.reactivex.Single
@@ -29,19 +30,26 @@ import org.dhis2.usescases.settings.models.SyncParametersViewModel
 import org.dhis2.utils.analytics.AnalyticsHelper
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.settings.LimitScope
+import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
+import java.io.File
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SyncManagerPresenterTest {
+
+    @get:Rule
+    val instantExecutorRule = InstantTaskExecutorRule()
 
     private lateinit var presenter: SyncManagerPresenter
     private val d2: D2 = Mockito.mock(D2::class.java, Mockito.RETURNS_DEEP_STUBS)
@@ -82,7 +90,7 @@ class SyncManagerPresenterTest {
             matomoAnalyticsController,
             resourcesManager,
             versionRepository,
-            dispatcherProvider
+            dispatcherProvider,
         )
     }
 
@@ -91,12 +99,12 @@ class SyncManagerPresenterTest {
         whenever(resourcesManager.getString(any())) doReturn ""
         presenter.init()
         whenever(
-            settingsRepository.metaSync(userManager)
+            settingsRepository.metaSync(userManager),
         ) doReturn Single.just(mockedMetaViewModel())
         whenever(settingsRepository.dataSync()) doReturn Single.just(mockedDataViewModel())
         whenever(settingsRepository.syncParameters()) doReturn Single.just(mockedParamsViewModel())
         whenever(settingsRepository.reservedValues()) doReturn Single.just(
-            mockedReservecValuesViewModel()
+            mockedReservecValuesViewModel(),
         )
         whenever(settingsRepository.sms()) doReturn Single.just(mockedSMSViewModel())
 
@@ -144,7 +152,7 @@ class SyncManagerPresenterTest {
             100,
             "test",
             false,
-            canEdit = false
+            canEdit = false,
         )
     }
 
@@ -155,7 +163,7 @@ class SyncManagerPresenterTest {
             false,
             false,
             false,
-            false
+            false,
         )
     }
 
@@ -169,7 +177,7 @@ class SyncManagerPresenterTest {
             false,
             false,
             false,
-            5
+            5,
         )
     }
 
@@ -185,7 +193,7 @@ class SyncManagerPresenterTest {
             10,
             false,
             false,
-            false
+            false,
         )
     }
 
@@ -196,8 +204,8 @@ class SyncManagerPresenterTest {
                 100,
                 "last date",
                 hasErrors = false,
-                canEdit = true
-            )
+                canEdit = true,
+            ),
         )
         val period = presenter.metadataPeriodSetting
         assert(period == 100)
@@ -212,8 +220,8 @@ class SyncManagerPresenterTest {
                 false,
                 dataHasErrors = true,
                 dataHasWarnings = true,
-                canEdit = true
-            )
+                canEdit = true,
+            ),
         )
         val period = presenter.dataPeriodSetting
         assert(period == 100)
@@ -287,8 +295,8 @@ class SyncManagerPresenterTest {
                 10,
                 null,
                 null,
-                ExistingPeriodicWorkPolicy.REPLACE
-            )
+                ExistingPeriodicWorkPolicy.REPLACE,
+            ),
         )
     }
 
@@ -303,8 +311,8 @@ class SyncManagerPresenterTest {
                 10,
                 null,
                 null,
-                ExistingPeriodicWorkPolicy.REPLACE
-            )
+                ExistingPeriodicWorkPolicy.REPLACE,
+            ),
         )
     }
 
@@ -376,5 +384,23 @@ class SyncManagerPresenterTest {
         verify(view).isGatewayValid
         verify(view).isResultTimeoutValid
         verifyNoMoreInteractions(view)
+    }
+
+    @Test
+    fun `Should export database`() {
+        val mockedFile: File = mock()
+        whenever(d2.maintenanceModule().databaseImportExport())doReturn mock()
+        whenever(d2.maintenanceModule().databaseImportExport().exportLoggedUserDatabase())doReturn mockedFile
+        presenter.onExportAndShareDB()
+        assertTrue(presenter.exportedDb.value?.file == mockedFile)
+    }
+
+    @Test
+    fun `Should display export database error`() {
+        whenever(d2.maintenanceModule().databaseImportExport())doReturn mock()
+        whenever(d2.maintenanceModule().databaseImportExport().exportLoggedUserDatabase())doThrow RuntimeException("Testing exception")
+        whenever(resourcesManager.parseD2Error(any()))doReturn "Testing exception"
+        presenter.onExportAndShareDB()
+        verify(view).displayMessage("Testing exception")
     }
 }

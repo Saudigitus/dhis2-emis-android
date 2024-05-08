@@ -14,14 +14,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -43,10 +38,12 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlin.math.roundToInt
 import org.dhis2.ui.R
 import org.dhis2.ui.theme.textSecondary
 import org.dhis2.ui.utils.dashedBorder
+import org.hisp.dhis.mobile.ui.designsystem.component.Button
+import org.hisp.dhis.mobile.ui.designsystem.component.IconButton
+import kotlin.math.roundToInt
 
 @ExperimentalComposeUiApi
 @Composable
@@ -62,14 +59,14 @@ fun SignatureDialogUi(title: String, onSave: (Bitmap) -> Unit, onCancel: () -> U
         modifier = Modifier
             .background(Color.White, RoundedCornerShape(16.dp))
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Text(
             text = title,
             style = TextStyle(
                 fontSize = 10.sp,
-                color = textSecondary
-            )
+                color = textSecondary,
+            ),
         )
         Box {
             SignatureCanvas(
@@ -78,12 +75,12 @@ fun SignatureDialogUi(title: String, onSave: (Bitmap) -> Unit, onCancel: () -> U
                     .dashedBorder(
                         strokeWidth = 1.dp,
                         color = textSecondary.copy(alpha = 0.3f),
-                        cornerRadiusDp = 8.dp
+                        cornerRadiusDp = 8.dp,
                     )
                     .onGloballyPositioned {
                         capturingViewBounds = it.boundsInRoot()
                     },
-                drawing = drawing
+                drawing = drawing,
             )
             if (!capturing) {
                 Text(
@@ -92,14 +89,14 @@ fun SignatureDialogUi(title: String, onSave: (Bitmap) -> Unit, onCancel: () -> U
                         .align(Alignment.TopEnd)
                         .background(
                             MaterialTheme.colorScheme.primary,
-                            RoundedCornerShape(6.dp, 6.dp, 6.dp, 0.dp)
+                            RoundedCornerShape(6.dp, 6.dp, 6.dp, 0.dp),
                         )
                         .padding(8.dp, 4.dp),
                     text = stringResource(R.string.draw_here),
                     style = TextStyle(
                         fontSize = 10.sp,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
+                        color = MaterialTheme.colorScheme.onPrimary,
+                    ),
                 )
                 if (isSigned) {
                     IconButton(
@@ -107,38 +104,31 @@ fun SignatureDialogUi(title: String, onSave: (Bitmap) -> Unit, onCancel: () -> U
                         onClick = {
                             drawing.value = null
                         },
-                        colors = IconButtonDefaults.iconButtonColors(
-                            contentColor = MaterialTheme.colorScheme.primary
-                        )
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Clear,
-                            contentDescription = stringResource(R.string.clear)
-                        )
-                    }
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = stringResource(R.string.clear),
+                            )
+                        },
+                    )
                 }
             }
         }
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
+            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
         ) {
-            TextButton(
-                onClick = onCancel
-            ) {
-                Text(text = stringResource(R.string.cancel))
-            }
             Button(
+                text = stringResource(R.string.cancel),
+                onClick = onCancel,
+            )
+            Button(
+                text = stringResource(R.string.save),
                 onClick = {
                     capturing = true
                 },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                ),
-                enabled = isSigned
-            ) {
-                Text(text = stringResource(R.string.save))
-            }
+                enabled = isSigned,
+            )
         }
     }
 
@@ -155,7 +145,7 @@ fun Rect.captureBitmap(view: View): Bitmap? {
     val imageBitmap = Bitmap.createBitmap(
         rect.width.roundToInt(),
         rect.height.roundToInt(),
-        Bitmap.Config.ARGB_8888
+        Bitmap.Config.ARGB_8888,
     )
     val canvas = Canvas(imageBitmap)
         .apply {

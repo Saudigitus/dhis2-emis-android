@@ -1,11 +1,13 @@
 package org.dhis2.form.model
 
+import org.dhis2.commons.orgunitselector.OrgUnitSelectorScope
 import org.dhis2.form.ui.event.RecyclerViewUiEvents
 import org.dhis2.form.ui.event.UiEventFactory
 import org.dhis2.form.ui.intent.FormIntent
 import org.dhis2.form.ui.style.FormUiModelStyle
 import org.hisp.dhis.android.core.common.ValueType
 import org.hisp.dhis.android.core.option.Option
+import org.hisp.dhis.mobile.ui.designsystem.component.SelectableDates
 
 interface FieldUiModel {
 
@@ -69,6 +71,16 @@ interface FieldUiModel {
 
     val isLoadingData: Boolean
 
+    val autocompleteList: List<String>?
+
+    val orgUnitSelectorScope: OrgUnitSelectorScope?
+
+    val selectableDates: SelectableDates?
+
+    val eventCategories: List<EventCategory>?
+
+    val periodSelector: PeriodSelector?
+
     fun setCallback(callback: Callback)
 
     fun equals(item: FieldUiModel): Boolean
@@ -94,6 +106,8 @@ interface FieldUiModel {
     fun invokeIntent(intent: FormIntent)
 
     fun setValue(value: String?): FieldUiModel
+
+    fun setSelectableDates(selectableDates: SelectableDates?): FieldUiModel
 
     fun setIsLoadingData(isLoadingData: Boolean): FieldUiModel
 

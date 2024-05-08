@@ -4,11 +4,17 @@ import android.content.Context
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
+import androidx.work.WorkInfo
 import io.reactivex.Completable
 import io.reactivex.Single
-import java.util.Date
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.setMain
+import org.dhis2.commons.Constants
 import org.dhis2.commons.sync.ConflictType
 import org.dhis2.commons.sync.SyncContext
 import org.dhis2.commons.viewmodel.DispatcherProvider
@@ -16,18 +22,28 @@ import org.dhis2.data.schedulers.TrampolineSchedulerProvider
 import org.dhis2.data.service.workManager.WorkManagerController
 import org.dhis2.usescases.sms.SmsSendingService
 import org.hisp.dhis.android.core.D2
+import org.hisp.dhis.android.core.category.CategoryOptionCombo
+import org.hisp.dhis.android.core.common.ObjectWithUid
 import org.hisp.dhis.android.core.common.State
+import org.hisp.dhis.android.core.dataset.DataSet
+import org.hisp.dhis.android.core.dataset.DataSetElement
+import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.mockito.ArgumentMatchers.anyList
 import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import java.util.Date
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class GranularSyncPresenterTest {
@@ -49,6 +65,16 @@ class GranularSyncPresenterTest {
     private val context: Context = mock()
     private val syncContext: SyncContext = SyncContext.Global()
 
+    @Before
+    fun setUp() {
+        Dispatchers.setMain(testingDispatcher)
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
+
     @Test
     fun `should return tracker program error state`() {
         val presenter = GranularSyncPresenter(
@@ -59,7 +85,7 @@ class GranularSyncPresenterTest {
             testDispatcher,
             SyncContext.TrackerProgram("test_uid"),
             workManager,
-            smsSyncProvider
+            smsSyncProvider,
         )
 
         val mockedState = SyncUiState(
@@ -69,7 +95,7 @@ class GranularSyncPresenterTest {
             message = "message",
             mainActionLabel = "action 1",
             secondaryActionLabel = "action 2",
-            content = emptyList()
+            content = emptyList(),
         )
         whenever(repository.getUiState()) doReturn mockedState
 
@@ -81,7 +107,7 @@ class GranularSyncPresenterTest {
     @Test
     fun `should block sms for some conflict types`() {
         whenever(
-            smsSyncProvider.isSMSEnabled(any())
+            smsSyncProvider.isSMSEnabled(any()),
         ) doReturn true
 
         val syncContexts = listOf(
@@ -96,7 +122,7 @@ class GranularSyncPresenterTest {
             SyncContext.Event(""),
             SyncContext.GlobalDataSet(""),
             SyncContext.DataSet(""),
-            SyncContext.DataSetInstance("", "", "", "")
+            SyncContext.DataSetInstance("", "", "", ""),
         )
 
         syncContexts.map {
@@ -108,7 +134,7 @@ class GranularSyncPresenterTest {
                 testDispatcher,
                 it,
                 workManager,
-                smsSyncProvider
+                smsSyncProvider,
             ).canSendSMS()
             it to enable
         }.forEach { (syncContext, canSendSMS) ->
@@ -134,14 +160,14 @@ class GranularSyncPresenterTest {
             testDispatcher,
             syncContext,
             workManager,
-            smsSyncProvider
+            smsSyncProvider,
         )
 
         val testingMsg = "testingMsg"
         val testingGateway = "testingGateWay"
         whenever(smsSyncProvider.isPlayServicesEnabled()) doReturn true
         whenever(smsSyncProvider.getConvertTask()) doReturn Single.just(
-            ConvertTaskResult.Message(testingMsg)
+            ConvertTaskResult.Message(testingMsg),
         )
         whenever(smsSyncProvider.getGatewayNumber()) doReturn testingGateway
         presenter.onSmsSyncClick { }
@@ -160,7 +186,7 @@ class GranularSyncPresenterTest {
             testDispatcher,
             syncContext,
             workManager,
-            smsSyncProvider
+            smsSyncProvider,
         )
 
         presenter.onSmsNotManuallySent(context)
@@ -177,13 +203,13 @@ class GranularSyncPresenterTest {
             testDispatcher,
             syncContext,
             workManager,
-            smsSyncProvider
+            smsSyncProvider,
         )
 
         whenever(smsSyncProvider.isPlayServicesEnabled()) doReturn false
         whenever(view.checkSmsPermission()) doReturn true
         whenever(
-            smsSyncProvider.getConvertTask()
+            smsSyncProvider.getConvertTask(),
         ) doReturn Single.just(ConvertTaskResult.Count(1))
         whenever(smsSyncProvider.smsSender) doReturn mock()
         whenever(smsSyncProvider.smsSender.submissionId) doReturn 1
@@ -196,7 +222,7 @@ class GranularSyncPresenterTest {
 
         assertTrue(testingState.value?.isNotEmpty() == true)
         assertTrue(
-            testingState.value?.get(0)?.state == SmsSendingService.State.WAITING_COUNT_CONFIRMATION
+            testingState.value?.get(0)?.state == SmsSendingService.State.WAITING_COUNT_CONFIRMATION,
         )
     }
 
@@ -210,7 +236,7 @@ class GranularSyncPresenterTest {
             testDispatcher,
             syncContext,
             workManager,
-            smsSyncProvider
+            smsSyncProvider,
         )
 
         whenever(smsSyncProvider.expectsResponseSMS()) doReturn false
@@ -232,7 +258,7 @@ class GranularSyncPresenterTest {
             testDispatcher,
             syncContext,
             workManager,
-            smsSyncProvider
+            smsSyncProvider,
         )
 
         whenever(smsSyncProvider.expectsResponseSMS()) doReturn true
@@ -252,7 +278,7 @@ class GranularSyncPresenterTest {
             testDispatcher,
             syncContext,
             workManager,
-            smsSyncProvider
+            smsSyncProvider,
         )
 
         whenever(smsSyncProvider.smsSender) doReturn mock()
@@ -273,7 +299,7 @@ class GranularSyncPresenterTest {
             testDispatcher,
             syncContext,
             workManager,
-            smsSyncProvider
+            smsSyncProvider,
         )
 
         whenever(smsSyncProvider.smsSender) doReturn mock()
@@ -282,5 +308,217 @@ class GranularSyncPresenterTest {
         presenter.onConfirmationMessageStateChanged(false)
 
         verify(repository).getUiState()
+    }
+
+    @Test
+    fun shouldSyncProgram() {
+        val presenter = GranularSyncPresenter(
+            d2,
+            view,
+            repository,
+            trampolineSchedulerProvider,
+            testDispatcher,
+            SyncContext.TrackerProgram("programUid"),
+            workManager,
+            smsSyncProvider,
+        )
+
+        val workInfoList = MutableLiveData<List<WorkInfo>>(emptyList())
+        whenever(workManager.getWorkInfosForUniqueWorkLiveData(any())) doReturn workInfoList
+
+        val workInfoObserver: Observer<List<WorkInfo>> = mock()
+        val resultLiveData = presenter.initGranularSync()
+        resultLiveData.observeForever(workInfoObserver)
+
+        verify(workManager).beginUniqueWork(any())
+        verify(workInfoObserver).onChanged(anyList())
+    }
+
+    @Test
+    fun shouldSyncTei() {
+        val presenter = GranularSyncPresenter(
+            d2,
+            view,
+            repository,
+            trampolineSchedulerProvider,
+            testDispatcher,
+            SyncContext.TrackerProgramTei("enrollmentUid"),
+            workManager,
+            smsSyncProvider,
+        )
+
+        val workInfoList = MutableLiveData<List<WorkInfo>>(emptyList())
+        whenever(workManager.getWorkInfosForUniqueWorkLiveData(any())) doReturn workInfoList
+
+        val workInfoObserver: Observer<List<WorkInfo>> = mock()
+        val resultLiveData = presenter.initGranularSync()
+        resultLiveData.observeForever(workInfoObserver)
+
+        verify(workManager).beginUniqueWork(any())
+        verify(workInfoObserver).onChanged(anyList())
+    }
+
+    @Test
+    fun shouldSyncEvent() {
+        val presenter = GranularSyncPresenter(
+            d2,
+            view,
+            repository,
+            trampolineSchedulerProvider,
+            testDispatcher,
+            SyncContext.Event("eventUid"),
+            workManager,
+            smsSyncProvider,
+        )
+
+        val workInfoList = MutableLiveData<List<WorkInfo>>(emptyList())
+        whenever(workManager.getWorkInfosForUniqueWorkLiveData(any())) doReturn workInfoList
+
+        val workInfoObserver: Observer<List<WorkInfo>> = mock()
+        val resultLiveData = presenter.initGranularSync()
+        resultLiveData.observeForever(workInfoObserver)
+
+        verify(workManager).beginUniqueWork(any())
+        verify(workInfoObserver).onChanged(anyList())
+    }
+
+    @Test
+    fun shouldSyncDataSet() {
+        val presenter = GranularSyncPresenter(
+            d2,
+            view,
+            repository,
+            trampolineSchedulerProvider,
+            testDispatcher,
+            SyncContext.DataSet("dataSetUid"),
+            workManager,
+            smsSyncProvider,
+        )
+
+        val workInfoList = MutableLiveData<List<WorkInfo>>(emptyList())
+        whenever(workManager.getWorkInfosForUniqueWorkLiveData(any())) doReturn workInfoList
+
+        val workInfoObserver: Observer<List<WorkInfo>> = mock()
+        val resultLiveData = presenter.initGranularSync()
+        resultLiveData.observeForever(workInfoObserver)
+
+        verify(workManager).beginUniqueWork(any())
+        verify(workInfoObserver).onChanged(anyList())
+    }
+
+    @Test
+    fun shouldSyncDataValues() {
+        val presenter = GranularSyncPresenter(
+            d2,
+            view,
+            repository,
+            trampolineSchedulerProvider,
+            testDispatcher,
+            SyncContext.DataSetInstance(
+                "dataSetUid",
+                "periodId",
+                "orgUnitUid",
+                "attrOptionComboUid",
+            ),
+            workManager,
+            smsSyncProvider,
+        )
+
+        val mockedDataSet: DataSet = mock {
+            on { dataSetElements() } doReturn listOf(
+                DataSetElement.builder()
+                    .categoryCombo(ObjectWithUid.create("catComboUid"))
+                    .dataElement(ObjectWithUid.create("dataElementUid"))
+                    .dataSet(ObjectWithUid.create("dataSetUid"))
+                    .build(),
+            )
+        }
+        whenever(
+            d2.dataSetModule().dataSets().withDataSetElements().uid(any()).get(),
+        ) doReturn Single.just(mockedDataSet)
+        whenever(
+            d2.categoryModule().categoryOptionCombos().byCategoryComboUid(),
+        ) doReturn mock()
+        whenever(
+            d2.categoryModule().categoryOptionCombos().byCategoryComboUid().`in`(anyList()),
+        ) doReturn mock()
+        whenever(
+            d2.categoryModule().categoryOptionCombos().byCategoryComboUid().`in`(anyList()).get(),
+        ) doReturn Single.just(
+            listOf(CategoryOptionCombo.builder().uid("catComboUid").build()),
+        )
+
+        val workInfoList = MutableLiveData<List<WorkInfo>>(emptyList())
+        whenever(workManager.getWorkInfosForUniqueWorkLiveData(any())) doReturn workInfoList
+        val workInfoObserver: Observer<List<WorkInfo>> = mock()
+        val resultLiveData = presenter.initGranularSync()
+        resultLiveData.observeForever(workInfoObserver)
+
+        verify(workManager).beginUniqueWork(any())
+        verify(workInfoObserver).onChanged(anyList())
+    }
+
+    @Test
+    fun shouldPerformInitialSync() {
+        val presenter = GranularSyncPresenter(
+            d2,
+            view,
+            repository,
+            trampolineSchedulerProvider,
+            testDispatcher,
+            SyncContext.Global(),
+            workManager,
+            smsSyncProvider,
+        )
+
+        val workInfoList = MutableLiveData<List<WorkInfo>>(emptyList())
+        whenever(workManager.getWorkInfosForUniqueWorkLiveData(any())) doReturn workInfoList
+
+        val workInfoObserver: Observer<List<WorkInfo>> = mock()
+        val resultLiveData = presenter.initGranularSync()
+        resultLiveData.observeForever(workInfoObserver)
+
+        verify(workManager).syncDataForWorker(Constants.DATA_NOW, Constants.INITIAL_SYNC)
+        verify(workInfoObserver).onChanged(anyList())
+    }
+
+    @Test
+    fun shouldCheckAvailableConnection() = runBlocking {
+        whenever(repository.checkServerAvailability()) doReturn "pong"
+
+        val presenter = GranularSyncPresenter(
+            d2,
+            view,
+            repository,
+            trampolineSchedulerProvider,
+            testDispatcher,
+            SyncContext.Global(),
+            workManager,
+            smsSyncProvider,
+        )
+
+        presenter.checkServerAvailability()
+
+        assertTrue(presenter.serverAvailability.value!!)
+    }
+
+    @Test
+    fun shouldCheckUnavailableConnection() = runBlocking {
+        whenever(repository.checkServerAvailability()) doThrow RuntimeException()
+
+        val presenter = GranularSyncPresenter(
+            d2,
+            view,
+            repository,
+            trampolineSchedulerProvider,
+            testDispatcher,
+            SyncContext.Global(),
+            workManager,
+            smsSyncProvider,
+        )
+
+        presenter.checkServerAvailability()
+
+        assertFalse(presenter.serverAvailability.value!!)
     }
 }

@@ -11,15 +11,9 @@ import android.net.Uri
 import android.os.Environment
 import android.provider.DocumentsContract
 import android.provider.MediaStore
-import java.io.File
 import org.apache.commons.io.FileUtils
 import org.hisp.dhis.android.core.arch.helpers.FileResourceDirectoryHelper
-
-fun File.widthAndHeight(minimum: Int? = null): Pair<Int, Int> {
-    BitmapFactory.decodeFile(this.absolutePath).apply {
-        return resizeToMinimum(minimum, width, height)
-    }
-}
+import java.io.File
 
 fun resizeToMinimum(minimum: Int? = null, width: Int, height: Int): Pair<Int, Int> {
     val ratio = width.toFloat() / height.toFloat()
@@ -39,7 +33,7 @@ fun File.rotateImage(context: Context): File {
         ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
     var bitmap = BitmapFactory.decodeFile(
         this.path,
-        BitmapFactory.Options().apply { inSampleSize = 4 }
+        BitmapFactory.Options().apply { inSampleSize = 4 },
     )
 
     bitmap = when (orientation) {
@@ -51,7 +45,7 @@ fun File.rotateImage(context: Context): File {
 
     return File(
         FileResourceDirectoryHelper.getFileResourceDirectory(context),
-        "tempFile.png"
+        "tempFile.png",
     ).apply { writeBitmap(bitmap, Bitmap.CompressFormat.JPEG, 100) }
 }
 
@@ -83,7 +77,7 @@ fun getFileFrom(context: Context, fileUri: Uri): File? {
     val file = getFilePath(context, fileUri)?.let { File(it) }
     val tempFile = File(
         FileResourceDirectoryHelper.getFileResourceDirectory(context),
-        file?.name ?: "temp"
+        file?.name ?: "temp",
     )
     context.contentResolver.openInputStream(fileUri)?.let { inputStream ->
         FileUtils.copyToFile(inputStream, tempFile)
@@ -96,32 +90,28 @@ private fun getFilePath(context: Context, uri: Uri): String? {
     var selection: String? = null
     var selectionArgs: Array<String>? = null
     if (DocumentsContract.isDocumentUri(context, copy)) {
+        val id = DocumentsContract.getDocumentId(copy)
+        val split = id.split(":").toTypedArray()
         when {
             isDownloadsDocument(copy) -> {
-                val id = DocumentsContract.getDocumentId(copy)
+                if (id.startsWith("raw:")) {
+                    return id.replaceFirst("raw:", "")
+                }
+                val splitIndex = if (split.size > 1) 1 else 0
                 copy = ContentUris.withAppendedId(
                     Uri.parse("content://downloads/public_downloads"),
-                    id.toLong()
+                    split[splitIndex].toLong(),
                 )
             }
             isExternalStorageDocument(copy) -> {
-                val id = DocumentsContract.getDocumentId(copy)
-                val split = id.split(":").toTypedArray()
                 return Environment.getExternalStorageDirectory().toString() + "/" + split[1]
             }
             isMediaDocument(copy) -> {
-                val id = DocumentsContract.getDocumentId(copy)
-                val split = id.split(":").toTypedArray()
-                when (split[0]) {
-                    "image" -> {
-                        copy = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-                    }
-                    "video" -> {
-                        copy = MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-                    }
-                    "audio" -> {
-                        copy = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-                    }
+                copy = when (split[0]) {
+                    "image" -> MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+                    "video" -> MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+                    "audio" -> MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+                    else -> MediaStore.Files.getContentUri("external")
                 }
 
                 selection = "_id=?"
@@ -143,7 +133,7 @@ private fun getFilePath(context: Context, uri: Uri): String? {
                 projection,
                 selection,
                 selectionArgs,
-                null
+                null,
             )
             if (cursor != null && cursor.moveToFirst()) {
                 return cursor.getString(0)

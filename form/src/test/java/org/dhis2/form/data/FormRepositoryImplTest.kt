@@ -3,6 +3,7 @@ package org.dhis2.form.data
 import androidx.databinding.ObservableField
 import io.reactivex.Flowable
 import org.dhis2.form.model.ActionType
+import org.dhis2.form.model.EventCategory
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.FieldUiModelImpl
 import org.dhis2.form.model.RowAction
@@ -12,10 +13,12 @@ import org.dhis2.form.model.ValueStoreResult
 import org.dhis2.form.ui.provider.DisplayNameProvider
 import org.dhis2.form.ui.provider.LegendValueProvider
 import org.dhis2.form.ui.validation.FieldErrorMessageProvider
+import org.dhis2.mobileProgramRules.RuleEngineHelper
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.Is.`is`
 import org.hisp.dhis.android.core.common.ValueType
-import org.hisp.dhis.rules.models.RuleActionAssign
+import org.hisp.dhis.android.core.program.ProgramRuleActionType
+import org.hisp.dhis.rules.models.RuleAction
 import org.hisp.dhis.rules.models.RuleEffect
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -23,6 +26,7 @@ import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.doReturnConsecutively
 import org.mockito.kotlin.mock
@@ -33,7 +37,7 @@ import org.mockito.kotlin.whenever
 class FormRepositoryImplTest {
 
     private val rulesUtilsProvider: RulesUtilsProvider = mock()
-    private val ruleEngineRepository: RuleEngineRepository = mock()
+    private val ruleEngineHelper: RuleEngineHelper = mock()
     private val dataEntryRepository: DataEntryRepository = mock()
     private val formValueStore: FormValueStore = mock()
     private val fieldErrorMessageProvider: FieldErrorMessageProvider = mock()
@@ -43,16 +47,45 @@ class FormRepositoryImplTest {
 
     @Before
     fun setUp() {
+        whenever(dataEntryRepository.disableCollapsableSections()) doReturn null
+        whenever(dataEntryRepository.firstSectionToOpen()) doReturn mockedSections().first()
         whenever(dataEntryRepository.sectionUids()) doReturn Flowable.just(mockedSections())
         whenever(dataEntryRepository.list()) doReturn Flowable.just(provideItemList())
+        whenever(fieldErrorMessageProvider.mandatoryWarning()) doReturn ""
+        whenever(
+            dataEntryRepository.updateField(
+                any<FieldUiModel>(),
+                anyOrNull<String>(),
+                any<List<String>>(),
+                any<List<String>>(),
+                any<List<String>>(),
+            ),
+        ).thenAnswer { invocationOnMock ->
+            invocationOnMock.getArgument(0) as FieldUiModel
+        }
+
+        whenever(
+            dataEntryRepository.updateSection(
+                any<FieldUiModel>(),
+                any<Boolean>(),
+                any<Int>(),
+                any<Int>(),
+                any<Int>(),
+                any<Int>(),
+            ),
+        ).thenAnswer { invocationOnMock ->
+            invocationOnMock.getArgument(0) as FieldUiModel
+        }
+
         repository = FormRepositoryImpl(
             formValueStore,
             fieldErrorMessageProvider,
             displayNameProvider,
             dataEntryRepository,
-            ruleEngineRepository,
+            ruleEngineHelper,
             rulesUtilsProvider,
-            legendValueProvider
+            legendValueProvider,
+            false,
         )
         repository.fetchFormItems()
     }
@@ -61,7 +94,7 @@ class FormRepositoryImplTest {
     fun `Should process user action ON_FOCUS`() {
         val action = RowAction(
             id = "uid001",
-            type = ActionType.ON_FOCUS
+            type = ActionType.ON_FOCUS,
         )
         repository.setFocusedItem(action)
         assertTrue(repository.composeList().find { it.uid == "uid001" }?.focused == true)
@@ -71,7 +104,7 @@ class FormRepositoryImplTest {
     fun `Should process user action ON_NEXT`() {
         val action = RowAction(
             id = "uid001",
-            type = ActionType.ON_NEXT
+            type = ActionType.ON_NEXT,
         )
         repository.setFocusedItem(action)
         assertTrue(repository.composeList().find { it.uid == "uid002" }?.focused == true)
@@ -88,14 +121,14 @@ class FormRepositoryImplTest {
         val action = RowAction(
             id = "uid001",
             value = "testValue",
-            type = ActionType.ON_SAVE
+            type = ActionType.ON_SAVE,
         )
         whenever(formValueStore.save(action.id, action.value, null)) doReturn StoreResult(
             action.id,
-            ValueStoreResult.VALUE_CHANGED
+            ValueStoreResult.VALUE_CHANGED,
         )
         val result = repository.save("uid001", "testValue", null)
-        assertThat(result?.valueStoreResult, `is`(ValueStoreResult.VALUE_CHANGED))
+        assertThat(result.valueStoreResult, `is`(ValueStoreResult.VALUE_CHANGED))
     }
 
     @Test
@@ -113,12 +146,12 @@ class FormRepositoryImplTest {
                 id = "uid001",
                 value = "testValue",
                 type = ActionType.ON_SAVE,
-                error = Throwable()
-            )
+                error = Throwable(),
+            ),
         )
 
         whenever(
-            fieldErrorMessageProvider.getFriendlyErrorMessage(any())
+            fieldErrorMessageProvider.getFriendlyErrorMessage(any()),
         ) doReturn "errorMessage"
 
         // Then item should not be saved
@@ -133,8 +166,8 @@ class FormRepositoryImplTest {
             RowAction(
                 id = "uid001",
                 value = "value",
-                type = ActionType.ON_FOCUS
-            )
+                type = ActionType.ON_FOCUS,
+            ),
         )
 
         // When user taps on next
@@ -142,8 +175,8 @@ class FormRepositoryImplTest {
             RowAction(
                 id = "uid001",
                 value = "value",
-                type = ActionType.ON_NEXT
-            )
+                type = ActionType.ON_NEXT,
+            ),
         )
 
         // Then result list should has second item focused
@@ -153,21 +186,21 @@ class FormRepositoryImplTest {
 
     @Test
     fun `Should apply program rules`() {
-        whenever(ruleEngineRepository.calculate()) doReturn listOf(
-            RuleEffect.create(
+        whenever(ruleEngineHelper.evaluate()) doReturn listOf(
+            RuleEffect(
                 "",
-                RuleActionAssign.create(
-                    null,
+                RuleAction(
                     "assignedValue",
-                    "uid001"
-                )
-            )
+                    ProgramRuleActionType.ASSIGN.name,
+                    mutableMapOf(Pair("field", "uid001")),
+                ),
+            ),
         )
 
-        whenever(dataEntryRepository.isEvent) doReturn true
+        whenever(dataEntryRepository.isEvent()) doReturn true
 
         whenever(
-            rulesUtilsProvider.applyRuleEffects(any(), any(), any(), any())
+            rulesUtilsProvider.applyRuleEffects(any(), any(), any(), any()),
         ) doReturn RuleUtilsProviderResult(
             canComplete = true,
             messageOnComplete = null,
@@ -179,14 +212,14 @@ class FormRepositoryImplTest {
             stagesToHide = emptyList(),
             optionsToHide = emptyMap(),
             optionGroupsToHide = emptyMap(),
-            optionGroupsToShow = emptyMap()
+            optionGroupsToShow = emptyMap(),
         )
 
         verify(rulesUtilsProvider, times(1)).applyRuleEffects(
             any(),
             any(),
             any(),
-            any()
+            any(),
         )
     }
 
@@ -200,18 +233,18 @@ class FormRepositoryImplTest {
                 any(),
                 any(),
                 any(),
-                any()
-            )
+                any(),
+            ),
         ) doReturnConsecutively listOf(
             section1().apply { totalFields = 3 },
-            section2().apply { totalFields = 0 }
+            section2().apply { totalFields = 0 },
         )
         val result = repository.fetchFormItems()
         assertTrue(
-            result.find { it.isSection() && it.uid == "section1" } != null
+            result.find { it.isSection() && it.uid == "section1" } != null,
         )
         assertTrue(
-            result.find { it.isSection() && it.uid == "section2" } == null
+            result.find { it.isSection() && it.uid == "section2" } == null,
         )
     }
 
@@ -221,7 +254,7 @@ class FormRepositoryImplTest {
         repository.fetchFormItems()
         assertTrue(repository.runDataIntegrityCheck(false) is MissingMandatoryResult)
         whenever(
-            dataEntryRepository.list()
+            dataEntryRepository.list(),
         ) doReturn Flowable.just(provideMandatoryItemList().filter { !it.mandatory })
         repository.fetchFormItems()
         assertTrue(repository.runDataIntegrityCheck(false) is SuccessfulResult)
@@ -231,10 +264,10 @@ class FormRepositoryImplTest {
     fun `Concurrent crash test`() {
         val ruleEffects = emptyList<RuleEffect>()
         whenever(dataEntryRepository.list()) doReturn Flowable.just(provideMandatoryItemList())
-        whenever(ruleEngineRepository.calculate()) doReturn ruleEffects
-        whenever(dataEntryRepository.isEvent) doReturn true
+        whenever(ruleEngineHelper.evaluate()) doReturn ruleEffects
+        whenever(dataEntryRepository.isEvent()) doReturn true
         whenever(
-            rulesUtilsProvider.applyRuleEffects(any(), any(), any(), any())
+            rulesUtilsProvider.applyRuleEffects(any(), any(), any(), any()),
         ) doReturn RuleUtilsProviderResult(
             canComplete = true,
             messageOnComplete = null,
@@ -246,7 +279,7 @@ class FormRepositoryImplTest {
             stagesToHide = emptyList(),
             optionsToHide = emptyMap(),
             optionGroupsToHide = emptyMap(),
-            optionGroupsToShow = emptyMap()
+            optionGroupsToShow = emptyMap(),
         )
         try {
             repository.fetchFormItems()
@@ -256,8 +289,22 @@ class FormRepositoryImplTest {
         }
     }
 
+    @Test
+    fun `Should show mandatory warning when some cat combo is missing`() {
+        whenever(
+            dataEntryRepository.list(),
+        ) doReturn Flowable.just(provideMandatoryListWithCategoryCombo("option1"))
+        repository.fetchFormItems()
+        assertTrue(repository.runDataIntegrityCheck(false) is MissingMandatoryResult)
+        whenever(
+            dataEntryRepository.list(),
+        ) doReturn Flowable.just(provideMandatoryListWithCategoryCombo("option1,option2"))
+        repository.fetchFormItems()
+        assertTrue(repository.runDataIntegrityCheck(false) is SuccessfulResult)
+    }
+
     private fun mockedSections() = listOf(
-        "section1"
+        "section1",
     )
 
     private fun provideItemList() = listOf<FieldUiModel>(
@@ -269,7 +316,8 @@ class FormRepositoryImplTest {
             valueType = ValueType.TEXT,
             programStageSection = "section1",
             uiEventFactory = null,
-            optionSetConfiguration = null
+            optionSetConfiguration = null,
+            autocompleteList = null,
         ),
         FieldUiModelImpl(
             uid = "uid002",
@@ -279,7 +327,8 @@ class FormRepositoryImplTest {
             valueType = ValueType.TEXT,
             programStageSection = "section1",
             uiEventFactory = null,
-            optionSetConfiguration = null
+            optionSetConfiguration = null,
+            autocompleteList = null,
         ),
         FieldUiModelImpl(
             uid = "uid003",
@@ -289,25 +338,26 @@ class FormRepositoryImplTest {
             valueType = ValueType.TEXT,
             programStageSection = "section1",
             uiEventFactory = null,
-            optionSetConfiguration = null
-        )
+            optionSetConfiguration = null,
+            autocompleteList = null,
+        ),
     )
 
     private fun section1() = SectionUiModelImpl(
         uid = "section1",
         layoutId = 1,
         label = "section1",
-        selectedField = ObservableField("")
+        selectedField = ObservableField(""),
     )
 
     private fun section2() = SectionUiModelImpl(
         uid = "section2",
         layoutId = 1,
         label = "section2",
-        selectedField = ObservableField("")
+        selectedField = ObservableField(""),
     )
 
-    private fun provideEmptySectionItemList() = listOf<FieldUiModel>(
+    private fun provideEmptySectionItemList() = listOf(
         section1(),
         FieldUiModelImpl(
             uid = "uid001",
@@ -318,7 +368,8 @@ class FormRepositoryImplTest {
             valueType = ValueType.TEXT,
             programStageSection = "section1",
             uiEventFactory = null,
-            optionSetConfiguration = null
+            optionSetConfiguration = null,
+            autocompleteList = null,
         ),
         FieldUiModelImpl(
             uid = "uid002",
@@ -329,7 +380,8 @@ class FormRepositoryImplTest {
             valueType = ValueType.TEXT,
             programStageSection = "section1",
             uiEventFactory = null,
-            optionSetConfiguration = null
+            optionSetConfiguration = null,
+            autocompleteList = null,
         ),
         FieldUiModelImpl(
             uid = "uid003",
@@ -340,9 +392,31 @@ class FormRepositoryImplTest {
             valueType = ValueType.TEXT,
             programStageSection = "section1",
             uiEventFactory = null,
-            optionSetConfiguration = null
+            optionSetConfiguration = null,
+            autocompleteList = null,
         ),
-        section2()
+        section2(),
+    )
+
+    private fun provideMandatoryListWithCategoryCombo(value: String) = listOf(
+        section1(),
+        FieldUiModelImpl(
+            uid = "EVENT_CATEGORY_COMBO_UID-uid001",
+            layoutId = 1,
+            value = value,
+            displayName = "displayValue",
+            label = "field1",
+            valueType = ValueType.TEXT,
+            programStageSection = "section1",
+            uiEventFactory = null,
+            mandatory = true,
+            optionSetConfiguration = null,
+            autocompleteList = null,
+            eventCategories = listOf(
+                EventCategory("categoryUid1", "Category1", emptyList()),
+                EventCategory("categoryUid2", "Category2", emptyList()),
+            ),
+        ),
     )
 
     private fun provideMandatoryItemList() = listOf(
@@ -357,7 +431,8 @@ class FormRepositoryImplTest {
             programStageSection = "section1",
             uiEventFactory = null,
             mandatory = true,
-            optionSetConfiguration = null
+            optionSetConfiguration = null,
+            autocompleteList = null,
         ),
         FieldUiModelImpl(
             uid = "uid002",
@@ -368,7 +443,8 @@ class FormRepositoryImplTest {
             valueType = ValueType.TEXT,
             programStageSection = "section1",
             uiEventFactory = null,
-            optionSetConfiguration = null
-        )
+            optionSetConfiguration = null,
+            autocompleteList = null,
+        ),
     )
 }

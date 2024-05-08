@@ -16,15 +16,15 @@ class GraphCoordinatesToEntry {
             val position = graphPoint.position ?: dateToPosition(
                 graphPoint.eventDate,
                 graph.eventPeriodType,
-                minMonth
+                minMonth,
             ) { newValue ->
                 minMonth = newValue
             }
 
             Entry(
                 position,
-                graphPoint.fieldValue,
-                serieLabel
+                graphPoint.numericValue(),
+                serieLabel,
             )
         }
     }
@@ -33,7 +33,7 @@ class GraphCoordinatesToEntry {
         return coordinates.map { graphPoint ->
             Entry(
                 graphPoint.position ?: 0f,
-                graphPoint.fieldValue
+                graphPoint.numericValue(),
             )
         }
     }

@@ -2,7 +2,6 @@
 buildscript {
     repositories {
         google()
-        mavenLocal()
         maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots") }
     }
     dependencies {
@@ -15,7 +14,7 @@ buildscript {
 }
 
 plugins {
-    id("org.jlleitschuh.gradle.ktlint").version("11.3.2")
+    id("org.jlleitschuh.gradle.ktlint").version("11.5.1")
     id("org.sonarqube").version("3.5.0.2730")
     id("com.github.ben-manes.versions").version("0.46.0")
 }
@@ -52,6 +51,7 @@ val isNonStable: (String) -> Boolean = { version ->
 allprojects {
     configurations.all {
         resolutionStrategy {
+            cacheDynamicVersionsFor(0, TimeUnit.SECONDS)
             eachDependency {
                 if (requested.group == "org.jacoco")
                     useVersion("0.8.10")
@@ -98,6 +98,7 @@ allprojects {
     }
 
     ktlint {
+        version.set("0.50.0")
         debug.set(true)
         verbose.set(true)
         android.set(true)

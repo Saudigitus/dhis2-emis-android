@@ -15,19 +15,19 @@ fun TableTheme(
     tableDimensions: TableDimensions? = LocalTableDimensions.current,
     tableConfiguration: TableConfiguration? = LocalTableConfiguration.current,
     tableValidator: Validator? = null,
-    tableResizeActions: TableResizeActions,
+    tableResizeActions: TableResizeActions? = null,
     content: @Composable
-    () -> Unit
+    () -> Unit,
 ) {
     CompositionLocalProvider(
         LocalTableColors provides (tableColors ?: TableColors()),
         LocalTableDimensions provides (tableDimensions ?: TableDimensions()),
         LocalTableConfiguration provides (tableConfiguration ?: TableConfiguration()),
         LocalValidator provides (tableValidator ?: DefaultValidator()),
-        LocalTableResizeActions provides tableResizeActions
+        LocalTableResizeActions provides (tableResizeActions ?: object : TableResizeActions {}),
     ) {
         MaterialTheme(
-            content = content
+            content = content,
         )
     }
 }

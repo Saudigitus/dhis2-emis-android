@@ -5,6 +5,7 @@ import androidx.annotation.ColorRes
 import com.mapbox.geojson.Feature
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
+import org.dhis2.commons.resources.ColorUtils
 import org.dhis2.maps.R
 import org.dhis2.maps.attribution.AttributionManager
 import org.dhis2.maps.layer.basemaps.BaseMapManager
@@ -20,13 +21,15 @@ import org.hisp.dhis.android.core.common.FeatureType
 
 class MapLayerManager(
     val mapboxMap: MapboxMap,
-    val baseMapManager: BaseMapManager
+    val baseMapManager: BaseMapManager,
+    val colorUtils: ColorUtils,
 ) {
     private var currentLayerSelection: MapLayer? = null
     var mapLayers: HashMap<String, MapLayer> = hashMapOf()
     private var mapStyle: MapStyle? = null
     var styleChangeCallback: ((Style) -> Unit)? = null
-    var currentStylePosition = 0
+    var currentStylePosition =
+        baseMapManager.baseMapStyles.indexOfFirst { it.isDefault }.takeIf { it > -1 } ?: 0
 
     private val relationShipColors =
         mutableListOf(
@@ -38,14 +41,14 @@ class MapLayerManager(
             Color.parseColor("#999999"),
             Color.parseColor("#F97FC0"),
             Color.parseColor("#2C2C2C"),
-            Color.parseColor("#A85621")
+            Color.parseColor("#A85621"),
         )
     private val drawableResources = mutableListOf(
         R.drawable.ic_map_item_1,
         R.drawable.ic_map_item_2,
         R.drawable.ic_map_item_3,
         R.drawable.ic_map_item_4,
-        R.drawable.ic_map_item_5
+        R.drawable.ic_map_item_5,
     )
 
     val relationshipUsedColors =
@@ -72,37 +75,48 @@ class MapLayerManager(
                     style,
                     featureType ?: FeatureType.POINT,
                     mapStyle?.teiColor!!,
-                    mapStyle?.programDarkColor!!
+                    mapStyle?.programDarkColor!!,
+                    colorUtils,
                 )
+
                 LayerType.ENROLLMENT_LAYER -> EnrollmentMapLayer(
                     style,
                     featureType ?: FeatureType.POINT,
                     mapStyle?.enrollmentColor!!,
-                    mapStyle?.programDarkColor!!
+                    mapStyle?.programDarkColor!!,
+                    colorUtils,
                 )
+
                 LayerType.HEATMAP_LAYER -> HeatmapMapLayer(
-                    style
+                    style,
                 )
+
                 LayerType.RELATIONSHIP_LAYER -> RelationshipMapLayer(
                     style,
                     featureType ?: FeatureType.POINT,
                     sourceId!!,
-                    getNextAvailableDrawable(sourceId)?.second
+                    getNextAvailableDrawable(sourceId)?.second,
+                    colorUtils,
                 )
+
                 LayerType.EVENT_LAYER -> EventMapLayer(
                     style,
                     featureType ?: FeatureType.POINT,
-                    relationShipColors.firstOrNull()
+                    relationShipColors.firstOrNull(),
+                    colorUtils,
                 )
+
                 LayerType.TEI_EVENT_LAYER -> TeiEventMapLayer(
                     style,
                     featureType ?: FeatureType.POINT,
                     sourceId!!,
-                    mapStyle?.programDarkColor!!
+                    mapStyle?.programDarkColor!!,
+                    colorUtils,
                 )
+
                 LayerType.FIELD_COORDINATE_LAYER -> FieldMapLayer(
                     style,
-                    sourceId!!
+                    sourceId!!,
                 )
             }
 
@@ -114,7 +128,7 @@ class MapLayerManager(
     fun addStartLayer(
         layerType: LayerType,
         featureType: FeatureType? = null,
-        sourceId: String? = null
+        sourceId: String? = null,
     ) = apply {
         addLayer(layerType, featureType, sourceId)
         handleLayer(sourceId ?: layerType.toString(), true)
@@ -173,7 +187,7 @@ class MapLayerManager(
         addLayers(
             layerType,
             sourceIds.filter { mapLayers[it] == null },
-            false
+            false,
         )
     }
 
@@ -220,8 +234,8 @@ class MapLayerManager(
             combinations.add(
                 Pair(
                     drawableResources[i % drawableResources.size],
-                    relationShipColors[i % relationShipColors.size]
-                )
+                    relationShipColors[i % relationShipColors.size],
+                ),
             )
         }
         return combinations

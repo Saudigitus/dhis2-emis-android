@@ -30,8 +30,8 @@ open class Action<out T>(private val content: T) {
 
 class ActionObserver<T>(private val onEventUnhandledContent: (T) -> Unit) : Observer<Action<T>> {
     override fun onChanged(value: Action<T>) {
-        value.getContentIfNotHandled()?.let { event ->
-            onEventUnhandledContent(event)
+        value.getContentIfNotHandled()?.let {
+            onEventUnhandledContent(it)
         }
     }
 }

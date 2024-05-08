@@ -17,5 +17,6 @@ enum class UiEventType {
     ADD_FILE,
     OPEN_FILE,
     EMAIL,
-    PHONE_NUMBER
+    PHONE_NUMBER,
+    SHARE_IMAGE,
 }

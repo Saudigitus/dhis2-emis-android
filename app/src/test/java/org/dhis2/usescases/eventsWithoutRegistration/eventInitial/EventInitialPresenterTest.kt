@@ -2,7 +2,6 @@ package org.dhis2.usescases.eventsWithoutRegistration.eventInitial
 
 import io.reactivex.Flowable
 import io.reactivex.Observable
-import java.util.Date
 import org.dhis2.commons.matomo.MatomoAnalyticsController
 import org.dhis2.commons.prefs.Preference
 import org.dhis2.commons.prefs.PreferenceProvider
@@ -30,6 +29,7 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import java.util.Date
 
 class EventInitialPresenterTest {
     lateinit var presenter: EventInitialPresenter
@@ -52,7 +52,7 @@ class EventInitialPresenterTest {
             preferences,
             analyticsHelper,
             matomoAnalyticsController,
-            eventFieldMapper
+            eventFieldMapper,
         )
     }
 
@@ -122,10 +122,9 @@ class EventInitialPresenterTest {
     @Test
     fun `Should show message when event is not yet created and the delete option is clicked`() {
         whenever(view.context) doReturn mock()
-        whenever(view.context.getString(any())) doReturn "display message"
 
         presenter.deleteEvent("tei_uid")
-        verify(view).displayMessage(any())
+        verify(view).showDeleteEventError()
     }
 
     @Test
@@ -144,7 +143,7 @@ class EventInitialPresenterTest {
     fun `Should get programStage`() {
         val programStage = ProgramStage.builder().uid("stage").build()
         whenever(
-            eventInitialRepository.programStageWithId("stage")
+            eventInitialRepository.programStageWithId("stage"),
         ) doReturn Observable.just(programStage)
 
         presenter.getProgramStage("stage")
@@ -184,8 +183,8 @@ class EventInitialPresenterTest {
                 "orgUnit",
                 "catCombo",
                 "catOption",
-                geometry
-            )
+                geometry,
+            ),
         ) doReturn Observable.just("event")
 
         presenter.init("uid", null, "orgUnit", "stage")
@@ -197,7 +196,7 @@ class EventInitialPresenterTest {
             "catCombo",
             "catOption",
             geometry,
-            "tei"
+            "tei",
         )
 
         verify(view).onEventCreated("event")
@@ -218,8 +217,8 @@ class EventInitialPresenterTest {
                 "orgUnit",
                 "catCombo",
                 "catOption",
-                geometry
-            )
+                geometry,
+            ),
         ) doReturn Observable.error(Throwable("Error"))
 
         presenter.init("uid", null, "orgUnit", "stage")
@@ -231,7 +230,7 @@ class EventInitialPresenterTest {
             "catCombo",
             "catOption",
             geometry,
-            "tei"
+            "tei",
         )
 
         verify(view).renderError("Error")
@@ -252,8 +251,8 @@ class EventInitialPresenterTest {
                 "orgUnit",
                 "catCombo",
                 "catOption",
-                geometry
-            )
+                geometry,
+            ),
         ) doReturn Observable.just("event")
 
         presenter.init("uid", null, "orgUnit", "stage")
@@ -265,7 +264,7 @@ class EventInitialPresenterTest {
             "orgUnit",
             "catCombo",
             "catOption",
-            geometry
+            geometry,
         )
 
         verify(view).onEventCreated("event")
@@ -287,8 +286,8 @@ class EventInitialPresenterTest {
                 "orgUnit",
                 "catCombo",
                 "catOption",
-                geometry
-            )
+                geometry,
+            ),
         ) doReturn Observable.error(Throwable("Error"))
 
         presenter.init("uid", null, "orgUnit", "stage")
@@ -300,7 +299,7 @@ class EventInitialPresenterTest {
             "orgUnit",
             "catCombo",
             "catOption",
-            geometry
+            geometry,
         )
 
         verify(view).renderError("Error")
@@ -321,8 +320,8 @@ class EventInitialPresenterTest {
                 "orgUnit",
                 "catCombo",
                 "catOption",
-                geometry
-            )
+                geometry,
+            ),
         ) doReturn Observable.just("event")
 
         presenter.init("uid", null, "orgUnit", "stage")
@@ -333,7 +332,7 @@ class EventInitialPresenterTest {
             "orgUnit",
             "catCombo",
             "catOption",
-            geometry
+            geometry,
         )
 
         verify(view).onEventCreated("event")
@@ -354,8 +353,8 @@ class EventInitialPresenterTest {
                 "orgUnit",
                 "catCombo",
                 "catOption",
-                geometry
-            )
+                geometry,
+            ),
         ) doReturn Observable.error(Throwable("Error"))
 
         presenter.init("uid", null, "orgUnit", "stage")
@@ -366,7 +365,7 @@ class EventInitialPresenterTest {
             "orgUnit",
             "catCombo",
             "catOption",
-            geometry
+            geometry,
         )
 
         verify(view).renderError("Error")
@@ -419,7 +418,7 @@ class EventInitialPresenterTest {
     @Test
     fun `Should return true if event is editable`() {
         whenever(
-            eventInitialRepository.editableStatus
+            eventInitialRepository.editableStatus,
         ) doReturn Flowable.just(Editable())
 
         val isEditable = presenter.isEventEditable
@@ -429,7 +428,7 @@ class EventInitialPresenterTest {
     @Test
     fun `Should return false if event is not editable`() {
         whenever(
-            eventInitialRepository.editableStatus
+            eventInitialRepository.editableStatus,
         ) doReturn Flowable.just(NonEditable(BLOCKED_BY_COMPLETION))
 
         val isEditable = presenter.isEventEditable
@@ -440,7 +439,7 @@ class EventInitialPresenterTest {
         uid: String?,
         eventId: String?,
         programStageUid: String?,
-        moreOrgUnits: Boolean = false
+        moreOrgUnits: Boolean = false,
     ) {
         val program = Program.builder().uid(uid).build()
         val orgUnits =
@@ -458,7 +457,7 @@ class EventInitialPresenterTest {
             eventMocks(eventId)
         } else {
             whenever(
-                eventInitialRepository.programStageWithId(programStageUid)
+                eventInitialRepository.programStageWithId(programStageUid),
             ) doReturn Observable.just(programStage)
         }
     }
@@ -470,12 +469,12 @@ class EventInitialPresenterTest {
 
         whenever(eventInitialRepository.event(eventId)) doReturn Observable.just(event)
         whenever(
-            eventInitialRepository.programStageForEvent(eventId)
+            eventInitialRepository.programStageForEvent(eventId),
         ) doReturn Flowable.just(programStage)
 
         whenever(eventInitialRepository.list()) doReturn Flowable.just(listOf())
         whenever(
-            eventInitialRepository.calculate()
+            eventInitialRepository.calculate(),
         ) doReturn Flowable.just(Result.success(listOf()))
         whenever(eventInitialRepository.eventSections()) doReturn Flowable.just(listOf())
         whenever(
@@ -486,8 +485,8 @@ class EventInitialPresenterTest {
                 mutableMapOf(),
                 mutableMapOf(),
                 mutableMapOf(),
-                false to false
-            )
+                false to false,
+            ),
         ) doReturn Pair(mutableListOf(), mutableListOf())
         whenever(eventInitialRepository.editableStatus) doReturn Flowable.just(editionStatus)
         whenever(view.context) doReturn mock()

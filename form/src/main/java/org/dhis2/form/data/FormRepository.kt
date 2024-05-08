@@ -20,8 +20,11 @@ interface FormRepository {
     fun currentFocusedItem(): FieldUiModel?
     fun setFocusedItem(action: RowAction)
     fun updateSectionOpened(action: RowAction)
+    fun getDateFormatConfiguration(): String
     fun removeAllValues()
     fun setFieldRequestingCoordinates(uid: String, requestInProcess: Boolean)
+    fun setFieldAddingImage(uid: String, requestInProcess: Boolean)
     fun clearFocusItem()
     fun storeFile(id: String, filePath: String?): StoreResult?
+    fun areSectionCollapsable(): Boolean
 }

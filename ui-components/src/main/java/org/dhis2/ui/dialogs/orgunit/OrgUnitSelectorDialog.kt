@@ -50,26 +50,25 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.dhis2.ui.R
-import org.dhis2.ui.buttons.Dhis2Button
-import org.dhis2.ui.buttons.Dhis2TextButton
-import org.dhis2.ui.model.ButtonUiModel
 import org.dhis2.ui.theme.defaultFontFamily
+import org.hisp.dhis.mobile.ui.designsystem.component.Button
+import org.hisp.dhis.mobile.ui.designsystem.component.ButtonStyle
 
 @Composable
 fun OrgUnitSelectorDialog(
     title: String?,
     items: List<OrgUnitTreeItem>,
-    actions: OrgUnitSelectorActions
+    actions: OrgUnitSelectorActions,
 ) {
     Surface(
         modifier = Modifier
             .wrapContentHeight()
             .fillMaxWidth(),
         color = Color.White,
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp),
     ) {
         Column(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
         ) {
             title?.let {
                 DialogTitle(title)
@@ -77,28 +76,19 @@ fun OrgUnitSelectorDialog(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = spacedBy(8.dp)
+                horizontalArrangement = spacedBy(8.dp),
             ) {
                 Search(
                     modifier = Modifier.weight(1f),
-                    onValueChangeListener = actions.onSearch
+                    onValueChangeListener = actions.onSearch,
                 )
-                Dhis2TextButton(
+                Button(
                     modifier = Modifier.testTag(CLEAR_TEST_TAG),
-                    model = ButtonUiModel(
-                        text = stringResource(id = R.string.action_clear_all),
-                        onClick = actions.onClearClick
-                    ),
-                    leadingIcon = {
-                        Icon(
-                            imageVector = ImageVector.vectorResource(
-                                id = R.drawable.ic_tree_node_clear
-                            ),
-                            contentDescription = ""
-                        )
-                    }
+                    text = stringResource(id = R.string.action_clear_all),
+                    onClick = actions.onClearClick,
+                    style = ButtonStyle.TEXT,
                 )
             }
             Divider()
@@ -107,7 +97,7 @@ fun OrgUnitSelectorDialog(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxWidth(),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     CircularProgressIndicator()
                 }
@@ -116,7 +106,7 @@ fun OrgUnitSelectorDialog(
                     modifier = Modifier.weight(1f),
                     items = items,
                     onOrgUnitChecked = actions.onOrgUnitChecked,
-                    onOpenOrgUnit = actions.onOpenOrgUnit
+                    onOpenOrgUnit = actions.onOpenOrgUnit,
                 )
             }
             Divider()
@@ -125,29 +115,28 @@ fun OrgUnitSelectorDialog(
                     .align(Alignment.End)
                     .padding(
                         vertical = 8.dp,
-                        horizontal = 16.dp
+                        horizontal = 16.dp,
                     ),
-                horizontalArrangement = spacedBy(16.dp)
+                horizontalArrangement = spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Dhis2TextButton(
+                Button(
                     modifier = Modifier.testTag(CANCEL_TEST_TAG),
-                    model = ButtonUiModel(
-                        text = stringResource(id = R.string.action_cancel),
-                        onClick = actions.onCancelClick
-                    )
+                    text = stringResource(id = R.string.action_cancel),
+                    style = ButtonStyle.TEXT,
+                    onClick = actions.onCancelClick,
                 )
-                Dhis2Button(
+                Button(
                     modifier = Modifier.testTag(DONE_TEST_TAG),
-                    model = ButtonUiModel(
-                        text = stringResource(id = R.string.action_done),
-                        onClick = actions.onDoneClick
-                    ),
-                    leadingIcon = {
+                    text = stringResource(id = R.string.action_done),
+                    onClick = actions.onDoneClick,
+                    style = ButtonStyle.FILLED,
+                    icon = {
                         Icon(
                             imageVector = Icons.Default.Check,
-                            contentDescription = ""
+                            contentDescription = "",
                         )
-                    }
+                    },
                 )
             }
         }
@@ -163,7 +152,7 @@ private fun DialogTitle(title: String) {
 private fun Search(
     modifier: Modifier = Modifier,
     hint: String = stringResource(id = R.string.hint_search),
-    onValueChangeListener: (String) -> Unit
+    onValueChangeListener: (String) -> Unit,
 ) {
     var currentValue by remember {
         mutableStateOf<String?>(null)
@@ -172,24 +161,24 @@ private fun Search(
         modifier = modifier
             .background(
                 color = Color(0x0A000000),
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(16.dp),
             )
             .border(
                 width = 1.dp,
                 color = Color(0x61000000),
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(16.dp),
             )
             .padding(
                 horizontal = 8.dp,
-                vertical = 4.dp
+                vertical = 4.dp,
             ),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = spacedBy(8.dp)
+        horizontalArrangement = spacedBy(8.dp),
     ) {
         Icon(
             imageVector = Icons.Default.Search,
             contentDescription = "",
-            tint = Color(0x8A333333)
+            tint = Color(0x8A333333),
         )
         BasicTextField(
             modifier = Modifier.testTag(SEARCH_TEST_TAG),
@@ -203,7 +192,7 @@ private fun Search(
                 color = Color(0x8A333333),
                 fontSize = 16.sp,
                 fontFamily = defaultFontFamily,
-                lineHeight = 24.sp
+                lineHeight = 24.sp,
             ),
             decorationBox = { innerTextField ->
                 if (currentValue.isNullOrEmpty()) {
@@ -216,13 +205,13 @@ private fun Search(
                             color = Color(0x8A333333),
                             fontSize = 16.sp,
                             fontFamily = defaultFontFamily,
-                            lineHeight = 24.sp
+                            lineHeight = 24.sp,
 
-                        )
+                        ),
                     )
                 }
                 innerTextField()
-            }
+            },
         )
     }
 }
@@ -232,12 +221,12 @@ fun OrgUnitTree(
     modifier: Modifier = Modifier,
     items: List<OrgUnitTreeItem>,
     onOrgUnitChecked: (orgUnitUid: String, isChecked: Boolean) -> Unit,
-    onOpenOrgUnit: (orgUnitUid: String) -> Unit
+    onOpenOrgUnit: (orgUnitUid: String) -> Unit,
 ) {
     LazyColumn(
         modifier = modifier
             .testTag(ITEM_LIST_TEST_TAG)
-            .fillMaxWidth()
+            .fillMaxWidth(),
     ) {
         items(items = items, key = { it.uid }) { orgUnitItem ->
             OrgUnitSelectorItem(
@@ -245,7 +234,7 @@ fun OrgUnitTree(
                 higherLevel = items.minBy { it.level }.level,
                 orgUnitItem = orgUnitItem,
                 onOpenOrgUnit = onOpenOrgUnit,
-                onOrgUnitChecked = onOrgUnitChecked
+                onOrgUnitChecked = onOrgUnitChecked,
             )
         }
     }
@@ -259,22 +248,22 @@ fun OrgUnitSelectorDialogPreview() {
             "uid",
             "orgUnit1",
             true,
-            hasChildren = true
+            hasChildren = true,
         ),
         OrgUnitTreeItem(
             "uid",
             "orgUnit2",
             false,
             level = 1,
-            hasChildren = true
+            hasChildren = true,
         ),
         OrgUnitTreeItem(
             "uid",
             "orgUnit2",
             false,
             level = 1,
-            hasChildren = false
-        )
+            hasChildren = false,
+        ),
     )
     OrgUnitSelectorDialog(
         null,
@@ -292,7 +281,7 @@ fun OrgUnitSelectorDialogPreview() {
                 get() = { }
             override val onClearClick: () -> Unit
                 get() = { }
-        }
+        },
     )
 }
 
@@ -302,7 +291,7 @@ fun OrgUnitSelectorItem(
     higherLevel: Int,
     orgUnitItem: OrgUnitTreeItem,
     onOpenOrgUnit: (orgUnitUid: String) -> Unit,
-    onOrgUnitChecked: (orgUnitUid: String, checked: Boolean) -> Unit
+    onOrgUnitChecked: (orgUnitUid: String, checked: Boolean) -> Unit,
 ) {
     Row(
         modifier = modifier
@@ -315,13 +304,13 @@ fun OrgUnitSelectorItem(
                 interactionSource = remember {
                     MutableInteractionSource()
                 },
-                indication = rememberRipple(bounded = true)
+                indication = rememberRipple(bounded = true),
             ) {
                 onOpenOrgUnit(orgUnitItem.uid)
             }
             .padding(start = ((orgUnitItem.level - higherLevel + 1) * 16).dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = spacedBy(8.dp)
+        horizontalArrangement = spacedBy(8.dp),
     ) {
         Icon(
             imageVector = when {
@@ -333,7 +322,7 @@ fun OrgUnitSelectorItem(
                     ImageVector.vectorResource(id = R.drawable.ic_tree_node_open)
             },
             tint = MaterialTheme.colorScheme.primary,
-            contentDescription = ""
+            contentDescription = "",
         )
         Text(
             modifier = Modifier.weight(1f),
@@ -347,8 +336,8 @@ fun OrgUnitSelectorItem(
                     FontWeight.Bold
                 } else {
                     FontWeight.Normal
-                }
-            )
+                },
+            ),
         )
         if (orgUnitItem.canBeSelected) {
             Checkbox(
@@ -356,7 +345,7 @@ fun OrgUnitSelectorItem(
                 checked = orgUnitItem.selected,
                 onCheckedChange = { isChecked ->
                     onOrgUnitChecked(orgUnitItem.uid, isChecked)
-                }
+                },
             )
         }
     }
