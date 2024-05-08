@@ -1,6 +1,5 @@
 package org.saudigitus.emis.ui.components
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -31,7 +30,6 @@ fun <T>DetailsWithOptions(
         colors = CardDefaults.cardColors(
             containerColor = Color.White
         ),
-        border = BorderStroke(width = 0.85.dp, color = Color.LightGray.copy(.85f)),
         shape = RoundedCornerShape(16.dp),
     ) {
         ShowCard(infoCard = infoCard)
