@@ -7,7 +7,9 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CornerSize
@@ -238,7 +240,8 @@ fun PerformanceScreen(
                         ) {
                             PerformanceForm(
                                 modifier = Modifier
-                                    .fillMaxWidth(.3f)
+                                    .width(120.dp)
+                                    .height(60.dp)
                                     .padding(bottom = 2.dp)
                                     .align(Alignment.End),
                                 state = state.fieldsState,
