@@ -1,7 +1,6 @@
 package org.dhis2.usescases.eventsWithoutRegistration.eventCapture;
 
 import static org.dhis2.usescases.teiDashboard.dashboardfragments.indicators.IndicatorsFragmentKt.VISUALIZATION_TYPE;
-import static org.dhis2.commons.Constants.PROGRAM_UID;
 
 import android.os.Bundle;
 
@@ -12,35 +11,38 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 import org.dhis2.R;
+import org.dhis2.form.model.EventMode;
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.eventCaptureFragment.EventCaptureFormFragment;
-import org.dhis2.usescases.eventsWithoutRegistration.eventDetails.ui.EventDetailsFragment;
 import org.dhis2.usescases.notes.NotesFragment;
 import org.dhis2.usescases.teiDashboard.dashboardfragments.indicators.IndicatorsFragment;
 import org.dhis2.usescases.teiDashboard.dashboardfragments.indicators.VisualizationType;
 import org.dhis2.usescases.teiDashboard.dashboardfragments.relationships.RelationshipFragment;
-import org.dhis2.commons.Constants;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import kotlin.Unit;
-
 public class EventCapturePagerAdapter extends FragmentStateAdapter {
 
     private final String programUid;
     private final String eventUid;
-    private final List<EventPageType> pages;
-    private EventCaptureFormFragment formFragment;
+    private final List<EventPageType> landscapePages;
+    private final List<EventPageType> portraitPages;
+
+    private final FragmentActivity fragmentActivity;
 
     private final boolean shouldOpenErrorSection;
 
+    private final EventMode eventMode;
+
+    public static final int NO_POSITION = -1;
+
     public boolean isFormScreenShown(@Nullable Integer currentItem) {
-        return currentItem!=null && pages.get(currentItem) == EventPageType.DATA_ENTRY;
+        return currentItem != null && portraitPages.get(currentItem) == EventPageType.DATA_ENTRY;
     }
 
     private enum EventPageType {
-        DETAILS, DATA_ENTRY, ANALYTICS, RELATIONSHIPS, NOTES
+        DATA_ENTRY, ANALYTICS, RELATIONSHIPS, NOTES
     }
 
     public EventCapturePagerAdapter(FragmentActivity fragmentActivity,
@@ -48,70 +50,73 @@ public class EventCapturePagerAdapter extends FragmentStateAdapter {
                                     String eventUid,
                                     boolean displayAnalyticScreen,
                                     boolean displayRelationshipScreen,
-                                    boolean openErrorSection
+                                    boolean openErrorSection,
+                                    EventMode eventMode
 
     ) {
         super(fragmentActivity);
         this.programUid = programUid;
         this.eventUid = eventUid;
         this.shouldOpenErrorSection = openErrorSection;
-        pages = new ArrayList<>();
-        pages.add(EventPageType.DETAILS);
-        pages.add(EventPageType.DATA_ENTRY);
+        this.eventMode = eventMode;
+        this.fragmentActivity = fragmentActivity;
+        landscapePages = new ArrayList<>();
+        portraitPages = new ArrayList<>();
+
+        portraitPages.add(EventPageType.DATA_ENTRY);
 
         if (displayAnalyticScreen) {
-            pages.add(EventPageType.ANALYTICS);
+            portraitPages.add(EventPageType.ANALYTICS);
+            landscapePages.add(EventPageType.ANALYTICS);
         }
 
         if (displayRelationshipScreen) {
-            pages.add(EventPageType.RELATIONSHIPS);
+            portraitPages.add(EventPageType.RELATIONSHIPS);
+            landscapePages.add(EventPageType.RELATIONSHIPS);
         }
-        pages.add(EventPageType.NOTES);
+        portraitPages.add(EventPageType.NOTES);
+        landscapePages.add(EventPageType.NOTES);
     }
 
     public int getDynamicTabIndex(@IntegerRes int tabClicked) {
-        if (tabClicked == R.id.navigation_details) {
-            return pages.indexOf(EventPageType.DETAILS);
-        } else if (tabClicked == R.id.navigation_data_entry) {
-            return pages.indexOf(EventPageType.DATA_ENTRY);
-        } else if (tabClicked == R.id.navigation_analytics) {
-            return pages.indexOf(EventPageType.ANALYTICS);
-        } else if (tabClicked == R.id.navigation_relationships) {
-            return pages.indexOf(EventPageType.RELATIONSHIPS);
-        } else if (tabClicked == R.id.navigation_notes) {
-            return pages.indexOf(EventPageType.NOTES);
+        EventPageType pageType = switch (tabClicked) {
+            case R.id.navigation_analytics -> EventPageType.ANALYTICS;
+            case R.id.navigation_relationships -> EventPageType.RELATIONSHIPS;
+            case R.id.navigation_notes -> EventPageType.NOTES;
+            default -> null;
+        };
+
+        if (pageType != null) {
+            if (isPortrait()) {
+                return portraitPages.indexOf(pageType);
+            } else {
+                return landscapePages.indexOf(pageType);
+            }
+        } else {
+            return NO_POSITION;
         }
-        return 0;
     }
 
     @NonNull
     @Override
     public Fragment createFragment(int position) {
-        switch (pages.get(position)) {
-            default:
-            case DETAILS:
-                Bundle bundle = new Bundle();
-                bundle.putString(Constants.EVENT_UID, eventUid);
-                bundle.putString(PROGRAM_UID, programUid);
-                EventDetailsFragment eventDetailsFragment = new EventDetailsFragment();
-                eventDetailsFragment.setArguments(bundle);
-                eventDetailsFragment.setOnEventReopened(() -> {
-                    if (formFragment != null) {
-                        formFragment.onReopen();
-                    }
-                    return Unit.INSTANCE;
-                });
-                return eventDetailsFragment;
-            case DATA_ENTRY:
-                formFragment = EventCaptureFormFragment.newInstance(eventUid, shouldOpenErrorSection);
-                return formFragment;
-            case ANALYTICS:
+        return createFragmentForPage(
+                isPortrait() ?
+                        portraitPages.get(position) :
+                        landscapePages.get(position)
+        );
+    }
+
+    private Fragment createFragmentForPage(EventPageType pageType) {
+        switch (pageType) {
+            case ANALYTICS -> {
                 Fragment indicatorFragment = new IndicatorsFragment();
                 Bundle arguments = new Bundle();
                 arguments.putString(VISUALIZATION_TYPE, VisualizationType.EVENTS.name());
                 indicatorFragment.setArguments(arguments);
                 return indicatorFragment;
-            case RELATIONSHIPS:
+            }
+            case RELATIONSHIPS -> {
                 Fragment relationshipFragment = new RelationshipFragment();
                 relationshipFragment.setArguments(
                         RelationshipFragment.withArguments(programUid,
@@ -121,13 +126,31 @@ public class EventCapturePagerAdapter extends FragmentStateAdapter {
                         )
                 );
                 return relationshipFragment;
-            case NOTES:
+            }
+            case NOTES -> {
                 return NotesFragment.newEventInstance(programUid, eventUid);
+            }
+            default -> {
+                return EventCaptureFormFragment.newInstance(
+                        eventUid,
+                        shouldOpenErrorSection,
+                        eventMode
+                );
+            }
         }
+
     }
 
     @Override
     public int getItemCount() {
-        return pages.size();
+        if (isPortrait()) {
+            return portraitPages.size();
+        } else {
+            return landscapePages.size();
+        }
+    }
+
+    public boolean isPortrait() {
+        return fragmentActivity.getResources().getConfiguration().orientation == 1;
     }
 }

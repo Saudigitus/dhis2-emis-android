@@ -35,10 +35,10 @@ android {
             )
         }
     }
-
-    flavorDimensions("default")
+    flavorDimensions += listOf("default")
 
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -55,6 +55,10 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = libs.versions.kotlinCompilerExtensionVersion.get()
     }
+
+    configurations.all {
+        resolutionStrategy.cacheDynamicVersionsFor(0, TimeUnit.SECONDS)
+    }
 }
 
 dependencies {
@@ -64,13 +68,15 @@ dependencies {
     api(libs.dhis2.android.sdk) {
         exclude("org.hisp.dhis", "core-rules")
         exclude("com.facebook.flipper")
+        this.isChanging = true
     }
 
     api(libs.dhis2.ruleengine) {
         exclude("junit", "junit")
     }
 
-    kapt(libs.metadata.jvm)
+    api(libs.dhis2.expressionparser)
+
     api(libs.google.autoValue)
     kapt(libs.google.autoValue)
     api(libs.androidx.coreKtx)
@@ -117,4 +123,8 @@ dependencies {
     api(libs.test.espresso.idlingconcurrent)
     api(libs.analytics.sentry)
     implementation(libs.github.treeView)
+    api(libs.dhis2.mobile.designsystem) {
+        isChanging = true
+    }
+    coreLibraryDesugaring(libs.desugar)
 }

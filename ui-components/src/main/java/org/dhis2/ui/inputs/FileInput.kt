@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -33,10 +32,12 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.core.graphics.toColorInt
-import org.dhis2.ui.IconTextButton
 import org.dhis2.ui.R
 import org.dhis2.ui.model.InputData
 import org.dhis2.ui.theme.defaultFontFamily
+import org.hisp.dhis.mobile.ui.designsystem.component.Button
+import org.hisp.dhis.mobile.ui.designsystem.component.ButtonStyle
+import org.hisp.dhis.mobile.ui.designsystem.component.IconButton
 
 @Composable
 fun BoxedInput(
@@ -45,20 +46,20 @@ fun BoxedInput(
     trailingIcons: @Composable
     RowScope.() -> Unit,
     content: @Composable
-    (modifier: Modifier) -> Unit
+    (modifier: Modifier) -> Unit,
 ) {
     Surface(
         modifier = Modifier
             .wrapContentSize(),
         shape = RoundedCornerShape(6.dp),
         color = Color.White,
-        shadowElevation = 4.dp
+        shadowElevation = 4.dp,
     ) {
         ConstraintLayout(
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
-                .padding(8.dp)
+                .padding(8.dp),
         ) {
             val (leadingIconRef, contentRef, trailingIconsRef) = createRefs()
             leadingIcon(
@@ -67,7 +68,7 @@ fun BoxedInput(
                     top.linkTo(parent.top)
                     bottom.linkTo(parent.bottom)
                     height = Dimension.wrapContent
-                }
+                },
             )
             content(
                 modifier = Modifier.constrainAs(contentRef) {
@@ -77,7 +78,7 @@ fun BoxedInput(
                     end.linkTo(trailingIconsRef.start, 8.dp)
                     height = Dimension.fillToConstraints
                     width = Dimension.fillToConstraints
-                }
+                },
             )
             Row(
                 modifier = Modifier.constrainAs(trailingIconsRef) {
@@ -85,7 +86,7 @@ fun BoxedInput(
                     bottom.linkTo(parent.bottom)
                     end.linkTo(parent.end)
                     height = Dimension.wrapContent
-                }
+                },
             ) {
                 trailingIcons()
             }
@@ -97,7 +98,7 @@ fun BoxedInput(
 fun FileDescription(modifier: Modifier, fileInputData: InputData.FileInputData) {
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
     ) {
         Text(
             text = fileInputData.fileName,
@@ -106,10 +107,10 @@ fun FileDescription(modifier: Modifier, fileInputData: InputData.FileInputData) 
                 fontSize = 12.sp,
                 fontFamily = defaultFontFamily,
                 fontWeight = FontWeight(400),
-                lineHeight = 20.sp
+                lineHeight = 20.sp,
             ),
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
         )
         Text(
             text = fileInputData.fileSizeLabel,
@@ -118,8 +119,8 @@ fun FileDescription(modifier: Modifier, fileInputData: InputData.FileInputData) 
                 fontSize = 10.sp,
                 fontWeight = FontWeight(400),
                 fontFamily = defaultFontFamily,
-                lineHeight = 12.sp
-            )
+                lineHeight = 12.sp,
+            ),
         )
     }
 }
@@ -131,14 +132,14 @@ fun FileInput(
     enabled: Boolean = true,
     onAddFile: () -> Unit = {},
     onDownloadClick: () -> Unit = {},
-    onDeleteFile: () -> Unit = {}
+    onDeleteFile: () -> Unit = {},
 ) {
     if (fileInputData != null) {
         FileInputWithValue(
             fileInputData = fileInputData,
             enabled = enabled,
             onDownloadClick = onDownloadClick,
-            onDeleteFile = onDeleteFile
+            onDeleteFile = onDeleteFile,
 
         )
     } else {
@@ -146,7 +147,7 @@ fun FileInput(
             modifier = Modifier.fillMaxWidth(),
             label = addFileLabel,
             enabled = enabled,
-            onAddFile = onAddFile
+            onAddFile = onAddFile,
         )
     }
 }
@@ -156,14 +157,20 @@ fun FileInputWithoutValue(
     modifier: Modifier,
     label: String,
     enabled: Boolean,
-    onAddFile: () -> Unit
+    onAddFile: () -> Unit,
 ) {
-    IconTextButton(
+    Button(
         modifier = modifier,
         enabled = enabled,
+        style = ButtonStyle.OUTLINED,
         onClick = onAddFile,
-        painter = painterResource(id = R.drawable.ic_file),
-        text = label
+        icon = {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_file),
+                contentDescription = "",
+            )
+        },
+        text = label,
     )
 }
 
@@ -172,39 +179,47 @@ fun FileInputWithValue(
     fileInputData: InputData.FileInputData,
     enabled: Boolean,
     onDownloadClick: () -> Unit,
-    onDeleteFile: () -> Unit
+    onDeleteFile: () -> Unit,
 ) {
     BoxedInput(
         leadingIcon = { modifier ->
             Box(
                 modifier = modifier
                     .size(LocalViewConfiguration.current.minimumTouchTargetSize),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     imageVector = ImageVector.vectorResource(id = R.drawable.ic_file),
                     contentDescription = "",
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = MaterialTheme.colorScheme.primary,
                 )
             }
         },
         trailingIcons = {
-            IconButton(enabled = enabled, onClick = onDownloadClick) {
-                Icon(
-                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_file_download),
-                    contentDescription = "",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
+            IconButton(
+                enabled = enabled,
+                onClick = onDownloadClick,
+                icon = {
+                    Icon(
+                        imageVector = ImageVector.vectorResource(id = R.drawable.ic_file_download),
+                        contentDescription = "",
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                },
+            )
 
-            IconButton(enabled = enabled, onClick = { onDeleteFile() }) {
-                Icon(
-                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_delete),
-                    contentDescription = "",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
+            IconButton(
+                enabled = enabled,
+                onClick = { onDeleteFile() },
+                icon = {
+                    Icon(
+                        imageVector = ImageVector.vectorResource(id = R.drawable.ic_delete),
+                        contentDescription = "",
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                },
+            )
+        },
     ) { modifier ->
         FileDescription(modifier = modifier, fileInputData = fileInputData)
     }
@@ -231,15 +246,15 @@ fun FileInputWithMessageTest() {
         descriptionText = "This is a description",
         selected = true,
         labelTextColor = Color.Black.copy(alpha = 0.54f),
-        helperTextColor = Color("#E91E63".toColorInt())
+        helperTextColor = Color("#E91E63".toColorInt()),
     ) {
         FileInput(
             fileInputData = InputData.FileInputData(
                 fileName = "file.txt",
                 fileSize = 1234,
-                filePath = "/file.txt"
+                filePath = "/file.txt",
             ),
-            addFileLabel = "addFile"
+            addFileLabel = "addFile",
         )
     }
 }
@@ -253,11 +268,11 @@ fun FileInputNoValueWithMessageTest() {
         descriptionText = "This is a description",
         selected = true,
         labelTextColor = Color.Black.copy(alpha = 0.54f),
-        helperTextColor = Color("#E91E63".toColorInt())
+        helperTextColor = Color("#E91E63".toColorInt()),
     ) {
         FileInput(
             fileInputData = null,
-            addFileLabel = "addFile"
+            addFileLabel = "addFile",
         )
     }
 }

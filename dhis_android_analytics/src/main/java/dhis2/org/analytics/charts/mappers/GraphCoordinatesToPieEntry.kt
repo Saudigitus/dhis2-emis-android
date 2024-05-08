@@ -7,9 +7,9 @@ class GraphCoordinatesToPieEntry {
     fun map(coordinates: List<GraphPoint>): List<PieEntry> {
         return coordinates.map { graphPoint ->
             PieEntry(
-                graphPoint.fieldValue,
+                graphPoint.numericValue(),
                 graphPoint.legend,
-                graphPoint.legend
+                graphPoint.legend,
             )
         }
     }

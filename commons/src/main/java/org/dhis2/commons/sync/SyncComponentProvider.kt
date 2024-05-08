@@ -7,6 +7,7 @@ interface SyncComponentProvider {
         activity: FragmentActivity,
         syncContext: SyncContext,
         dismissListener: OnDismissListener? = null,
-        onSyncNavigationListener: OnSyncNavigationListener? = null
+        onSyncNavigationListener: OnSyncNavigationListener? = null,
+        onNoConnectionListener: OnNoConnectionListener? = null,
     )
 }

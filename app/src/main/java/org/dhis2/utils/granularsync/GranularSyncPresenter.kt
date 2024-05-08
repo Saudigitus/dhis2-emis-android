@@ -74,15 +74,23 @@ class GranularSyncPresenter(
     private val dispatcher: DispatcherProvider,
     private val syncContext: SyncContext,
     private val workManagerController: WorkManagerController,
-    private val smsSyncProvider: SMSSyncProvider
+    private val smsSyncProvider: SMSSyncProvider,
 ) : ViewModel() {
 
+    private val workerName: String
     private var disposable: CompositeDisposable = CompositeDisposable()
     private lateinit var states: MutableLiveData<List<SmsSendingService.SendingStatus>>
     private lateinit var statesList: ArrayList<SmsSendingService.SendingStatus>
     private var refreshing = false
     private val _currentState = MutableStateFlow<SyncUiState?>(null)
     val currentState: StateFlow<SyncUiState?> = _currentState
+
+    init {
+        workerName = workerName()
+    }
+
+    private val _serverAvailability = MutableLiveData<Boolean>()
+    val serverAvailability: LiveData<Boolean> = _serverAvailability
 
     private fun loadSyncInfo(forcedState: State? = null) {
         viewModelScope.launch(dispatcher.io()) {
@@ -110,10 +118,13 @@ class GranularSyncPresenter(
         return when (syncContext.conflictType()) {
             ALL,
             PROGRAM,
-            DATA_SET -> false
+            DATA_SET,
+            -> false
+
             TEI,
             EVENT,
-            DATA_VALUES -> true
+            DATA_VALUES,
+            -> true
         }
     }
 
@@ -134,41 +145,49 @@ class GranularSyncPresenter(
                         .putString(ATTRIBUTE_OPTION_COMBO, attributeOptionComboUid)
                         .putStringArray(
                             CATEGORY_OPTION_COMBO,
-                            getDataSetCatOptCombos().blockingGet().toTypedArray()
+                            getDataSetCatOptCombos().blockingGet().toTypedArray(),
                         )
                         .build()
                 }
+
             ALL -> { // Do nothing
             }
         }
-        var workName: String
         if (syncContext.conflictType() != ALL) {
-            workName = syncContext.recordUid()
             if (dataToDataValues == null) {
                 dataToDataValues = Data.Builder()
                     .putString(UID, syncContext.recordUid())
                     .putString(CONFLICT_TYPE, conflictTypeData!!.name)
                     .build()
-            } else {
-                workName = with(syncContext as SyncContext.DataSetInstance) {
-                    orgUnitUid + "_" + periodId + "_" + attributeOptionComboUid
-                }
             }
 
             val workerItem =
                 WorkerItem(
-                    workName,
+                    workerName,
                     WorkerType.GRANULAR,
                     data = dataToDataValues,
-                    policy = ExistingWorkPolicy.KEEP
+                    policy = ExistingWorkPolicy.KEEP,
                 )
 
             workManagerController.beginUniqueWork(workerItem)
         } else {
-            workName = Constants.INITIAL_SYNC
             workManagerController.syncDataForWorker(Constants.DATA_NOW, Constants.INITIAL_SYNC)
         }
-        return workManagerController.getWorkInfosForUniqueWorkLiveData(workName)
+        return observeWorkInfo()
+    }
+
+    fun observeWorkInfo() =
+        workManagerController.getWorkInfosForUniqueWorkLiveData(workerName)
+
+    private fun workerName(): String {
+        return when (syncContext.conflictType()) {
+            ALL -> Constants.INITIAL_SYNC
+            DATA_VALUES -> with(syncContext as SyncContext.DataSetInstance) {
+                orgUnitUid + "_" + periodId + "_" + attributeOptionComboUid
+            }
+
+            else -> syncContext.recordUid()
+        }
     }
 
     // NO PLAY SERVICES
@@ -189,8 +208,8 @@ class GranularSyncPresenter(
                                     SmsSendingService.State.CONVERTED,
                                     null,
                                     0,
-                                    countResult.smsCount
-                                )
+                                    countResult.smsCount,
+                                ),
                             )
                             updateStateList(
                                 SmsSendingService.SendingStatus(
@@ -198,8 +217,8 @@ class GranularSyncPresenter(
                                     SmsSendingService.State.WAITING_COUNT_CONFIRMATION,
                                     null,
                                     0,
-                                    countResult.smsCount
-                                )
+                                    countResult.smsCount,
+                                ),
                             )
                         }
                     },
@@ -210,11 +229,11 @@ class GranularSyncPresenter(
                                 SmsSendingService.State.ERROR,
                                 it,
                                 0,
-                                0
-                            )
+                                0,
+                            ),
                         )
-                    }
-                )
+                    },
+                ),
         )
 
         return states
@@ -240,8 +259,8 @@ class GranularSyncPresenter(
                     { message ->
                         view.openSmsApp(message, smsSyncProvider.getGatewayNumber())
                     },
-                    { error -> Timber.e(error) }
-                )
+                    { error -> Timber.e(error) },
+                ),
         )
     }
 
@@ -255,7 +274,7 @@ class GranularSyncPresenter(
                 },
                 doOnNewState = {
                     updateStateList(it)
-                }
+                },
             )
                 .subscribeOn(schedulerProvider.io())
                 .observeOn(schedulerProvider.io())
@@ -267,8 +286,8 @@ class GranularSyncPresenter(
                                 SmsSendingService.State.COMPLETED,
                                 null,
                                 0,
-                                0
-                            )
+                                0,
+                            ),
                         )
                     },
                     {
@@ -278,17 +297,17 @@ class GranularSyncPresenter(
                                 SmsSendingService.State.ERROR,
                                 it,
                                 0,
-                                0
-                            )
+                                0,
+                            ),
                         )
-                    }
-                )
+                    },
+                ),
         )
     }
 
     fun onSmsNotAccepted() {
         updateStateList(
-            smsSyncProvider.onSmsNotAccepted()
+            smsSyncProvider.onSmsNotAccepted(),
         )
     }
 
@@ -341,7 +360,7 @@ class GranularSyncPresenter(
                     updateStatusToSentBySMS()
                     restartSmsSender()
                     loadSyncInfo()
-                }
+                },
             )
         } else {
             updateStatusToSentBySMS()
@@ -356,6 +375,7 @@ class GranularSyncPresenter(
                 true -> {
                     updateStatusToSyncedWithSMS()
                 }
+
                 false -> {
                     updateStatusToSentBySMS()
                 }
@@ -369,14 +389,14 @@ class GranularSyncPresenter(
         return d2.dataSetModule().dataSets().withDataSetElements().uid(syncContext.recordUid())
             .get()
             .map {
-                it.dataSetElements()?.map { dataSetElement ->
+                it.dataSetElements()?.mapNotNull { dataSetElement ->
                     if (dataSetElement.categoryCombo() != null) {
                         dataSetElement.categoryCombo()?.uid()
                     } else {
                         d2.dataElementModule()
                             .dataElements()
                             .uid(dataSetElement.dataElement().uid())
-                            .blockingGet().categoryComboUid()
+                            .blockingGet()?.categoryComboUid()
                     }
                 }?.distinct()
             }
@@ -394,13 +414,27 @@ class GranularSyncPresenter(
         when (workInfo.state) {
             WorkInfo.State.ENQUEUED,
             WorkInfo.State.BLOCKED,
-            WorkInfo.State.RUNNING -> {
+            WorkInfo.State.RUNNING,
+            -> {
                 loadSyncInfo(State.UPLOADING)
             }
+
             WorkInfo.State.SUCCEEDED,
             WorkInfo.State.FAILED,
-            WorkInfo.State.CANCELLED -> {
+            WorkInfo.State.CANCELLED,
+            -> {
                 loadSyncInfo()
+            }
+        }
+    }
+
+    fun checkServerAvailability() {
+        viewModelScope.launch {
+            try {
+                repository.checkServerAvailability()
+                _serverAvailability.value = true
+            } catch (error: RuntimeException) {
+                _serverAvailability.value = false
             }
         }
     }

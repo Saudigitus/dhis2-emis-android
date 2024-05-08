@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import org.dhis2.composetable.model.TableCell
+import org.dhis2.composetable.model.TableHeader
 import org.dhis2.composetable.ui.semantics.CELL_TEST_TAG
 
 @Composable
@@ -18,12 +19,13 @@ fun ItemValues(
     maxLines: Int,
     cellValues: Map<Int, TableCell>,
     overridenValues: Map<Int, TableCell>,
-    headerExtraSize: Int,
-    options: List<String>
+    tableHeaderModel: TableHeader,
+    options: List<String>,
+    headerLabel: String,
 ) {
     Row(
         modifier = Modifier
-            .horizontalScroll(state = horizontalScrollState)
+            .horizontalScroll(state = horizontalScrollState),
     ) {
         repeat(
             times = cellValues.size,
@@ -33,18 +35,24 @@ fun ItemValues(
                         overridenValues[columnIndex]
                     } else {
                         cellValues[columnIndex]
-                    } ?: TableCell(value = "")
+                    } ?: TableCell(value = "", column = columnIndex)
 
                 key("$tableId$CELL_TEST_TAG${cellValue.row}${cellValue.column}") {
                     TableCell(
                         tableId = tableId,
                         cell = cellValue,
                         maxLines = maxLines,
-                        headerExtraSize = headerExtraSize,
-                        options = options
+                        headerExtraSize = TableTheme.dimensions.extraSize(
+                            tableId,
+                            tableHeaderModel.tableMaxColumns(),
+                            tableHeaderModel.hasTotals,
+                            columnIndex,
+                        ),
+                        options = options,
+                        headerLabel = headerLabel,
                     )
                 }
-            }
+            },
         )
         Spacer(Modifier.size(TableTheme.dimensions.tableEndExtraScroll))
     }

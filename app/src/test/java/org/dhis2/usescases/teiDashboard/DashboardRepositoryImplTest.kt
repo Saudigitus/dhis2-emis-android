@@ -2,6 +2,8 @@ package org.dhis2.usescases.teiDashboard
 
 import dhis2.org.analytics.charts.Charts
 import io.reactivex.Single
+import org.dhis2.commons.prefs.PreferenceProvider
+import org.dhis2.commons.resources.MetadataIconProvider
 import org.dhis2.commons.resources.ResourceManager
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.common.Unit
@@ -32,6 +34,8 @@ class DashboardRepositoryImplTest {
     private val resources: ResourceManager = mock()
     private val charts: Charts = mock()
     private val teiAttributesProvider: TeiAttributesProvider = mock()
+    private val preferences: PreferenceProvider = mock()
+    private val metadataIconProvider: MetadataIconProvider = mock()
 
     @Before
     fun setUp() {
@@ -41,8 +45,9 @@ class DashboardRepositoryImplTest {
             "teiUid",
             "programUid",
             "enrollmentUid",
-            resources,
-            teiAttributesProvider
+            teiAttributesProvider,
+            preferences,
+            metadataIconProvider,
         )
     }
 
@@ -84,22 +89,22 @@ class DashboardRepositoryImplTest {
 
         whenever(d2.enrollmentModule().enrollments().byTrackedEntityInstance()) doReturn mock()
         whenever(
-            d2.enrollmentModule().enrollments().byTrackedEntityInstance().eq(teiUid)
+            d2.enrollmentModule().enrollments().byTrackedEntityInstance().eq(teiUid),
         ) doReturn mock()
         whenever(
             d2.enrollmentModule().enrollments()
                 .byTrackedEntityInstance().eq(teiUid)
-                .byDeleted()
+                .byDeleted(),
         ) doReturn mock()
         whenever(
             d2.enrollmentModule().enrollments()
                 .byTrackedEntityInstance().eq(teiUid)
-                .byDeleted().eq(false)
+                .byDeleted().eq(false),
         ) doReturn mock()
         whenever(
             d2.enrollmentModule().enrollments()
                 .byTrackedEntityInstance().eq(teiUid)
-                .byDeleted().eq(false).get()
+                .byDeleted().eq(false).get(),
         ) doReturn Single.just(enrollments)
 
         val testObserver = repository.getTEIEnrollments(teiUid).test()
@@ -114,7 +119,7 @@ class DashboardRepositoryImplTest {
         whenever(d2.enrollmentModule().enrollments().uid("uid")) doReturn mock()
         whenever(d2.enrollmentModule().enrollments().uid("uid").blockingGet()) doReturn mock()
         whenever(
-            d2.enrollmentModule().enrollments().uid("uid").blockingGet().status()
+            d2.enrollmentModule().enrollments().uid("uid").blockingGet()?.status(),
         ) doReturn EnrollmentStatus.COMPLETED
 
         val status = repository.getEnrollmentStatus("uid")
@@ -128,19 +133,19 @@ class DashboardRepositoryImplTest {
         whenever(d2.programModule().programs().uid("programUid")) doReturn mock()
         whenever(d2.programModule().programs().uid("programUid").blockingGet()) doReturn mock()
         whenever(
-            d2.programModule().programs().uid("programUid").blockingGet().access()
+            d2.programModule().programs().uid("programUid").blockingGet()?.access(),
         ) doReturn mock()
         whenever(
-            d2.programModule().programs().uid("programUid").blockingGet().access().data()
+            d2.programModule().programs().uid("programUid").blockingGet()?.access()?.data(),
         ) doReturn mock()
         whenever(
-            d2.programModule().programs().uid("programUid").blockingGet().access().data().write()
+            d2.programModule().programs().uid("programUid").blockingGet()?.access()?.data()?.write(),
         ) doReturn true
         whenever(d2.enrollmentModule().enrollments()) doReturn mock()
         whenever(d2.enrollmentModule().enrollments().uid("enrollmentUid")) doReturn mock()
         whenever(
             d2.enrollmentModule().enrollments()
-                .uid("enrollmentUid").setStatus(EnrollmentStatus.COMPLETED)
+                .uid("enrollmentUid").setStatus(EnrollmentStatus.COMPLETED),
         ) doThrow D2Error.builder().errorCode(D2ErrorCode.VALUE_CANT_BE_SET)
             .errorComponent(D2ErrorComponent.Database)
             .errorDescription("description")
@@ -161,19 +166,19 @@ class DashboardRepositoryImplTest {
         whenever(d2.programModule().programs().uid("programUid")) doReturn mock()
         whenever(d2.programModule().programs().uid("programUid").blockingGet()) doReturn mock()
         whenever(
-            d2.programModule().programs().uid("programUid").blockingGet().access()
+            d2.programModule().programs().uid("programUid").blockingGet()?.access(),
         ) doReturn mock()
         whenever(
-            d2.programModule().programs().uid("programUid").blockingGet().access().data()
+            d2.programModule().programs().uid("programUid").blockingGet()?.access()?.data(),
         ) doReturn mock()
         whenever(
-            d2.programModule().programs().uid("programUid").blockingGet().access().data().write()
+            d2.programModule().programs().uid("programUid").blockingGet()?.access()?.data()?.write(),
         ) doReturn true
         whenever(d2.enrollmentModule().enrollments()) doReturn mock()
         whenever(d2.enrollmentModule().enrollments().uid("enrollmentUid")) doReturn mock()
         whenever(
             d2.enrollmentModule().enrollments()
-                .uid("enrollmentUid").setStatus(EnrollmentStatus.COMPLETED)
+                .uid("enrollmentUid").setStatus(EnrollmentStatus.COMPLETED),
         ) doReturn Unit()
 
         val testObserver =
@@ -191,13 +196,13 @@ class DashboardRepositoryImplTest {
         whenever(d2.programModule().programs().uid("programUid")) doReturn mock()
         whenever(d2.programModule().programs().uid("programUid").blockingGet()) doReturn mock()
         whenever(
-            d2.programModule().programs().uid("programUid").blockingGet().access()
+            d2.programModule().programs().uid("programUid").blockingGet()?.access(),
         ) doReturn mock()
         whenever(
-            d2.programModule().programs().uid("programUid").blockingGet().access().data()
+            d2.programModule().programs().uid("programUid").blockingGet()?.access()?.data(),
         ) doReturn mock()
         whenever(
-            d2.programModule().programs().uid("programUid").blockingGet().access().data().write()
+            d2.programModule().programs().uid("programUid").blockingGet()?.access()?.data()?.write(),
         ) doReturn false
 
         val testObserver =
@@ -217,7 +222,7 @@ class DashboardRepositoryImplTest {
 
         whenever(
             teiAttributesProvider
-                .getValuesFromProgramTrackedEntityAttributesByProgram(programUid, teiUid)
+                .getValuesFromProgramTrackedEntityAttributesByProgram(programUid, teiUid),
         ) doReturn Single.just(
             arrayListOf(
                 TrackedEntityAttributeValue.builder()
@@ -234,12 +239,12 @@ class DashboardRepositoryImplTest {
                     .trackedEntityAttribute("attr3")
                     .trackedEntityInstance(teiUid)
                     .value("3")
-                    .build()
-            )
+                    .build(),
+            ),
         )
 
         whenever(
-            d2.trackedEntityModule().trackedEntityAttributes().uid(anyString()).blockingGet()
+            d2.trackedEntityModule().trackedEntityAttributes().uid(anyString()).blockingGet(),
         ) doReturnConsecutively arrayListOf(
             TrackedEntityAttribute.builder()
                 .uid("attr1")
@@ -248,7 +253,7 @@ class DashboardRepositoryImplTest {
             TrackedEntityAttribute.builder()
                 .uid("attr3")
                 .valueType(ValueType.TEXT)
-                .build()
+                .build(),
         )
 
         val testObserver = repository.getTEIAttributeValues(programUid, teiUid).test()
@@ -269,18 +274,18 @@ class DashboardRepositoryImplTest {
 
         whenever(d2.trackedEntityModule().trackedEntityInstances()) doReturn mock()
         whenever(
-            d2.trackedEntityModule().trackedEntityInstances().uid(anyString())
+            d2.trackedEntityModule().trackedEntityInstances().uid(anyString()),
         ) doReturn mock()
         whenever(
-            d2.trackedEntityModule().trackedEntityInstances().uid(anyString()).blockingGet()
+            d2.trackedEntityModule().trackedEntityInstances().uid(anyString()).blockingGet(),
         ) doReturn mock()
         whenever(
             d2.trackedEntityModule().trackedEntityInstances()
-                .uid(anyString()).blockingGet().trackedEntityType()
+                .uid(anyString()).blockingGet()?.trackedEntityType(),
         ) doReturn teType
 
         whenever(
-            teiAttributesProvider.getValuesFromTrackedEntityTypeAttributes(teType, teiUid)
+            teiAttributesProvider.getValuesFromTrackedEntityTypeAttributes(teType, teiUid),
         ) doReturn arrayListOf(
             TrackedEntityAttributeValue.builder()
                 .id(1)
@@ -296,15 +301,15 @@ class DashboardRepositoryImplTest {
                 .id(3)
                 .value("attrValue4")
                 .trackedEntityAttribute("attr4")
-                .build()
+                .build(),
         )
 
         whenever(d2.trackedEntityModule().trackedEntityAttributes()) doReturn mock()
         whenever(
-            d2.trackedEntityModule().trackedEntityAttributes().uid(anyString())
+            d2.trackedEntityModule().trackedEntityAttributes().uid(anyString()),
         ) doReturn mock()
         whenever(
-            d2.trackedEntityModule().trackedEntityAttributes().uid(anyString()).blockingGet()
+            d2.trackedEntityModule().trackedEntityAttributes().uid(anyString()).blockingGet(),
         ) doReturnConsecutively arrayListOf(
             TrackedEntityAttribute.builder()
                 .uid("attr1")
@@ -317,7 +322,7 @@ class DashboardRepositoryImplTest {
             TrackedEntityAttribute.builder()
                 .uid("attr4")
                 .valueType(ValueType.TEXT)
-                .build()
+                .build(),
         )
 
         val testObserver = repository.getTEIAttributeValues(null, "teiUid").test()
@@ -338,20 +343,20 @@ class DashboardRepositoryImplTest {
 
         whenever(d2.trackedEntityModule().trackedEntityInstances()) doReturn mock()
         whenever(
-            d2.trackedEntityModule().trackedEntityInstances().uid(anyString())
+            d2.trackedEntityModule().trackedEntityInstances().uid(anyString()),
         ) doReturn mock()
         whenever(
-            d2.trackedEntityModule().trackedEntityInstances().uid(anyString()).blockingGet()
+            d2.trackedEntityModule().trackedEntityInstances().uid(anyString()).blockingGet(),
         ) doReturn mock()
         whenever(
             d2.trackedEntityModule().trackedEntityInstances()
-                .uid(anyString()).blockingGet().trackedEntityType()
+                .uid(anyString()).blockingGet()?.trackedEntityType(),
         ) doReturn teType
         whenever(
-            teiAttributesProvider.getValuesFromTrackedEntityTypeAttributes(teType, teiUid)
+            teiAttributesProvider.getValuesFromTrackedEntityTypeAttributes(teType, teiUid),
         ) doReturn emptyList()
         whenever(
-            teiAttributesProvider.getValuesFromProgramTrackedEntityAttributes(teType, teiUid)
+            teiAttributesProvider.getValuesFromProgramTrackedEntityAttributes(teType, teiUid),
         ) doReturn arrayListOf(
             TrackedEntityAttributeValue.builder()
                 .id(1)
@@ -367,15 +372,15 @@ class DashboardRepositoryImplTest {
                 .id(3)
                 .value("attrValue3")
                 .trackedEntityAttribute("attr3")
-                .build()
+                .build(),
         )
 
         whenever(d2.trackedEntityModule().trackedEntityAttributes()) doReturn mock()
         whenever(
-            d2.trackedEntityModule().trackedEntityAttributes().uid(anyString())
+            d2.trackedEntityModule().trackedEntityAttributes().uid(anyString()),
         ) doReturn mock()
         whenever(
-            d2.trackedEntityModule().trackedEntityAttributes().uid(anyString()).blockingGet()
+            d2.trackedEntityModule().trackedEntityAttributes().uid(anyString()).blockingGet(),
         ) doReturnConsecutively arrayListOf(
             TrackedEntityAttribute.builder()
                 .uid("attr1")
@@ -388,7 +393,7 @@ class DashboardRepositoryImplTest {
             TrackedEntityAttribute.builder()
                 .uid("attr3")
                 .valueType(ValueType.TEXT)
-                .build()
+                .build(),
         )
 
         val testObserver = repository.getTEIAttributeValues(null, "teiUid").test()

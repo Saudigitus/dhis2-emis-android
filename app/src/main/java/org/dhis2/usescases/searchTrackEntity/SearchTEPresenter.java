@@ -34,8 +34,8 @@ import org.dhis2.commons.orgunitselector.OrgUnitSelectorScope;
 import org.dhis2.commons.prefs.Preference;
 import org.dhis2.commons.prefs.PreferenceProvider;
 import org.dhis2.commons.resources.ColorUtils;
-import org.dhis2.commons.resources.D2ErrorUtils;
 import org.dhis2.commons.resources.ObjectStyleUtils;
+import org.dhis2.commons.resources.ResourceManager;
 import org.dhis2.commons.schedulers.SchedulerProvider;
 import org.dhis2.data.service.SyncStatusController;
 import org.dhis2.maps.model.StageStyle;
@@ -75,17 +75,19 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     private final BehaviorSubject<String> currentProgram;
     private final PreferenceProvider preferences;
     private final FilterRepository filterRepository;
+    private final ResourceManager resourceManager;
     private Program selectedProgram;
 
     private final CompositeDisposable compositeDisposable;
     private final TrackedEntityType trackedEntity;
-    private Date selectedEnrollmentDate;
 
     private final String trackedEntityType;
 
     private final DisableHomeFiltersFromSettingsApp disableHomeFilters;
     private final MatomoAnalyticsController matomoAnalyticsController;
     private final SyncStatusController syncStatusController;
+
+    private final ColorUtils colorUtils;
 
     public SearchTEPresenter(SearchTEContractsModule.View view,
                              D2 d2,
@@ -98,7 +100,9 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
                              FilterRepository filterRepository,
                              DisableHomeFiltersFromSettingsApp disableHomeFilters,
                              MatomoAnalyticsController matomoAnalyticsController,
-                             SyncStatusController syncStatusController) {
+                             SyncStatusController syncStatusController,
+                             ResourceManager resourceManager,
+                             ColorUtils colorUtils) {
         this.view = view;
         this.preferences = preferenceProvider;
         this.searchRepository = searchRepository;
@@ -109,11 +113,13 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
         this.disableHomeFilters = disableHomeFilters;
         this.matomoAnalyticsController = matomoAnalyticsController;
         this.syncStatusController = syncStatusController;
+        this.resourceManager = resourceManager;
         compositeDisposable = new CompositeDisposable();
         selectedProgram = initialProgram != null ? d2.programModule().programs().uid(initialProgram).blockingGet() : null;
         currentProgram = BehaviorSubject.createDefault(initialProgram != null ? initialProgram : "");
         this.trackedEntityType = teTypeUid;
         this.trackedEntity = searchRepository.getTrackedEntityType(trackedEntityType).blockingFirst();
+        this.colorUtils = colorUtils;
     }
 
     //-----------------------------------
@@ -283,7 +289,6 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
 
     @Override
     public void enroll(String programUid, String uid, HashMap<String, String> queryData) {
-        selectedEnrollmentDate = Calendar.getInstance().getTime();
 
         compositeDisposable.add(getOrgUnits()
                 .subscribeOn(schedulerProvider.io())
@@ -296,70 +301,23 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
                                         .singleSelection()
                                         .onSelection(selectedOrgUnits -> {
                                             if (!selectedOrgUnits.isEmpty())
-                                                showCalendar(selectedOrgUnits.get(0), programUid, uid, queryData);
+                                                enrollInOrgUnit(selectedOrgUnits.get(0).uid(), programUid, uid, queryData);
                                             return Unit.INSTANCE;
                                         })
                                         .orgUnitScope(new OrgUnitSelectorScope.ProgramCaptureScope(programUid))
                                         .build()
                                         .show(view.getAbstracContext().getSupportFragmentManager(), "OrgUnitEnrollment");
                             } else if (allOrgUnits.size() == 1)
-                                showCalendar(allOrgUnits.get(0), programUid, uid, queryData);
+                                enrollInOrgUnit(allOrgUnits.get(0).uid(), programUid, uid, queryData);
                         },
                         Timber::d
                 )
         );
     }
 
-    private void showCalendar(OrganisationUnit selectedOrgUnit, String programUid, String uid, HashMap<String, String> queryData) {
-        Date minDate = null;
-        Date maxDate = null;
-
-        if (selectedOrgUnit.openingDate() != null)
-            minDate = selectedOrgUnit.openingDate();
-
-        if (selectedOrgUnit.closedDate() == null && Boolean.FALSE.equals(selectedProgram.selectEnrollmentDatesInFuture())) {
-            maxDate = new Date(System.currentTimeMillis());
-        } else if (selectedOrgUnit.closedDate() != null && Boolean.FALSE.equals(selectedProgram.selectEnrollmentDatesInFuture())) {
-            if (selectedOrgUnit.closedDate().before(new Date(System.currentTimeMillis()))) {
-                maxDate = selectedOrgUnit.closedDate();
-            } else {
-                maxDate = new Date(System.currentTimeMillis());
-            }
-        } else if (selectedOrgUnit.closedDate() != null && Boolean.TRUE.equals(selectedProgram.selectEnrollmentDatesInFuture())) {
-            maxDate = selectedOrgUnit.closedDate();
-        }
-
-        CalendarPicker dialog = new CalendarPicker(view.getContext());
-        dialog.setTitle(selectedProgram.enrollmentDateLabel());
-        dialog.setMinDate(minDate);
-        dialog.setMaxDate(maxDate);
-        dialog.isFutureDatesAllowed(true);
-        dialog.setListener(new OnDatePickerListener() {
-            @Override
-            public void onNegativeClick() {
-            }
-
-            @Override
-            public void onPositiveClick(@NotNull DatePicker datePicker) {
-                Calendar selectedCalendar = Calendar.getInstance();
-                selectedCalendar.set(Calendar.YEAR, datePicker.getYear());
-                selectedCalendar.set(Calendar.MONTH, datePicker.getMonth());
-                selectedCalendar.set(Calendar.DAY_OF_MONTH, datePicker.getDayOfMonth());
-                selectedCalendar.set(Calendar.HOUR_OF_DAY, 0);
-                selectedCalendar.set(Calendar.MINUTE, 0);
-                selectedCalendar.set(Calendar.SECOND, 0);
-                selectedCalendar.set(Calendar.MILLISECOND, 0);
-                selectedEnrollmentDate = selectedCalendar.getTime();
-
-                enrollInOrgUnit(selectedOrgUnit.uid(), programUid, uid, selectedEnrollmentDate, queryData);
-            }
-        });
-        dialog.show();
-    }
-
-    private void enrollInOrgUnit(String orgUnitUid, String programUid, String uid, Date enrollmentDate, HashMap<String, String> queryData) {
+    private void enrollInOrgUnit(String orgUnitUid, String programUid, String uid,  HashMap<String, String> queryData) {
         compositeDisposable.add(
-                searchRepository.saveToEnroll(trackedEntity.uid(), orgUnitUid, programUid, uid, queryData, enrollmentDate, view.fromRelationshipTEI())
+                searchRepository.saveToEnroll(trackedEntity.uid(), orgUnitUid, programUid, uid, queryData, view.fromRelationshipTEI())
                         .subscribeOn(schedulerProvider.computation())
                         .observeOn(schedulerProvider.ui())
                         .subscribe(enrollmentAndTEI -> {
@@ -413,7 +371,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
                                         view.showBreakTheGlass(teiUid, enrollmentUid);
                                         break;
                                     default:
-                                        view.displayMessage(new D2ErrorUtils(view.getContext()).getErrorMessage(t));
+                                        view.displayMessage(resourceManager.parseD2Error(t));
                                         break;
                                 }
                             } else {
@@ -502,7 +460,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
 
         if (teiType.style() != null && teiType.style().icon() != null) {
             return
-                    ObjectStyleUtils.getIconResource(view.getContext(), teiType.style().icon(), R.drawable.ic_default_icon);
+                    ObjectStyleUtils.getIconResource(view.getContext(), teiType.style().icon(), R.drawable.ic_default_icon, colorUtils);
         } else
             return AppCompatResources.getDrawable(view.getContext(), R.drawable.ic_default_icon);
     }
@@ -511,7 +469,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     public Drawable getEnrollmentSymbolIcon() {
         if (selectedProgram != null) {
             if (selectedProgram.style() != null && selectedProgram.style().icon() != null) {
-                return ObjectStyleUtils.getIconResource(view.getContext(), selectedProgram.style().icon(), R.drawable.ic_default_outline);
+                return ObjectStyleUtils.getIconResource(view.getContext(), selectedProgram.style().icon(), R.drawable.ic_default_outline, colorUtils);
             } else
                 return AppCompatResources.getDrawable(view.getContext(), R.drawable.ic_default_outline);
         }
@@ -524,7 +482,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
         TrackedEntityType teiType = d2.trackedEntityModule().trackedEntityTypes().withTrackedEntityTypeAttributes().uid(trackedEntityType).blockingGet();
 
         if (teiType.style() != null && teiType.style().color() != null) {
-            return ColorUtils.parseColor(Objects.requireNonNull(teiType.style().color()));
+            return colorUtils.parseColor(Objects.requireNonNull(teiType.style().color()));
         } else
             return -1;
     }
@@ -532,7 +490,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     @Override
     public int getEnrollmentColor() {
         if (selectedProgram != null && selectedProgram.style() != null && selectedProgram.style().color() != null)
-            return ColorUtils.parseColor(Objects.requireNonNull(selectedProgram.style().color()));
+            return colorUtils.parseColor(Objects.requireNonNull(selectedProgram.style().color()));
         else
             return -1;
     }
@@ -546,12 +504,12 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
                 int color;
                 Drawable icon;
                 if (stage.style() != null && stage.style().color() != null) {
-                    color = ColorUtils.parseColor(Objects.requireNonNull(stage.style().color()));
+                    color = colorUtils.parseColor(Objects.requireNonNull(stage.style().color()));
                 } else {
                     color = -1;
                 }
                 if (stage.style() != null && stage.style().icon() != null) {
-                    icon = ObjectStyleUtils.getIconResource(view.getContext(), stage.style().icon(), R.drawable.ic_clinical_f_outline);
+                    icon = ObjectStyleUtils.getIconResource(view.getContext(), stage.style().icon(), R.drawable.ic_clinical_f_outline, colorUtils);
                 } else {
                     icon = AppCompatResources.getDrawable(view.getContext(), R.drawable.ic_clinical_f_outline);
                 }

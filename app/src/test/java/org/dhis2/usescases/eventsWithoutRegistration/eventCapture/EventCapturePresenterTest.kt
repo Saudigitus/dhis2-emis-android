@@ -4,7 +4,6 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.Single
-import java.util.Date
 import org.dhis2.commons.prefs.PreferenceProvider
 import org.dhis2.data.schedulers.TrampolineSchedulerProvider
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.domain.ConfigureEventCompletionDialog
@@ -25,6 +24,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
+import java.util.Date
 
 class EventCapturePresenterTest {
     @get:Rule
@@ -46,7 +46,7 @@ class EventCapturePresenterTest {
             eventRepository,
             schedulers,
             preferences,
-            configureEventCompletionDialog
+            configureEventCompletionDialog,
         )
     }
 
@@ -58,7 +58,7 @@ class EventCapturePresenterTest {
         whenever(eventRepository.isEventEditable("eventUid")) doReturn true
 
         presenter.init()
-        verify(view).renderInitialInfo(any(), any(), any(), any())
+        verify(view).renderInitialInfo(any())
 
         verifyNoMoreInteractions(view)
     }
@@ -72,7 +72,7 @@ class EventCapturePresenterTest {
 
         presenter.init()
         verify(view).showEventIntegrityAlert()
-        verify(view).renderInitialInfo(any(), any(), any(), any())
+        verify(view).renderInitialInfo(any())
         verifyNoMoreInteractions(view)
     }
 
@@ -87,7 +87,7 @@ class EventCapturePresenterTest {
     fun `Should return enrollment that is not open`() {
         whenever(eventRepository.isEnrollmentOpen) doReturn false
 
-        val result = presenter.isEnrollmentOpen
+        val result = presenter.isEnrollmentOpen()
         assertTrue(!result)
     }
 
@@ -95,7 +95,7 @@ class EventCapturePresenterTest {
     fun `Should return enrollment that is open`() {
         whenever(eventRepository.isEnrollmentOpen) doReturn true
 
-        val result = presenter.isEnrollmentOpen
+        val result = presenter.isEnrollmentOpen()
         assertTrue(result)
     }
 
@@ -126,9 +126,10 @@ class EventCapturePresenterTest {
     @Test
     fun `Should delete an event`() {
         whenever(eventRepository.deleteEvent()) doReturn Observable.just(true)
+        whenever(eventRepository.programStage()) doReturn Observable.just("programStage")
 
         presenter.deleteEvent()
-        verify(view).showSnackBar(any())
+        verify(view).showSnackBar(any(), any())
         verify(view).finishDataEntry()
         verifyNoMoreInteractions(view)
     }
@@ -136,6 +137,7 @@ class EventCapturePresenterTest {
     @Test
     fun `Should close form if it could not delete an event`() {
         whenever(eventRepository.deleteEvent()) doReturn Observable.just(false)
+        whenever(eventRepository.programStage()) doReturn Observable.just("programStage")
 
         presenter.deleteEvent()
         verify(view).finishDataEntry()
@@ -146,9 +148,10 @@ class EventCapturePresenterTest {
     fun `Should skip an event`() {
         val status = EventStatus.SKIPPED
         whenever(eventRepository.updateEventStatus(status)) doReturn Observable.just(true)
+        whenever(eventRepository.programStage()) doReturn Observable.just("programStage")
 
         presenter.skipEvent()
-        verify(view).showSnackBar(any())
+        verify(view).showSnackBar(any(), any())
         verify(view).finishDataEntry()
         verifyNoMoreInteractions(view)
     }
@@ -209,7 +212,7 @@ class EventCapturePresenterTest {
     fun `Should show completion percentage`() {
         whenever(eventRepository.showCompletionPercentage()) doReturn true
 
-        val result = presenter.completionPercentageVisibility
+        val result = presenter.getCompletionPercentageVisibility()
         assertTrue(result)
     }
 
@@ -217,7 +220,7 @@ class EventCapturePresenterTest {
     fun `Should hide completion percentage`() {
         whenever(eventRepository.showCompletionPercentage()) doReturn false
 
-        val result = presenter.completionPercentageVisibility
+        val result = presenter.getCompletionPercentageVisibility()
         assertTrue(!result)
     }
 
@@ -255,7 +258,7 @@ class EventCapturePresenterTest {
 
         presenter.attemptFinish(true, null, emptyList(), emptyMap(), emptyList())
 
-        verify(view).SaveAndFinish()
+        verify(view).saveAndFinish()
     }
 
     @Test
@@ -318,14 +321,14 @@ class EventCapturePresenterTest {
         whenever(eventRepository.isEventEditable("eventUid")) doReturn true
 
         whenever(
-            eventRepository.validationStrategy()
+            eventRepository.validationStrategy(),
         ) doReturn ValidationStrategy.ON_UPDATE_AND_INSERT
         val eventCompletionDialog: EventCompletionDialog = mock()
         whenever(
-            configureEventCompletionDialog.invoke(any(), any(), any(), any(), any(), any())
+            configureEventCompletionDialog.invoke(any(), any(), any(), any(), any(), any()),
         ) doReturn eventCompletionDialog
         whenever(
-            eventRepository.isEnrollmentOpen
+            eventRepository.isEnrollmentOpen,
         ) doReturn true
 
         presenter.attemptFinish(
@@ -333,14 +336,10 @@ class EventCapturePresenterTest {
             onCompleteMessage = "Complete",
             errorFields = emptyList(),
             emptyMandatoryFields = emptyMap(),
-            warningFields = emptyList()
+            warningFields = emptyList(),
         )
 
-        verify(view).showCompleteActions(
-            any(),
-            any(),
-            any()
-        )
+        verify(view).showCompleteActions(any())
         verify(view).showNavigationBar()
     }
 
@@ -348,7 +347,7 @@ class EventCapturePresenterTest {
     fun `Should init note counter`() {
         whenever(eventRepository.noteCount) doReturnConsecutively listOf(
             0,
-            1
+            1,
         ).map { Single.just(it) }
         presenter.initNoteCounter()
         verify(view).updateNoteBadge(0)
@@ -358,14 +357,10 @@ class EventCapturePresenterTest {
 
     private fun initializeMocks() {
         val stage = ProgramStage.builder().uid("stage").displayName("stageName").build()
-        val date = "date"
         val orgUnit = OrganisationUnit.builder().uid("orgUnit").displayName("OrgUnitName").build()
-        val catOption = "catOption"
 
         whenever(eventRepository.programStageName()) doReturn Flowable.just(stage.uid())
-        whenever(eventRepository.eventDate()) doReturn Flowable.just(date)
         whenever(eventRepository.orgUnit()) doReturn Flowable.just(orgUnit)
-        whenever(eventRepository.catOption()) doReturn Flowable.just(catOption)
         doNothing().`when`(preferences).setValue(any(), any())
         whenever(eventRepository.programStage()) doReturn Observable.just(stage.uid())
     }

@@ -28,8 +28,7 @@ android {
             )
         }
     }
-
-    flavorDimensions("default")
+    flavorDimensions += listOf("default")
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -54,4 +53,5 @@ dependencies {
     debugImplementation(libs.bundles.table.debugImplementation)
     testImplementation(libs.bundles.table.test)
     androidTestImplementation(libs.bundles.table.androidTest)
+    implementation(libs.dhis2.mobile.designsystem)
 }

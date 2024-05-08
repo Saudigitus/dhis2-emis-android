@@ -10,11 +10,11 @@ fun LazyListScope.fixedStickyHeader(
     fixHeader: Boolean = true,
     key: Any? = null,
     contentType: Any? = null,
-    content: @Composable LazyItemScope.() -> Unit
+    content: @Composable LazyItemScope.() -> Unit,
 ) {
     if (fixHeader) {
-        stickyHeader(key, contentType = contentType, content = content)
+        stickyHeader("${key}_sticky", contentType = contentType, content = content)
     } else {
-        item(key, contentType = contentType, content = content)
+        item("${key}_non_sticky", contentType = contentType, content = content)
     }
 }

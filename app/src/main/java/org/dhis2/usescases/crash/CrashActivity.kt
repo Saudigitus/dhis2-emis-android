@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,11 +26,8 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,11 +41,14 @@ import androidx.compose.ui.unit.sp
 import cat.ereza.customactivityoncrash.CustomActivityOnCrash
 import cat.ereza.customactivityoncrash.config.CaocConfig
 import com.google.android.material.composethemeadapter.MdcTheme
+import org.dhis2.BuildConfig
+import org.dhis2.R
+import org.hisp.dhis.mobile.ui.designsystem.component.Button
+import org.hisp.dhis.mobile.ui.designsystem.component.ButtonStyle
+import org.hisp.dhis.mobile.ui.designsystem.component.ColorStyle
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import org.dhis2.BuildConfig
-import org.dhis2.R
 
 class CrashActivity : AppCompatActivity() {
     var config: CaocConfig? = null
@@ -66,11 +67,11 @@ class CrashActivity : AppCompatActivity() {
                         CrashGoBackButton {
                             goBack()
                         }
-                    }
+                    },
                 ) {
                     CrashScreen(
                         crashReport = loadCrashReport(),
-                        onCopy = { copyTextToClipboard(it) }
+                        onCopy = { copyTextToClipboard(it) },
                     )
                 }
             }
@@ -82,11 +83,11 @@ class CrashActivity : AppCompatActivity() {
         buildDate = BuildConfig.BUILD_DATE,
         currentDate = SimpleDateFormat(
             "yyyy-MM-dd HH:mm",
-            Locale.getDefault()
+            Locale.getDefault(),
         ).format(Date()),
         device = "%s %s".format(Build.MANUFACTURER, Build.MODEL),
         osVersion = Build.VERSION.RELEASE,
-        stackTrace = CustomActivityOnCrash.getStackTraceFromIntent(intent) ?: "-"
+        stackTrace = CustomActivityOnCrash.getStackTraceFromIntent(intent) ?: "-",
     )
 
     private fun copyTextToClipboard(textToCopy: String) {
@@ -98,7 +99,7 @@ class CrashActivity : AppCompatActivity() {
             Toast.makeText(
                 this,
                 getString(R.string.copied_text),
-                Toast.LENGTH_SHORT
+                Toast.LENGTH_SHORT,
             ).show()
         }
     }
@@ -116,7 +117,7 @@ data class CrashReport(
     val currentDate: String,
     val device: String,
     val osVersion: String,
-    val stackTrace: String
+    val stackTrace: String,
 )
 
 @Composable
@@ -136,20 +137,20 @@ fun CrashHeader() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Image(
             modifier = Modifier.size(48.dp),
             painter = painterResource(id = R.drawable.ic_dhis),
-            contentDescription = "dhis2"
+            contentDescription = "dhis2",
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             modifier = Modifier.fillMaxWidth(),
             text = stringResource(
-                id = R.string.customactivityoncrash_error_activity_error_occurred_explanation
+                id = R.string.customactivityoncrash_error_activity_error_occurred_explanation,
             ),
-            color = colorResource(id = R.color.textPrimary)
+            color = colorResource(id = R.color.textPrimary),
         )
     }
 }
@@ -159,32 +160,32 @@ fun CrashDeviceInfo(crashReport: CrashReport) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
     ) {
         Text(
             fontSize = 14.sp,
             text = stringResource(R.string.customactivityoncrash_error_activity_build_version)
-                .format(crashReport.buildVersion)
+                .format(crashReport.buildVersion),
         )
         Text(
             fontSize = 14.sp,
             text = stringResource(R.string.customactivityoncrash_error_activity_buid_date)
-                .format(crashReport.buildDate)
+                .format(crashReport.buildDate),
         )
         Text(
             fontSize = 14.sp,
             text = stringResource(R.string.customactivityoncrash_error_activity_current_date)
-                .format(crashReport.currentDate)
+                .format(crashReport.currentDate),
         )
         Text(
             fontSize = 14.sp,
             text = stringResource(R.string.customactivityoncrash_error_activity_device)
-                .format(crashReport.device)
+                .format(crashReport.device),
         )
         Text(
             fontSize = 14.sp,
             text = stringResource(R.string.customactivityoncrash_error_activity_os_version)
-                .format(crashReport.osVersion)
+                .format(crashReport.osVersion),
         )
     }
 }
@@ -196,7 +197,8 @@ fun CrashStackTraceInfo(stackTrace: String, onCopy: (textToCopy: String) -> Unit
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalArrangement = spacedBy(8.dp),
 
     ) {
         Column(
@@ -205,23 +207,19 @@ fun CrashStackTraceInfo(stackTrace: String, onCopy: (textToCopy: String) -> Unit
                 .height(200.dp)
                 .background(color = Color.LightGray, shape = RoundedCornerShape(8.dp))
                 .padding(8.dp)
-                .verticalScroll(state = scrollState)
+                .verticalScroll(state = scrollState),
         ) {
             Text(
                 modifier = Modifier.fillMaxSize(),
                 text = stackTrace,
                 fontSize = 12.sp,
-                color = Color.DarkGray
+                color = Color.DarkGray,
             )
         }
-        TextButton(onClick = { onCopy(stackTrace) }) {
-            Text(
-                text = stringResource(
-                    id = R.string.customactivityoncrash_error_activity_error_details_copy
-                ).uppercase(),
-                color = colorResource(id = R.color.colorPrimary)
-            )
-        }
+        Button(
+            text = stringResource(id = R.string.customactivityoncrash_error_activity_error_details_copy),
+            onClick = { onCopy(stackTrace) },
+        )
     }
 }
 
@@ -230,21 +228,16 @@ fun CrashGoBackButton(onGoBack: () -> Unit) {
     Row(
         modifier = Modifier
             .padding(horizontal = 16.dp, vertical = 16.dp),
-        horizontalArrangement = Arrangement.Center
+        horizontalArrangement = Arrangement.Center,
     ) {
         Button(
+            text = stringResource(
+                id = R.string.customactivityoncrash_error_activity_restart_app,
+            ),
             onClick = { onGoBack() },
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = colorResource(id = R.color.colorPrimary)
-            )
-        ) {
-            Text(
-                text = stringResource(
-                    id = R.string.customactivityoncrash_error_activity_restart_app
-                ).uppercase(),
-                color = colorResource(id = R.color.primaryBgTextColor)
-            )
-        }
+            colorStyle = ColorStyle.DEFAULT,
+            style = ButtonStyle.FILLED,
+        )
     }
 }
 
@@ -258,7 +251,7 @@ fun ScreenPreview() {
             currentDate = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(Date()),
             device = "%s %s".format(Build.MANUFACTURER, Build.MODEL),
             osVersion = Build.VERSION.RELEASE,
-            stackTrace = "Error, Error,Error,\n Error, Error, Error,\nError, Error"
-        )
+            stackTrace = "Error, Error,Error,\n Error, Error, Error,\nError, Error",
+        ),
     ) {}
 }

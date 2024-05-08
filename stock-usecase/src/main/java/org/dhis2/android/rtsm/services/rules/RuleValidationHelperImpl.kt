@@ -2,10 +2,6 @@ package org.dhis2.android.rtsm.services.rules
 
 import io.reactivex.Flowable
 import io.reactivex.Single
-import java.util.Date
-import java.util.Objects
-import java.util.UUID
-import javax.inject.Inject
 import org.apache.commons.lang3.math.NumberUtils
 import org.dhis2.android.rtsm.data.AppConfig
 import org.dhis2.android.rtsm.data.TransactionType
@@ -17,36 +13,45 @@ import org.dhis2.android.rtsm.utils.printRuleEffects
 import org.dhis2.android.rtsm.utils.toRuleDataValue
 import org.dhis2.android.rtsm.utils.toRuleList
 import org.dhis2.android.rtsm.utils.toRuleVariableList
+import org.dhis2.commons.rules.RuleEngineContextData
+import org.dhis2.commons.rules.toRuleEngineInstant
+import org.dhis2.commons.rules.toRuleEngineLocalDate
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.arch.repositories.scope.RepositoryScope
 import org.hisp.dhis.android.core.enrollment.Enrollment
 import org.hisp.dhis.android.core.enrollment.EnrollmentStatus
 import org.hisp.dhis.android.core.event.EventStatus
+import org.hisp.dhis.android.core.program.ProgramRuleActionType
 import org.hisp.dhis.android.core.program.ProgramStage
-import org.hisp.dhis.rules.RuleEngine
-import org.hisp.dhis.rules.models.RuleActionAssign
+import org.hisp.dhis.rules.api.RuleEngine
 import org.hisp.dhis.rules.models.RuleDataValue
 import org.hisp.dhis.rules.models.RuleEffect
 import org.hisp.dhis.rules.models.RuleEvent
 import org.hisp.dhis.rules.models.RuleVariable
 import timber.log.Timber
+import java.util.Date
+import java.util.Objects
+import java.util.UUID
+import javax.inject.Inject
 
 class RuleValidationHelperImpl @Inject constructor(
-    private val d2: D2
+    private val d2: D2,
 ) : RuleValidationHelper {
+
+    private val ruleEngine = RuleEngine.getInstance()
 
     override fun evaluate(
         entry: StockEntry,
         program: String,
         transaction: Transaction,
         eventUid: String?,
-        appConfig: AppConfig
+        appConfig: AppConfig,
     ): Flowable<List<RuleEffect>> {
-        return ruleEngine(entry.item.id, appConfig.program).flatMap { ruleEngine ->
-            val programStage = programStage(program)
+        return ruleEngineData(entry.item.id, appConfig.program).flatMap { ruleEngineData ->
+            val programStage = programStage(program) ?: return@flatMap Flowable.empty()
 
-            Flowable.fromCallable(
-                prepareForDataEntry(ruleEngine, programStage, transaction, entry.date)
+            Flowable.just(
+                prepareForDataEntry(ruleEngineData, programStage, transaction, entry.date),
             ).flatMap { prelimRuleEffects ->
                 val dataValues = mutableListOf<RuleDataValue>().apply {
                     addAll(
@@ -55,23 +60,23 @@ class RuleValidationHelperImpl @Inject constructor(
                             programStage.uid(),
                             transaction,
                             entry.date,
-                            appConfig
-                        )
+                            appConfig,
+                        ),
                     )
                 }
 
                 prelimRuleEffects.forEach { ruleEffect ->
-                    when (ruleEffect.ruleAction()) {
-                        is RuleActionAssign -> {
-                            val ruleAction = ruleEffect.ruleAction() as RuleActionAssign
-                            ruleEffect.data()?.let { data ->
+                    when (ruleEffect.ruleAction.type) {
+                        ProgramRuleActionType.ASSIGN.name -> {
+                            val ruleAction = ruleEffect.ruleAction
+                            ruleEffect.data?.let { data ->
                                 dataValues.add(
-                                    RuleDataValue.create(
-                                        entry.date,
+                                    RuleDataValue(
+                                        entry.date.toRuleEngineInstant(),
                                         programStage.uid(),
-                                        ruleAction.field(),
-                                        data
-                                    )
+                                        ruleAction.field()!!,
+                                        data,
+                                    ),
                                 )
                             }
                         }
@@ -80,16 +85,19 @@ class RuleValidationHelperImpl @Inject constructor(
 
                 printRuleEffects("Preliminary RuleEffects", prelimRuleEffects, dataValues)
 
-                Flowable.fromCallable(
+                Flowable.just(
                     ruleEngine.evaluate(
-                        createRuleEvent(
+                        target = createRuleEvent(
                             programStage,
                             transaction.facility.uid,
                             dataValues,
                             entry.date,
-                            null
-                        )
-                    )
+                            null,
+                        ),
+                        ruleEnrollment = ruleEngineData.ruleEnrollment,
+                        ruleEvents = ruleEngineData.ruleEvents,
+                        executionContext = ruleEngineData.ruleEngineContext,
+                    ),
                 )
             }
         }
@@ -100,12 +108,15 @@ class RuleValidationHelperImpl @Inject constructor(
      * data entry
      */
     private fun prepareForDataEntry(
-        ruleEngine: RuleEngine,
+        ruleEngineData: RuleEngineContextData,
         programStage: ProgramStage,
         transaction: Transaction,
-        eventDate: Date
+        eventDate: Date,
     ) = ruleEngine.evaluate(
-        createRuleEvent(programStage, transaction.facility.uid, listOf(), eventDate)
+        target = createRuleEvent(programStage, transaction.facility.uid, listOf(), eventDate),
+        ruleEnrollment = ruleEngineData.ruleEnrollment,
+        ruleEvents = ruleEngineData.ruleEvents,
+        executionContext = ruleEngineData.ruleEngineContext,
     )
 
     private fun createRuleEvent(
@@ -113,12 +124,18 @@ class RuleValidationHelperImpl @Inject constructor(
         organisationUnit: String,
         dataValues: List<RuleDataValue>,
         period: Date,
-        eventUid: String? = null
-    ) = RuleEvent.create(
-        eventUid ?: UUID.randomUUID().toString(), programStage.uid(),
-        RuleEvent.Status.ACTIVE, period, period,
-        organisationUnit, null, dataValues,
-        programStage.name() ?: "", period
+        eventUid: String? = null,
+    ) = RuleEvent(
+        eventUid ?: UUID.randomUUID().toString(),
+        programStage.uid(),
+        programStage.name()!!,
+        RuleEvent.Status.ACTIVE,
+        period.toRuleEngineInstant(),
+        period.toRuleEngineLocalDate(),
+        period.toRuleEngineLocalDate(),
+        organisationUnit,
+        null,
+        dataValues,
     )
 
     private fun programStage(programUid: String) = d2.programModule().programStages()
@@ -133,7 +150,7 @@ class RuleValidationHelperImpl @Inject constructor(
                 it.toRuleVariableList(
                     d2.trackedEntityModule().trackedEntityAttributes(),
                     d2.dataElementModule().dataElements(),
-                    d2.optionModule().options()
+                    d2.optionModule().options(),
                 )
             }
     }
@@ -152,7 +169,7 @@ class RuleValidationHelperImpl @Inject constructor(
 
     private fun supplementaryData(): Single<Map<String, List<String>>> = Single.just(hashMapOf())
 
-    private fun ruleEngine(teiUid: String, programUid: String): Flowable<RuleEngine> {
+    private fun ruleEngineData(teiUid: String, programUid: String): Flowable<RuleEngineContextData> {
         val enrollment = currentEnrollment(teiUid, programUid)
 
         val enrollmentEvents = if (enrollment == null) {
@@ -166,7 +183,7 @@ class RuleValidationHelperImpl @Inject constructor(
             ruleVariables(programUid),
             constants(),
             supplementaryData(),
-            enrollmentEvents
+            enrollmentEvents,
         ) { rules, variables, constants, supplData, events ->
             RuleEngineHelper.getRuleEngine(rules, variables, constants, supplData, events)
         }
@@ -207,37 +224,30 @@ class RuleValidationHelperImpl @Inject constructor(
             .get()
             .toFlowable().flatMapIterable { events -> events }
             .map { event ->
-                RuleEvent.builder()
-                    .event(event.uid())
-                    .programStage(event.programStage())
-                    .programStageName(
-                        d2.programModule().programStages().uid(event.programStage())
-                            .blockingGet()!!.name()
-                    )
-                    .status(
-                        if (event.status() == EventStatus.VISITED) {
-                            RuleEvent.Status.ACTIVE
-                        } else {
-                            RuleEvent.Status.valueOf(event.status()!!.name)
-                        }
-                    )
-                    .eventDate(event.eventDate())
-                    .dueDate(if (event.dueDate() != null) event.dueDate() else event.eventDate())
-                    .organisationUnit(event.organisationUnit())
-                    .organisationUnitCode(
-                        d2.organisationUnitModule()
-                            .organisationUnits().uid(event.organisationUnit())
-                            .blockingGet()!!.code()
-                    )
-                    .dataValues(
-                        event.trackedEntityDataValues()?.toRuleDataValue(
-                            event,
-                            d2.dataElementModule().dataElements(),
-                            d2.programModule().programRuleVariables(),
-                            d2.optionModule().options()
-                        )
-                    )
-                    .build()
+                RuleEvent(
+                    event.uid(),
+                    event.programStage()!!,
+                    d2.programModule().programStages().uid(event.programStage())
+                        .blockingGet()!!.name()!!,
+                    if (event.status() == EventStatus.VISITED) {
+                        RuleEvent.Status.ACTIVE
+                    } else {
+                        RuleEvent.Status.valueOf(event.status()!!.name)
+                    },
+                    (event.eventDate() ?: Date()).toRuleEngineInstant(),
+                    event.dueDate()?.toRuleEngineLocalDate(),
+                    event.completedDate()?.toRuleEngineLocalDate(),
+                    event.organisationUnit()!!,
+                    d2.organisationUnitModule()
+                        .organisationUnits().uid(event.organisationUnit())
+                        .blockingGet()?.code(),
+                    event.trackedEntityDataValues()?.toRuleDataValue(
+                        event,
+                        d2.dataElementModule().dataElements(),
+                        d2.programModule().programRuleVariables(),
+                        d2.optionModule().options(),
+                    ) ?: emptyList(),
+                )
             }.toList()
     }
 
@@ -250,9 +260,9 @@ class RuleValidationHelperImpl @Inject constructor(
             .map {
                 if (eventUid != null) {
                     val programStage = d2.eventModule().events()
-                        .uid(eventUid).blockingGet().programStage()
+                        .uid(eventUid).blockingGet()?.programStage()
                     it.filter { rule ->
-                        rule.programStage() == null || rule.programStage() == programStage
+                        rule.programStage == null || rule.programStage == programStage
                     }
                 } else {
                     it
@@ -264,7 +274,7 @@ class RuleValidationHelperImpl @Inject constructor(
         programStage: String,
         transaction: Transaction,
         eventDate: Date,
-        appConfig: AppConfig
+        appConfig: AppConfig,
     ): List<RuleDataValue> {
         val values = mutableListOf<RuleDataValue>()
 
@@ -272,7 +282,14 @@ class RuleValidationHelperImpl @Inject constructor(
         if (qty != null && NumberUtils.isCreatable(qty)) {
             val deUid =
                 ConfigUtils.getTransactionDataElement(transaction.transactionType, appConfig)
-            values.add(RuleDataValue.create(eventDate, programStage, deUid, qty))
+            values.add(
+                RuleDataValue(
+                    eventDate = eventDate.toRuleEngineInstant(),
+                    programStage = programStage,
+                    dataElement = deUid,
+                    value = qty,
+                ),
+            )
 
             // Add the 'deliver to' if it's a distribution event
             if (transaction.transactionType == TransactionType.DISTRIBUTION) {
@@ -281,14 +298,14 @@ class RuleValidationHelperImpl @Inject constructor(
                         .options()
                         .uid(distributedTo.uid)
                         .blockingGet()
-                        .code()?.let { code ->
+                        ?.code()?.let { code ->
                             values.add(
-                                RuleDataValue.create(
-                                    eventDate,
-                                    programStage,
-                                    appConfig.distributedTo,
-                                    code
-                                )
+                                RuleDataValue(
+                                    eventDate = eventDate.toRuleEngineInstant(),
+                                    programStage = programStage,
+                                    dataElement = appConfig.distributedTo,
+                                    value = code,
+                                ),
                             )
                         }
                 }

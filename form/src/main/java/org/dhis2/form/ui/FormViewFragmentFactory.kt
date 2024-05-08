@@ -10,7 +10,6 @@ import org.dhis2.form.ui.provider.EnrollmentResultDialogUiProvider
 class FormViewFragmentFactory(
     val locationProvider: LocationProvider?,
     private val onItemChangeListener: ((action: RowAction) -> Unit)?,
-    private val needToForceUpdate: Boolean = false,
     private val onLoadingListener: ((loading: Boolean) -> Unit)?,
     private val onFocused: (() -> Unit)?,
     private val onFinishDataEntry: (() -> Unit)?,
@@ -20,7 +19,8 @@ class FormViewFragmentFactory(
     private val onFieldItemsRendered: ((fieldsEmpty: Boolean) -> Unit)?,
     private val resultDialogUiProvider: EnrollmentResultDialogUiProvider?,
     private val actionIconsActivate: Boolean = true,
-    private val openErrorLocation: Boolean = false
+    private val openErrorLocation: Boolean = false,
+    private val useComposeForms: Boolean = false,
 ) : FragmentFactory() {
     override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
         return when (className) {
@@ -32,15 +32,15 @@ class FormViewFragmentFactory(
                     onFinishDataEntry = onFinishDataEntry,
                     onActivityForResult = onActivityForResult,
                     onDataIntegrityCheck = onDataIntegrityCheck,
-                    onFieldItemsRendered = onFieldItemsRendered
+                    onFieldItemsRendered = onFieldItemsRendered,
                 )
                 setConfiguration(
                     locationProvider = locationProvider,
-                    needToForceUpdate = needToForceUpdate,
                     completionListener = completionListener,
                     resultDialogUiProvider = resultDialogUiProvider,
                     actionIconsActivate = actionIconsActivate,
-                    openErrorLocation = openErrorLocation
+                    openErrorLocation = openErrorLocation,
+                    useCompose = useComposeForms,
                 )
             }
 

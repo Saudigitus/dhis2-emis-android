@@ -1,5 +1,6 @@
 package org.dhis2.form.ui.provider
 
+import org.dhis2.commons.resources.DhisPeriodUtils
 import org.dhis2.form.data.metadata.FileResourceConfiguration
 import org.dhis2.form.data.metadata.OptionSetConfiguration
 import org.dhis2.form.data.metadata.OrgUnitConfiguration
@@ -18,11 +19,13 @@ class DisplayNameProviderImplTest {
     private val optionSetConfiguration: OptionSetConfiguration = mock()
     private val orgUnitConfiguration: OrgUnitConfiguration = mock()
     private val fileResourceConfiguration: FileResourceConfiguration = mock()
+    private val periodUtils: DhisPeriodUtils = mock()
     private val displayNameProvider =
         DisplayNameProviderImpl(
             optionSetConfiguration,
             orgUnitConfiguration,
-            fileResourceConfiguration
+            fileResourceConfiguration,
+            periodUtils,
         )
 
     @Test
@@ -43,7 +46,7 @@ class DisplayNameProviderImplTest {
         val result = displayNameProvider.provideDisplayName(
             ValueType.INTEGER,
             testingValue,
-            testingOptionSetUid
+            testingOptionSetUid,
         )
 
         assertTrue(result == testingOptionName)
@@ -60,7 +63,7 @@ class DisplayNameProviderImplTest {
         val result = displayNameProvider.provideDisplayName(
             ValueType.INTEGER,
             testingValue,
-            testingOptionSetUid
+            testingOptionSetUid,
         )
 
         assertTrue(result == testingOptionName)
@@ -77,7 +80,7 @@ class DisplayNameProviderImplTest {
         val result = displayNameProvider.provideDisplayName(
             ValueType.INTEGER,
             testingValue,
-            testingOptionSetUid
+            testingOptionSetUid,
         )
 
         assertTrue(result == "value")
@@ -88,7 +91,7 @@ class DisplayNameProviderImplTest {
         val testingOrgUnitUid = "orgUnitUid"
         val testingOrgUnitName = "orgUnitName"
         whenever(
-            orgUnitConfiguration.orgUnitByUid(testingOrgUnitUid)
+            orgUnitConfiguration.orgUnitByUid(testingOrgUnitUid),
         ) doReturn OrganisationUnit.builder()
             .uid(testingOrgUnitUid)
             .displayName(testingOrgUnitName)
@@ -103,7 +106,7 @@ class DisplayNameProviderImplTest {
         val testingOrgUnitUid = "orgUnitUid"
 
         whenever(
-            orgUnitConfiguration.orgUnitByUid(testingOrgUnitUid)
+            orgUnitConfiguration.orgUnitByUid(testingOrgUnitUid),
         ) doReturn null
         val result =
             displayNameProvider.provideDisplayName(ValueType.ORGANISATION_UNIT, testingOrgUnitUid)
@@ -117,7 +120,7 @@ class DisplayNameProviderImplTest {
         val result = displayNameProvider.provideDisplayName(
             valueType = ValueType.IMAGE,
             value = value,
-            optionSet = null
+            optionSet = null,
         )
         assertEquals(value, result)
     }
@@ -130,19 +133,40 @@ class DisplayNameProviderImplTest {
         val result = displayNameProvider.provideDisplayName(
             valueType = ValueType.IMAGE,
             value = value,
-            optionSet = null
+            optionSet = null,
         )
         assertEquals(filePath, result)
+    }
+
+    @Test
+    fun `Should return same value for valueType Date if value is an incomplete date`() {
+        val result =
+            displayNameProvider.provideDisplayName(ValueType.DATE, "12/25")
+        assertTrue(result == "12/25")
+    }
+
+    @Test
+    fun `Should return same value for valueType DateTime if value is an incomplete date`() {
+        val result =
+            displayNameProvider.provideDisplayName(ValueType.DATETIME, "12/25")
+        assertTrue(result == "12/25")
+    }
+
+    @Test
+    fun `Should return same value for valueType Time if value is an incomplete date`() {
+        val result =
+            displayNameProvider.provideDisplayName(ValueType.TIME, "12:25")
+        assertTrue(result == "12:25")
     }
 
     private fun mockOptionSetByCode(
         value: String,
         optionSetUid: String,
         optionName: String,
-        exists: Boolean
+        exists: Boolean,
     ) {
         whenever(
-            optionSetConfiguration.optionInDataSetByCode(optionSetUid, value)
+            optionSetConfiguration.optionInDataSetByCode(optionSetUid, value),
         ) doReturn if (exists) {
             Option.builder()
                 .uid("optionUid")
@@ -157,10 +181,10 @@ class DisplayNameProviderImplTest {
         value: String,
         optionSetUid: String,
         optionName: String,
-        exists: Boolean
+        exists: Boolean,
     ) {
         whenever(
-            optionSetConfiguration.optionInDataSetByName(optionSetUid, value)
+            optionSetConfiguration.optionInDataSetByName(optionSetUid, value),
         ) doReturn if (exists) {
             Option.builder()
                 .uid("optionUid")

@@ -8,7 +8,8 @@ class SyncDialog(
     val recordUid: String,
     val syncContext: SyncContext,
     private val dismissListener: OnDismissListener? = null,
-    private val onSyncNavigationListener: OnSyncNavigationListener? = null
+    private val onSyncNavigationListener: OnSyncNavigationListener? = null,
+    private val onNoConnectionListener: OnNoConnectionListener? = null,
 ) {
     fun show() {
         (activity.applicationContext as? ComponentProvider)
@@ -17,7 +18,8 @@ class SyncDialog(
                 activity,
                 syncContext,
                 dismissListener,
-                onSyncNavigationListener
+                onSyncNavigationListener,
+                onNoConnectionListener,
             )
     }
 }

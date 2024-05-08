@@ -13,16 +13,11 @@ interface ValueStore {
         attributeOptionComboUid: String,
         dataElementUid: String,
         categoryOptionComboUid: String,
-        value: String?
+        value: String?,
     ): Flowable<StoreResult>
 
     fun deleteOptionValues(optionCodeValuesToDelete: List<String>)
     fun deleteOptionValueIfSelected(field: String, optionUid: String): StoreResult
-    fun deleteOptionValueIfSelectedInGroup(
-        field: String,
-        optionGroupUid: String,
-        isInGroup: Boolean
-    ): StoreResult
 
     fun overrideProgram(programUid: String?)
     fun validate(dataElementUid: String, value: String?): ValidatorResult<String, Throwable>
