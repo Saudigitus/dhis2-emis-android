@@ -94,10 +94,6 @@ class HomeViewModel
     private suspend fun getDataElementName(uid: String) =
         repository.getDataElement(uid)?.displayFormName() ?: ""
 
-    private fun options() {
-        filterState.value
-    }
-
     private fun getTeis() {
         viewModelScope.launch {
             if (!filterState.value.isNull()) {
