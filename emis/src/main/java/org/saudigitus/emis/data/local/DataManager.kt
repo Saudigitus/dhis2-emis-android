@@ -33,7 +33,7 @@ interface DataManager {
         program: String
     ): List<AttendanceOption>
 
-    suspend fun getDataElement(uid: String): DataElement
+    suspend fun getDataElement(uid: String): DataElement?
 
     suspend fun getTeisBy(
         ou: String,

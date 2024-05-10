@@ -3,7 +3,7 @@ package org.saudigitus.emis.data.local.repository
 import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.dhis2.Bindings.userFriendlyValue
+import org.dhis2.bindings.userFriendlyValue
 import org.dhis2.commons.bindings.dataElement
 import org.dhis2.commons.bindings.enrollment
 import org.dhis2.commons.data.SearchTeiModel
@@ -45,7 +45,7 @@ class DataManagerImpl
 ) : DataManager {
     private fun getAttributeOptionCombo() =
         d2.categoryModule().categoryOptionCombos()
-            .byDisplayName().eq(Constants.DEFAULT).one().blockingGet().uid()
+            .byDisplayName().eq(Constants.DEFAULT).one().blockingGet()?.uid()
 
     private fun createEventProjection(
         tei: String,
@@ -63,7 +63,7 @@ class DataManagerImpl
                     .organisationUnit(ou)
                     .program(program).programStage(programStage)
                     .attributeOptionCombo(getAttributeOptionCombo())
-                    .enrollment(enrollment.uid()).build()
+                    .enrollment(enrollment?.uid()).build()
             )
     }
 
@@ -130,14 +130,14 @@ class DataManagerImpl
                 .byKey().eq(id)
                 .one().blockingGet()
 
-            return@withContext EMISConfig.fromJson(dataStore.value())
+            return@withContext EMISConfig.fromJson(dataStore?.value())
         }
 
 
     override suspend fun getOptions(
         dataElement: String
     ): List<DropdownItem> = withContext(Dispatchers.IO) {
-        val optionSet = d2.dataElement(dataElement).optionSetUid()
+        val optionSet = d2.dataElement(dataElement)?.optionSetUid()
 
         return@withContext d2.optionByOptionSet(optionSet).map {
             DropdownItem(
@@ -153,7 +153,7 @@ class DataManagerImpl
         dataElement: String,
         codes: List<String>
     ): List<DropdownItem> = withContext(Dispatchers.IO) {
-        val optionSet = d2.dataElement(dataElement).optionSetUid()
+        val optionSet = d2.dataElement(dataElement)?.optionSetUid()
 
         return@withContext d2.optionsByOptionSetAndCode(optionSet, codes).map {
             DropdownItem(
@@ -172,6 +172,7 @@ class DataManagerImpl
             ?.attendance ?: return@withContext emptyList()
 
         val optionsCode = config.attendanceStatus?.mapNotNull { it.code } ?: emptyList()
+        val colorUtils = ColorUtils()
 
         return@withContext getOptionsByCode("${config.status}", optionsCode).mapNotNull {
             val status = config.attendanceStatus?.find { status ->
@@ -185,14 +186,14 @@ class DataManagerImpl
                     dataElement = "${config.status}",
                     icon = Utils.dynamicIcons("${status.icon}"),
                     iconName = "${status.icon}",
-                    color = Color(ColorUtils.parseColor("${status.color}")),
+                    color = Color(colorUtils.parseColor("${status.color}")),
                     actionOrder = it.sortOrder
                 )
             } else null
         }.sortedWith(compareBy { it.actionOrder })
     }
 
-    override suspend fun getDataElement(uid: String): DataElement =
+    override suspend fun getDataElement(uid: String): DataElement? =
         withContext(Dispatchers.IO) {
             return@withContext d2.dataElement(uid)
         }
@@ -217,7 +218,7 @@ class DataManagerImpl
         }.map {
             val tei = d2.trackedEntityModule()
                 .trackedEntityInstances()
-                .byUid().eq(it.trackedEntityInstance())
+                .byUid().eq(it?.trackedEntityInstance())
                 .withTrackedEntityAttributeValues()
                 .one().blockingGet()
 
@@ -260,6 +261,8 @@ class DataManagerImpl
         val config = getConfig(Constants.KEY)?.find { it.program == program }
             ?.attendance ?: return@withContext emptyList()
 
+        val colorUtils = ColorUtils()
+
         return@withContext d2.eventModule().events()
             .byTrackedEntityInstanceUids(teis)
             .byProgramUid().eq(program)
@@ -284,7 +287,7 @@ class DataManagerImpl
                 attendanceEntity.withBtnSettings(
                     icon = Utils.dynamicIcons("${status?.icon}"),
                     iconName = "${status?.icon}",
-                    iconColor = Color(ColorUtils.parseColor("${status?.color}"))
+                    iconColor = Color(colorUtils.parseColor("${status?.color}"))
                 )
             }
     }
@@ -298,7 +301,7 @@ class DataManagerImpl
                     .byKey().eq(id)
                     .one().blockingGet()
 
-                EMISConfig.schoolCalendarJson(dataStore.value())
+                EMISConfig.schoolCalendarJson(dataStore?.value())
             } catch (_: Exception) {
                 null
             }
@@ -308,14 +311,14 @@ class DataManagerImpl
         return@withContext d2.programModule().programStageDataElements()
             .byProgramStage().eq(stage)
             .blockingGet()
-            .mapNotNull { stageDl ->
+            .map { stageDl ->
                 val dl = d2.dataElement( stageDl.dataElement()?.uid() ?: "")
 
                 Subject(
-                    uid = dl.uid(),
-                    code = dl.code(),
-                    color = dl.style().color(),
-                    displayName = dl.displayFormName()
+                    uid = dl?.uid() ?: "",
+                    code = dl?.code()?.ifEmpty{ "" },
+                    color = dl?.style()?.color(),
+                    displayName = dl?.displayFormName()
                 )
             }
     }
@@ -326,7 +329,7 @@ class DataManagerImpl
         return@withContext d2.programModule().programStages()
             .byUid().`in`(stagesIds)
             .blockingGet()
-            .mapNotNull {
+            .map {
                 DropdownItem(
                     id = it.uid(),
                     itemName = it.displayName() ?: "",
@@ -344,7 +347,7 @@ class DataManagerImpl
         val reason = event.trackedEntityDataValues()?.find { it.dataElement() == reasonDataElement }
 
         return if (dataValue != null) {
-            val tei = d2.enrollment(event.enrollment().toString()).trackedEntityInstance() ?: ""
+            val tei = d2.enrollment(event.enrollment().toString())?.trackedEntityInstance() ?: ""
 
             AttendanceEntity(
                 tei = tei,
@@ -364,13 +367,13 @@ class DataManagerImpl
     }
 
     private fun transform(
-        tei: TrackedEntityInstance,
+        tei: TrackedEntityInstance?,
         program: String?
     ): SearchTeiModel {
         val searchTei = SearchTeiModel()
         searchTei.tei = tei
 
-        if (tei.trackedEntityAttributeValues() != null) {
+        if (tei?.trackedEntityAttributeValues() != null) {
             if (program != null) {
                 val programAttributes = d2.programModule().programTrackedEntityAttributes()
                     .byProgram().eq(program)
@@ -384,7 +387,7 @@ class DataManagerImpl
                         .blockingGet()
 
                     for (attrValue in tei.trackedEntityAttributeValues()!!) {
-                        if (attrValue.trackedEntityAttribute() == attribute.uid()) {
+                        if (attrValue.trackedEntityAttribute() == attribute?.uid()) {
                             addAttribute(searchTei, attrValue, attribute)
                             break
                         }
@@ -400,7 +403,7 @@ class DataManagerImpl
                         .uid(typeAttribute.trackedEntityAttribute()!!.uid())
                         .blockingGet()
                     for (attrValue in tei.trackedEntityAttributeValues()!!) {
-                        if (attrValue.trackedEntityAttribute() == attribute.uid()) {
+                        if (attrValue.trackedEntityAttribute() == attribute?.uid()) {
                             addAttribute(searchTei, attrValue, attribute)
                             break
                         }
@@ -414,7 +417,7 @@ class DataManagerImpl
     private fun addAttribute(
         searchTei: SearchTeiModel,
         attrValue: TrackedEntityAttributeValue,
-        attribute: TrackedEntityAttribute
+        attribute: TrackedEntityAttribute?
     ) {
         val friendlyValue = attrValue.userFriendlyValue(d2)
 
@@ -424,6 +427,6 @@ class DataManagerImpl
             .lastUpdated(attrValue.lastUpdated())
             .trackedEntityAttribute(attrValue.trackedEntityAttribute())
             .trackedEntityInstance(searchTei.tei.uid())
-        searchTei.addAttributeValue(attribute.displayFormName(), attrValueBuilder.build())
+        searchTei.addAttributeValue(attribute?.displayFormName(), attrValueBuilder.build())
     }
 }
