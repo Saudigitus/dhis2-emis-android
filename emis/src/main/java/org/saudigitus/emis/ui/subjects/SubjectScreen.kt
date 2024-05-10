@@ -111,7 +111,7 @@ fun SubjectScreen(
                             displayName = subject.displayName ?: "-",
                             attrValue = selected,
                             color = if (subject.color != null) {
-                                Color(ColorUtils.parseColor(subject.color))
+                                Color(ColorUtils().parseColor(subject.color))
                             } else null,
                             onClick = { onClick.invoke(subject.uid, subject.displayName ?: "-") }
                         )
