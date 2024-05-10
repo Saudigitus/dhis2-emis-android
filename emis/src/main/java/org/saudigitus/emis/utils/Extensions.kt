@@ -19,7 +19,7 @@ fun D2.eventsWithTrackedDataValues(
     .blockingGet()
 
 fun D2.optionByOptionSet(
-    optionSet: String
+    optionSet: String?
 ): List<Option> = optionModule()
     .options()
     .byOptionSetUid().eq(optionSet)
@@ -28,7 +28,7 @@ fun D2.optionByOptionSet(
 
 
 fun D2.optionsByOptionSetAndCode(
-    optionSet: String,
+    optionSet: String?,
     codes: List<String>
 ): List<Option> = optionModule()
     .options()
