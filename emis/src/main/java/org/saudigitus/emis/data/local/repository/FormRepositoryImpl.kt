@@ -29,7 +29,7 @@ class FormRepositoryImpl
 
     private fun getAttributeOptionCombo() =
         d2.categoryModule().categoryOptionCombos()
-            .byDisplayName().eq(Constants.DEFAULT).one().blockingGet().uid()
+            .byDisplayName().eq(Constants.DEFAULT).one().blockingGet()?.uid()
 
     private fun createEventProjection(
         tei: String,
@@ -47,7 +47,7 @@ class FormRepositoryImpl
                     .organisationUnit(ou)
                     .program(program).programStage(programStage)
                     .attributeOptionCombo(getAttributeOptionCombo())
-                    .enrollment(enrollment.uid()).build()
+                    .enrollment(enrollment?.uid()).build()
             )
     }
 
@@ -122,7 +122,7 @@ class FormRepositoryImpl
     override suspend fun getOptions(
         dataElement: String
     ): List<org.hisp.dhis.android.core.option.Option> = withContext(Dispatchers.IO) {
-        val optionSet = d2.dataElement(dataElement).optionSetUid() ?: return@withContext emptyList()
+        val optionSet = d2.dataElement(dataElement)?.optionSetUid() ?: return@withContext emptyList()
 
         return@withContext d2.optionByOptionSet(optionSet)
     }
@@ -151,7 +151,7 @@ class FormRepositoryImpl
         dataElement: String
     ): FormData? {
         val dataValue = event.trackedEntityDataValues()?.find { it.dataElement() == dataElement }
-        val tei = d2.enrollment(event.enrollment().toString()).trackedEntityInstance() ?: ""
+        val tei = d2.enrollment(event.enrollment().toString())?.trackedEntityInstance() ?: ""
 
         val dl = d2.dataElement(dataElement)
         val options = this.getOptions(dataElement)
@@ -159,12 +159,12 @@ class FormRepositoryImpl
         return if (dataValue != null) {
             FormData(
                 tei = tei,
-                dataElement = dl.uid(),
+                dataElement = dl?.uid() ?: "",
                 value = dataValue.value(),
                 date = DateHelper.formatDate(
                     event.eventDate()?.time ?: DateUtils.getInstance().today.time
                 ).toString(),
-                valueType = dl.valueType(),
+                valueType = dl?.valueType(),
                 hasOptions = options.isNotEmpty(),
                 itemOptions = if (options.isNotEmpty()) {
                     val opt = options.find { option -> option.code() == dataValue.value() }
