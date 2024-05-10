@@ -225,10 +225,18 @@ data class InfoCard(
     val section: String = "",
     val academicYear: String = "",
     val orgUnitName: String = "",
-    val teiCount: Int = 0
+    val teiCount: Int = 0,
+    val isStaff: Boolean = false
 ) {
-    fun hasData() = grade.isNotEmpty() && section.isNotEmpty() && academicYear.isNotEmpty() &&
-        orgUnitName.isNotEmpty()
+    fun hasData(): Boolean {
+        return if (isStaff) {
+            academicYear.isNotEmpty() &&
+                orgUnitName.isNotEmpty()
+        } else {
+            grade.isNotEmpty() && section.isNotEmpty() && academicYear.isNotEmpty() &&
+                orgUnitName.isNotEmpty()
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
