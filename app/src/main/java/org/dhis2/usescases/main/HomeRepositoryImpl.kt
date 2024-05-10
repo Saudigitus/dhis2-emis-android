@@ -94,7 +94,7 @@ class HomeRepositoryImpl(
                     } else {
                         null
                     },
-                    isSEMIS = isSEMIS(program.uid())
+                    isSEMIS = isSEMIS(program.uid()),
                 )
 
             program?.programType() == ProgramType.WITHOUT_REGISTRATION ->
