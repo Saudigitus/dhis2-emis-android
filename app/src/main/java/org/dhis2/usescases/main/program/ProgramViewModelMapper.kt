@@ -36,6 +36,7 @@ class ProgramViewModelMapper() {
             filtersAreActive = filtersAreActive,
             downloadState = ProgramDownloadState.NONE,
             stockConfig = null,
+            isSEMIS = false
         )
     }
 
@@ -63,6 +64,7 @@ class ProgramViewModelMapper() {
             filtersAreActive = filtersAreActive,
             downloadState = ProgramDownloadState.NONE,
             stockConfig = null,
+            isSEMIS = false
         )
     }
 
