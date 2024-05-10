@@ -183,14 +183,16 @@ fun HomeScreen(
                             onClick = { navTo.invoke("${AppRoutes.ATTENDANCE_ROUTE}/${filterState.school?.uid}") }
                         )
                     }
-                    item {
-                        HomeItem(
-                            modifier = Modifier.fillMaxWidth(),
-                            icon = painterResource(R.drawable.performance),
-                            label = stringResource(R.string.performance),
-                            enabled = infoCard.hasData(),
-                            onClick = { navTo.invoke("${AppRoutes.SUBJECT_ROUTE}/${filterState.school?.uid}") }
-                        )
+                    if (!infoCard.isStaff) {
+                        item {
+                            HomeItem(
+                                modifier = Modifier.fillMaxWidth(),
+                                icon = painterResource(R.drawable.performance),
+                                label = stringResource(R.string.performance),
+                                enabled = infoCard.hasData(),
+                                onClick = { navTo.invoke("${AppRoutes.SUBJECT_ROUTE}/${filterState.school?.uid}") }
+                            )
+                        }
                     }
                 }
             }
