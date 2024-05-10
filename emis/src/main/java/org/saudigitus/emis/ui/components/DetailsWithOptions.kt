@@ -23,12 +23,12 @@ fun <T>DetailsWithOptions(
     trailingIcon: ImageVector? = null,
     data: List<T>,
     defaultSelection: String = "",
-    onItemClick: (T) -> Unit
+    onItemClick: (T) -> Unit,
 ) {
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = Color.White,
         ),
         shape = RoundedCornerShape(16.dp),
     ) {
@@ -38,7 +38,7 @@ fun <T>DetailsWithOptions(
                 .fillMaxWidth()
                 .padding(vertical = 5.dp),
             color = Color.LightGray.copy(.85f),
-            thickness = .9.dp
+            thickness = .9.dp,
         )
         DropDown(
             placeholder = placeholder,
@@ -47,7 +47,7 @@ fun <T>DetailsWithOptions(
             data = data,
             elevation = 1.dp,
             selectedItemName = defaultSelection,
-            onItemClick = onItemClick
+            onItemClick = onItemClick,
         )
         Spacer(modifier = Modifier.size(5.dp))
     }

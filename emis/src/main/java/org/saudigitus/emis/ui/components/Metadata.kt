@@ -49,7 +49,7 @@ fun MetadataIcon(
     paddingAll: Dp = 0.dp,
     painter: Painter? = null,
     contentDescription: String? = null,
-    colorFilter: ColorFilter? = null
+    colorFilter: ColorFilter? = null,
 ) {
     if (painter != null) {
         Image(
@@ -60,7 +60,7 @@ fun MetadataIcon(
                 .padding(paddingAll),
             painter = painter,
             contentDescription = contentDescription,
-            colorFilter = colorFilter
+            colorFilter = colorFilter,
         )
     }
 }
@@ -69,7 +69,7 @@ fun MetadataIcon(
 fun MetadataItem(
     displayName: String,
     attrValue: String? = null,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = {},
 ) {
     Column(
         modifier = Modifier
@@ -77,14 +77,14 @@ fun MetadataItem(
             .background(color = Color.White)
             .clickable { onClick.invoke() },
         verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.Start
+        horizontalAlignment = Alignment.Start,
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp, horizontal = 16.dp),
             horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             RoundedIcon(label = "${displayName[0]}")
             Spacer(modifier = Modifier.size(15.dp))
@@ -93,8 +93,8 @@ fun MetadataItem(
                 title = displayName,
                 subtitle = "$attrValue",
                 fontDefaults = TitleSubtitleDefaults(
-                    titleColor = Color.Black.copy(.75f)
-                )
+                    titleColor = Color.Black.copy(.75f),
+                ),
             )
         }
         Divider(
@@ -103,7 +103,7 @@ fun MetadataItem(
                 .align(Alignment.End)
                 .wrapContentWidth(Alignment.End, false)
                 .padding(end = 5.dp),
-            thickness = .75.dp
+            thickness = .75.dp,
         )
     }
 }
@@ -114,7 +114,7 @@ fun MetadataItem(
     attrValue: String? = null,
     enableClickAction: Boolean = true,
     onClick: () -> Unit = {},
-    content: @Composable () -> Unit = {}
+    content: @Composable () -> Unit = {},
 ) {
     Column(
         modifier = Modifier
@@ -122,20 +122,20 @@ fun MetadataItem(
             .background(color = Color.White)
             .clickable(enabled = enableClickAction) { onClick.invoke() },
         verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.Start
+        horizontalAlignment = Alignment.Start,
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Row(
                 modifier = Modifier
                     .weight(1f)
                     .padding(vertical = 8.dp, horizontal = 16.dp),
                 horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 RoundedIcon(label = "${displayName[0]}")
                 Spacer(modifier = Modifier.size(15.dp))
@@ -144,8 +144,8 @@ fun MetadataItem(
                     title = displayName,
                     subtitle = "$attrValue",
                     fontDefaults = TitleSubtitleDefaults(
-                        titleColor = Color.Black.copy(.75f)
-                    )
+                        titleColor = Color.Black.copy(.75f),
+                    ),
                 )
             }
 
@@ -157,7 +157,7 @@ fun MetadataItem(
                 .align(Alignment.End)
                 .wrapContentWidth(Alignment.End, false)
                 .padding(end = 5.dp),
-            thickness = .75.dp
+            thickness = .75.dp,
         )
     }
 }
@@ -165,14 +165,14 @@ fun MetadataItem(
 @Composable
 fun RoundedIcon(
     painter: Painter? = null,
-    label: String? = null
+    label: String? = null,
 ) {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(100.dp))
             .background(color = colorResource(R.color.colorPrimary))
             .size(40.dp),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         MetadataIcon(
             cornerShape = 100.dp,
@@ -180,7 +180,7 @@ fun RoundedIcon(
             size = 48.dp,
             paddingAll = 5.dp,
             painter = painter,
-            colorFilter = ColorFilter.tint(Color.White)
+            colorFilter = ColorFilter.tint(Color.White),
         )
         if (painter == null) {
             Text(text = "$label", color = Color.White)
@@ -191,22 +191,22 @@ fun RoundedIcon(
 @Composable
 fun TEICountComponent(
     teiCount: Int = 0,
-    imageVector: ImageVector = Icons.Outlined.Person
+    imageVector: ImageVector = Icons.Outlined.Person,
 ) {
     Row(
         modifier = Modifier
             .background(
                 color = Color.LightGray.copy(.35f),
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(16.dp),
             )
             .padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
             imageVector = imageVector,
             contentDescription = "Image",
-            tint = Color.Black.copy(.5f)
+            tint = Color.Black.copy(.5f),
         )
         Text(
             text = "$teiCount",
@@ -215,7 +215,7 @@ fun TEICountComponent(
             softWrap = true,
             overflow = TextOverflow.Ellipsis,
             fontSize = 18.sp,
-            fontWeight = FontWeight.ExtraBold
+            fontWeight = FontWeight.ExtraBold,
         )
     }
 }
@@ -226,7 +226,7 @@ data class InfoCard(
     val academicYear: String = "",
     val orgUnitName: String = "",
     val teiCount: Int = 0,
-    val isStaff: Boolean = false
+    val isStaff: Boolean = false,
 ) {
     fun hasData(): Boolean {
         return if (isStaff) {
@@ -244,42 +244,44 @@ data class InfoCard(
 fun ShowCard(
     infoCard: InfoCard,
     enableTEICount: Boolean = true,
-    enabledIconButton: Boolean =  true,
+    enabledIconButton: Boolean = true,
     onClick: () -> Unit = {},
-    onIconClick: () -> Unit = {}
-){
-    Card (
+    onIconClick: () -> Unit = {},
+) {
+    Card(
         shape = RoundedCornerShape(0.dp),
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        onClick = onClick
-    ){
-        Column(modifier = Modifier
-            .fillMaxWidth()
-            .padding(5.dp)) {
-            Row (modifier = Modifier.fillMaxWidth(),
+        onClick = onClick,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(5.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ){
-
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Row {
                     Icon(
                         Icons.Rounded.School,
                         tint = Color(0xFF2C98F0),
-                        contentDescription = "Icon"
+                        contentDescription = "Icon",
                     )
                     Spacer(modifier = Modifier.size(10.dp))
                     Column {
                         Text(
-                            text = String.format("%s, %s",  infoCard.grade , infoCard.section),
+                            text = String.format("%s, %s", infoCard.grade, infoCard.section),
                             fontWeight = FontWeight.Bold,
-                            fontSize = 17.sp
+                            fontSize = 17.sp,
                         )
                         Text(
-                            text = String.format("%s | %s",  infoCard.academicYear , infoCard.orgUnitName),
-                            fontSize = 14.sp
+                            text = String.format("%s | %s", infoCard.academicYear, infoCard.orgUnitName),
+                            fontSize = 14.sp,
                         )
                     }
                 }
@@ -288,12 +290,12 @@ fun ShowCard(
                 } else {
                     IconButton(
                         onClick = onIconClick,
-                        enabled = enabledIconButton
+                        enabled = enabledIconButton,
                     ) {
                         Icon(
                             imageVector = Icons.Default.Rocket,
                             contentDescription = null,
-                            tint = Color(0xFF2C98F0)
+                            tint = Color(0xFF2C98F0),
                         )
                     }
                 }

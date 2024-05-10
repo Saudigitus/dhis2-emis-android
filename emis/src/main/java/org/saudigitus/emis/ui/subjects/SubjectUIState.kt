@@ -7,5 +7,5 @@ import org.saudigitus.emis.ui.components.ToolbarHeaders
 data class SubjectUIState(
     val toolbarHeaders: ToolbarHeaders,
     val filters: List<DropdownItem> = emptyList(),
-    val subjects: List<Subject> = emptyList()
+    val subjects: List<Subject> = emptyList(),
 )

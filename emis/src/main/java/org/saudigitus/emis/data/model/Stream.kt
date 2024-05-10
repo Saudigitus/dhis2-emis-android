@@ -1,6 +1,5 @@
 package org.saudigitus.emis.data.model
 
-
 import com.fasterxml.jackson.annotation.JsonProperty
 import kotlinx.serialization.Serializable
 
@@ -11,5 +10,5 @@ data class Stream(
     @JsonProperty("code")
     val code: String? = null,
     @JsonProperty("sections")
-    val sections: List<Section> = emptyList()
+    val sections: List<Section> = emptyList(),
 )

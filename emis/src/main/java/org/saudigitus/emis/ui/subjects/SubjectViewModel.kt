@@ -15,11 +15,11 @@ import javax.inject.Inject
 @HiltViewModel
 class SubjectViewModel
 @Inject constructor(
-    private val repository: DataManager
+    private val repository: DataManager,
 ) : BaseViewModel(repository) {
 
     private val _uiState = MutableStateFlow(
-        SubjectUIState(ToolbarHeaders(title = "Subjects"))
+        SubjectUIState(ToolbarHeaders(title = "Subjects")),
     )
     val uiState: StateFlow<SubjectUIState> = _uiState
 
@@ -31,7 +31,6 @@ class SubjectViewModel
             val config = repository.getConfig(Constants.KEY)?.find { it.program == program }
 
             if (config?.performance != null) {
-
                 val stages = config.performance.programStages
                     ?.filterNotNull()
                     ?: emptyList()

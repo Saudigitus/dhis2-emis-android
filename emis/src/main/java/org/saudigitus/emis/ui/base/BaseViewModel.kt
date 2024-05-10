@@ -15,20 +15,20 @@ import org.saudigitus.emis.utils.Constants
 import org.saudigitus.emis.utils.DateHelper
 
 abstract class BaseViewModel(
-    private val repository: DataManager
+    private val repository: DataManager,
 ) : ViewModel() {
 
     private val _teis = MutableStateFlow<List<SearchTeiModel>>(emptyList())
     val teis: StateFlow<List<SearchTeiModel>> = _teis
 
-    private val _teiUIds =  MutableStateFlow<List<String>>(emptyList())
-    protected val teiUIds: StateFlow<List<String>> =  _teiUIds
+    private val _teiUIds = MutableStateFlow<List<String>>(emptyList())
+    protected val teiUIds: StateFlow<List<String>> = _teiUIds
 
     protected val _toolbarHeaders = MutableStateFlow(
         ToolbarHeaders(
             title = "",
-            subtitle = DateHelper.formatDateWithWeekDay("${DateHelper.formatDate(System.currentTimeMillis())}")
-        )
+            subtitle = DateHelper.formatDateWithWeekDay("${DateHelper.formatDate(System.currentTimeMillis())}"),
+        ),
     )
     val toolbarHeaders: StateFlow<ToolbarHeaders> = _toolbarHeaders
 
@@ -49,7 +49,6 @@ abstract class BaseViewModel(
 
     protected val _buttonStep = MutableStateFlow(ButtonStep.EDITING)
     val buttonStep: StateFlow<ButtonStep> = _buttonStep
-
 
     init {
         viewModelScope.launch {
@@ -73,7 +72,7 @@ abstract class BaseViewModel(
 
     fun setTeis(
         teis: List<SearchTeiModel>,
-        run: () -> Unit
+        run: () -> Unit,
     ) {
         _teis.value = teis
         _teiUIds.value = teis.mapNotNull { it.tei.uid() }

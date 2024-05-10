@@ -47,9 +47,8 @@ import org.saudigitus.emis.utils.getByType
 fun HomeScreen(
     viewModel: HomeViewModel,
     onBack: () -> Unit,
-    navTo: (route: String) -> Unit
+    navTo: (route: String) -> Unit,
 ) {
-
     var displayFilters by remember { mutableStateOf(true) }
     val dataElementFilters by viewModel.dataElementFilters.collectAsStateWithLifecycle()
     val filterState by viewModel.filterState.collectAsStateWithLifecycle()
@@ -69,17 +68,17 @@ fun HomeScreen(
                     containerColor = Color(0xFF2C98F0),
                     navigationIconContentColor = Color.White,
                     titleContentColor = Color.White,
-                    actionIconContentColor = Color.White
+                    actionIconContentColor = Color.White,
                 ),
                 navigationAction = { onBack.invoke() },
                 disableNavigation = false,
                 actionState = ToolbarActionState(
                     syncVisibility = false,
-                    showFavorite = true
+                    showFavorite = true,
                 ),
-                filterAction = { displayFilters = !displayFilters }
+                filterAction = { displayFilters = !displayFilters },
             )
-        }
+        },
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -87,13 +86,13 @@ fun HomeScreen(
                 .background(color = Color(0xFF2C98F0))
                 .padding(paddingValues),
             verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.Start
+            horizontalAlignment = Alignment.Start,
         ) {
             AnimatedVisibility(visible = displayFilters) {
                 Column(
                     modifier = Modifier.padding(bottom = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top),
-                    horizontalAlignment = Alignment.Start
+                    horizontalAlignment = Alignment.Start,
                 ) {
                     DropDownWithSelectionByCode(
                         placeholder = dataElementFilters.getByType(FilterType.ACADEMIC_YEAR)?.displayName
@@ -101,18 +100,18 @@ fun HomeScreen(
                         leadingIcon = ImageVector.vectorResource(R.drawable.ic_book),
                         data = dataElementFilters.getByType(FilterType.ACADEMIC_YEAR)?.data,
                         selectedCodeItem = filterState.academicYear?.code ?: defaultConfig?.currentAcademicYear ?: "",
-                        onItemClick = viewModel::setAcademicYear
+                        onItemClick = viewModel::setAcademicYear,
                     )
 
-                    if(schoolOptions.isNotEmpty()) {
+                    if (schoolOptions.isNotEmpty()) {
                         DropDown(
                             placeholder = stringResource(R.string.school),
                             leadingIcon = ImageVector.vectorResource(R.drawable.ic_location_on),
-                            data =  schoolOptions,
-                            selectedItemName =  schoolOptions[0].itemName,
+                            data = schoolOptions,
+                            selectedItemName = schoolOptions[0].itemName,
                             onItemClick = {
-                                viewModel.setSchool(OU(uid= it.id, displayName = it.itemName))
-                            }
+                                viewModel.setSchool(OU(uid = it.id, displayName = it.itemName))
+                            },
                         )
                     } else {
                         DropDownOu(
@@ -120,7 +119,7 @@ fun HomeScreen(
                             leadingIcon = ImageVector.vectorResource(R.drawable.ic_location_on),
                             selectedSchool = filterState.school,
                             program = programSettings?.getString(Constants.PROGRAM_UID) ?: "",
-                            onItemClick =  viewModel::setSchool
+                            onItemClick = viewModel::setSchool,
                         )
                     }
 
@@ -130,7 +129,7 @@ fun HomeScreen(
                         leadingIcon = ImageVector.vectorResource(R.drawable.ic_school),
                         data = gradeOptions.ifEmpty { dataElementFilters.getByType(FilterType.GRADE)?.data },
                         selectedItemName = filterState.grade?.itemName ?: "",
-                        onItemClick = viewModel::setGrade
+                        onItemClick = viewModel::setGrade,
                     )
 
                     DropDown(
@@ -139,7 +138,7 @@ fun HomeScreen(
                         leadingIcon = ImageVector.vectorResource(R.drawable.ic_category),
                         data = dataElementFilters.getByType(FilterType.SECTION)?.data,
                         selectedItemName = filterState.section?.itemName ?: "",
-                        onItemClick = viewModel::setSection
+                        onItemClick = viewModel::setSection,
                     )
                 }
             }
@@ -153,15 +152,15 @@ fun HomeScreen(
                                 topStart = CornerSize(16.dp),
                                 topEnd = CornerSize(16.dp),
                                 bottomStart = CornerSize(0.dp),
-                                bottomEnd = CornerSize(0.dp)
-                            )
+                                bottomEnd = CornerSize(0.dp),
+                            ),
                     ),
                 verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
-                horizontalAlignment = Alignment.Start
+                horizontalAlignment = Alignment.Start,
             ) {
                 ShowCard(
                     infoCard = infoCard,
-                    onClick = { navTo.invoke(AppRoutes.TEI_LIST_ROUTE) }
+                    onClick = { navTo.invoke(AppRoutes.TEI_LIST_ROUTE) },
                 )
 
                 LazyVerticalGrid(
@@ -171,8 +170,8 @@ fun HomeScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top),
                     horizontalArrangement = Arrangement.spacedBy(
                         16.dp,
-                        Alignment.CenterHorizontally
-                    )
+                        Alignment.CenterHorizontally,
+                    ),
                 ) {
                     item {
                         HomeItem(
@@ -180,7 +179,7 @@ fun HomeScreen(
                             icon = painterResource(R.drawable.s_calendar),
                             label = stringResource(R.string.attendance),
                             enabled = infoCard.hasData(),
-                            onClick = { navTo.invoke("${AppRoutes.ATTENDANCE_ROUTE}/${filterState.school?.uid}") }
+                            onClick = { navTo.invoke("${AppRoutes.ATTENDANCE_ROUTE}/${filterState.school?.uid}") },
                         )
                     }
                     if (!infoCard.isStaff) {
@@ -190,7 +189,7 @@ fun HomeScreen(
                                 icon = painterResource(R.drawable.performance),
                                 label = stringResource(R.string.performance),
                                 enabled = infoCard.hasData(),
-                                onClick = { navTo.invoke("${AppRoutes.SUBJECT_ROUTE}/${filterState.school?.uid}") }
+                                onClick = { navTo.invoke("${AppRoutes.SUBJECT_ROUTE}/${filterState.school?.uid}") },
                             )
                         }
                     }

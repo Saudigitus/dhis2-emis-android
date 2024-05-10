@@ -9,7 +9,7 @@ data class FormField(
     val type: ValueType?,
     val value: String? = null,
     val placeholder: String = "",
-    val options: List<Option>? = null
+    val options: List<Option>? = null,
 ) {
     fun hasOptions() = options?.isNotEmpty() == true
 }
@@ -18,5 +18,5 @@ data class Field(
     val key: String,
     val dataElement: String,
     val value: String,
-    val valueType: ValueType?
+    val valueType: ValueType?,
 )

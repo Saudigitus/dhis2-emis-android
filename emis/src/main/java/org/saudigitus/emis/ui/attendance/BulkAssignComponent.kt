@@ -46,7 +46,7 @@ fun BulkAssignComponent(
     attendanceOptions: List<AttendanceOption>,
     onAttendanceStatus: (Pair<Int, String>) -> Unit,
     onClear: () -> Unit,
-    onCancel: () -> Unit
+    onCancel: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(false)
 
@@ -61,12 +61,12 @@ fun BulkAssignComponent(
                 .fillMaxWidth()
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Icon(
                 imageVector = Icons.Default.Rocket,
                 contentDescription = null,
-                tint = Color(0xFF2C98F0)
+                tint = Color(0xFF2C98F0),
             )
 
             Text(
@@ -74,7 +74,7 @@ fun BulkAssignComponent(
                 maxLines = 1,
                 softWrap = true,
                 overflow = TextOverflow.Ellipsis,
-                fontSize =  20.sp,
+                fontSize = 20.sp,
             )
 
             LazyColumn(modifier = Modifier.fillMaxWidth()) {
@@ -82,31 +82,31 @@ fun BulkAssignComponent(
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(
-                            containerColor = Color.White
+                            containerColor = Color.White,
                         ),
-                        onClick = { onAttendanceStatus.invoke(Pair(index, option.code!!)) }
+                        onClick = { onAttendanceStatus.invoke(Pair(index, option.code!!)) },
                     ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(16.dp),
                             horizontalArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterHorizontally),
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Icon(
                                 imageVector = option.icon ?: ImageVector
                                     .vectorResource(Utils.getIconByName("${option.iconName}")),
                                 contentDescription = "${option.name}",
-                                tint = option.color ?: Color.LightGray
+                                tint = option.color ?: Color.LightGray,
                             )
                             Text(
                                 text = "${option.name}",
                                 maxLines = 1,
                                 softWrap = true,
                                 overflow = TextOverflow.Ellipsis,
-                                fontSize =  17.sp,
+                                fontSize = 17.sp,
                                 color = option.color ?: Color.LightGray,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Bold,
                             )
                         }
                     }
@@ -115,7 +115,7 @@ fun BulkAssignComponent(
             Divider(
                 modifier = Modifier.fillMaxWidth(),
                 color = Color.LightGray.copy(.85f),
-                thickness = .9.dp
+                thickness = .9.dp,
             )
 
             Row(
@@ -123,26 +123,26 @@ fun BulkAssignComponent(
                     .fillMaxWidth()
                     .padding(bottom = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 TextButton(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
-                    onClick = onClear::invoke
+                    onClick = onClear::invoke,
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(
                             imageVector = Icons.Default.ClearAll,
-                            contentDescription = stringResource(R.string.clear_all)
+                            contentDescription = stringResource(R.string.clear_all),
                         )
                         Text(
                             text = stringResource(R.string.clear),
-                            color = Color.Gray
+                            color = Color.Gray,
                         )
                     }
                 }
@@ -157,12 +157,12 @@ fun BulkAssignComponent(
                     elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 3.dp),
                     colors = ButtonDefaults.elevatedButtonColors(
                         containerColor = Color.White,
-                        contentColor = Color(0xFF2C98F0)
+                        contentColor = Color(0xFF2C98F0),
                     ),
-                    onClick = onCancel::invoke
+                    onClick = onCancel::invoke,
                 ) {
                     Text(
-                        text = stringResource(R.string.cancel)
+                        text = stringResource(R.string.cancel),
                     )
                 }
             }

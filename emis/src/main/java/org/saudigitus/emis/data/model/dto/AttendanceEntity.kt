@@ -10,18 +10,18 @@ data class AttendanceEntity(
     val reasonDataElement: String? = null,
     val reasonOfAbsence: String? = null,
     val date: String,
-    val setting: Settings? = null
+    val setting: Settings? = null,
 )
 
 data class Settings(
     val icon: ImageVector? = null,
     val iconName: String?,
-    val iconColor: Color
+    val iconColor: Color,
 )
 fun AttendanceEntity.withBtnSettings(
     icon: ImageVector?,
     iconName: String?,
-    iconColor: Color
+    iconColor: Color,
 ) = AttendanceEntity(
     this.tei,
     this.dataElement,
@@ -32,6 +32,6 @@ fun AttendanceEntity.withBtnSettings(
     Settings(
         icon,
         iconName,
-        iconColor
-    )
+        iconColor,
+    ),
 )

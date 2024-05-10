@@ -4,5 +4,5 @@ enum class FilterType {
     ACADEMIC_YEAR,
     SCHOOL,
     GRADE,
-    SECTION
+    SECTION,
 }

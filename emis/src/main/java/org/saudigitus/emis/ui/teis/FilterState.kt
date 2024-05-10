@@ -9,11 +9,11 @@ data class FilterState(
     val school: OU? = null,
     val grade: DropdownItem? = null,
     val section: DropdownItem? = null,
-    val key: String? = null
+    val key: String? = null,
 ) {
     fun isNull() = academicYear == null &&
-    school == null && grade == null &&
-    section == null
+        school == null && grade == null &&
+        section == null
 
     fun isStaff() = key == Constants.STAFF
 
@@ -22,14 +22,16 @@ data class FilterState(
             listOf(
                 academicYear.code,
                 grade?.code,
-                section?.code
+                section?.code,
             ).mapNotNull { it }
         } else if (!isNull()) {
             listOf(
                 "${academicYear?.code}",
                 "${grade?.code}",
-                "${section?.code}"
+                "${section?.code}",
             )
-        } else emptyList()
+        } else {
+            emptyList()
+        }
     }
 }

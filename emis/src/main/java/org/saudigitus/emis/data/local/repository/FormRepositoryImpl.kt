@@ -24,8 +24,8 @@ import javax.inject.Inject
 class FormRepositoryImpl
 @Inject constructor(
     private val d2: D2,
-    private val hintProvider: HintProvider
-): FormRepository {
+    private val hintProvider: HintProvider,
+) : FormRepository {
 
     private fun getAttributeOptionCombo() =
         d2.categoryModule().categoryOptionCombos()
@@ -35,7 +35,7 @@ class FormRepositoryImpl
         tei: String,
         ou: String,
         program: String,
-        programStage: String
+        programStage: String,
     ): String {
         val enrollment = d2.enrollmentModule().enrollments()
             .byTrackedEntityInstance().eq(tei)
@@ -47,7 +47,7 @@ class FormRepositoryImpl
                     .organisationUnit(ou)
                     .program(program).programStage(programStage)
                     .attributeOptionCombo(getAttributeOptionCombo())
-                    .enrollment(enrollment?.uid()).build()
+                    .enrollment(enrollment?.uid()).build(),
             )
     }
 
@@ -55,7 +55,7 @@ class FormRepositoryImpl
         tei: String,
         ou: String,
         program: String,
-        programStage: String
+        programStage: String,
     ): String? {
         return d2.eventModule().events()
             .byTrackedEntityInstanceUids(listOf(tei))
@@ -66,14 +66,14 @@ class FormRepositoryImpl
     }
 
     override suspend fun save(
-        eventTuple: EventTuple
+        eventTuple: EventTuple,
     ): Unit = withContext(Dispatchers.IO) {
         try {
             val uid = eventUid(
                 eventTuple.tei,
                 eventTuple.ou,
                 eventTuple.program,
-                eventTuple.programStage
+                eventTuple.programStage,
             ) ?: createEventProjection(
                 eventTuple.tei,
                 eventTuple.ou,
@@ -95,7 +95,7 @@ class FormRepositoryImpl
 
     override suspend fun keyboardInputTypeByStage(
         stage: String,
-        dl: String
+        dl: String,
     ) = withContext(Dispatchers.IO) {
         d2.programModule().programStageDataElements()
             .byProgramStage().eq(stage)
@@ -112,15 +112,15 @@ class FormRepositoryImpl
                         Option(
                             uid = option.uid(),
                             code = option.code(),
-                            displayName = option.displayName()
+                            displayName = option.displayName(),
                         )
-                    }
+                    },
                 )
             }
     }
 
     override suspend fun getOptions(
-        dataElement: String
+        dataElement: String,
     ): List<org.hisp.dhis.android.core.option.Option> = withContext(Dispatchers.IO) {
         val optionSet = d2.dataElement(dataElement)?.optionSetUid() ?: return@withContext emptyList()
 
@@ -133,7 +133,7 @@ class FormRepositoryImpl
         program: String,
         programStage: String,
         dataElement: String,
-        teis: List<String>
+        teis: List<String>,
     ): List<FormData> = withContext(Dispatchers.IO) {
         return@withContext d2.eventModule().events()
             .byTrackedEntityInstanceUids(teis)
@@ -148,7 +148,7 @@ class FormRepositoryImpl
 
     private suspend fun eventsTransform(
         event: Event,
-        dataElement: String
+        dataElement: String,
     ): FormData? {
         val dataValue = event.trackedEntityDataValues()?.find { it.dataElement() == dataElement }
         val tei = d2.enrollment(event.enrollment().toString())?.trackedEntityInstance() ?: ""
@@ -162,7 +162,7 @@ class FormRepositoryImpl
                 dataElement = dl?.uid() ?: "",
                 value = dataValue.value(),
                 date = DateHelper.formatDate(
-                    event.eventDate()?.time ?: DateUtils.getInstance().today.time
+                    event.eventDate()?.time ?: DateUtils.getInstance().today.time,
                 ).toString(),
                 valueType = dl?.valueType(),
                 hasOptions = options.isNotEmpty(),
@@ -172,10 +172,14 @@ class FormRepositoryImpl
                     Option(
                         uid = opt?.uid() ?: "",
                         code = opt?.code(),
-                        displayName = opt?.displayName()
+                        displayName = opt?.displayName(),
                     )
-                } else null
+                } else {
+                    null
+                },
             )
-        } else null
+        } else {
+            null
+        }
     }
 }

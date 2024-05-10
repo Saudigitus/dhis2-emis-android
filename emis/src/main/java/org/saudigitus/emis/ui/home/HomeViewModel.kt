@@ -26,7 +26,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel
 @Inject constructor(
-    private val repository: DataManager
+    private val repository: DataManager,
 ) : BaseViewModel(repository) {
 
     private val _dataElementFilters = MutableStateFlow<List<DropdownState>>(emptyList())
@@ -48,11 +48,10 @@ class HomeViewModel
     val toolbarHeader: StateFlow<ToolbarHeaders> = _toolbarHeader
 
     private val _schoolOptions = MutableStateFlow<List<DropdownItem>>(emptyList())
-    val schoolOptions:  StateFlow<List<DropdownItem>> = _schoolOptions
+    val schoolOptions: StateFlow<List<DropdownItem>> = _schoolOptions
 
     private val _gradeOptions = MutableStateFlow<List<DropdownItem>>(emptyList())
-    val gradeOptions:  StateFlow<List<DropdownItem>> = _gradeOptions
-
+    val gradeOptions: StateFlow<List<DropdownItem>> = _gradeOptions
 
     override fun setConfig(program: String) {
         viewModelScope.launch {
@@ -69,18 +68,18 @@ class HomeViewModel
                     DropdownState(
                         FilterType.ACADEMIC_YEAR,
                         getDataElementName("${registration.value?.academicYear}"),
-                        options("${registration.value?.academicYear}")
+                        options("${registration.value?.academicYear}"),
                     ),
                     DropdownState(
                         FilterType.GRADE,
                         getDataElementName("${registration.value?.grade}"),
-                        options("${registration.value?.grade}")
+                        options("${registration.value?.grade}"),
                     ),
                     DropdownState(
                         FilterType.SECTION,
                         getDataElementName("${registration.value?.section}"),
-                        options("${registration.value?.section}")
-                    )
+                        options("${registration.value?.section}"),
+                    ),
                 )
             }
         }
@@ -107,8 +106,8 @@ class HomeViewModel
                             "${registration.value?.grade}",
                             "${registration.value?.section}",
                         ),
-                        options = filterState.value.options()
-                    )
+                        options = filterState.value.options(),
+                    ),
                 )
 
                 setInfoCard(
@@ -118,8 +117,8 @@ class HomeViewModel
                         academicYear = filterState.value.academicYear?.itemName ?: "",
                         orgUnitName = filterState.value.school?.displayName ?: "",
                         teiCount = teis.value.size,
-                        isStaff = filterState.value.isStaff()
-                    )
+                        isStaff = filterState.value.isStaff(),
+                    ),
                 )
             }
         }

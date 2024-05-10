@@ -19,17 +19,16 @@ fun D2.eventsWithTrackedDataValues(
     .blockingGet()
 
 fun D2.optionByOptionSet(
-    optionSet: String?
+    optionSet: String?,
 ): List<Option> = optionModule()
     .options()
     .byOptionSetUid().eq(optionSet)
     .orderBySortOrder(RepositoryScope.OrderByDirection.ASC)
     .blockingGet()
 
-
 fun D2.optionsByOptionSetAndCode(
     optionSet: String?,
-    codes: List<String>
+    codes: List<String>,
 ): List<Option> = optionModule()
     .options()
     .byCode().`in`(codes)
@@ -37,7 +36,5 @@ fun D2.optionsByOptionSetAndCode(
     .orderBySortOrder(RepositoryScope.OrderByDirection.ASC)
     .blockingGet()
 
-
-
 fun List<DropdownState>.getByType(type: FilterType): DropdownState? =
-    find { it.filterType == type}
+    find { it.filterType == type }

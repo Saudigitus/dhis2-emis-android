@@ -10,5 +10,5 @@ data class FormData(
     val date: String?,
     val valueType: ValueType?,
     val hasOptions: Boolean,
-    val itemOptions: Option? = null
+    val itemOptions: Option? = null,
 )

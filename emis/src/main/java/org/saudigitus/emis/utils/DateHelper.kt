@@ -6,7 +6,6 @@ import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.time.DayOfWeek
 import java.time.LocalDate
-import java.time.format.TextStyle
 import java.util.Date
 import java.util.Locale
 

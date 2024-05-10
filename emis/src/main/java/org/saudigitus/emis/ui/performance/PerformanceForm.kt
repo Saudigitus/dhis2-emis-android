@@ -32,8 +32,8 @@ fun PerformanceForm(
         key: String,
         dataElement: String,
         value: String,
-        valueType: ValueType?
-    ) -> Unit
+        valueType: ValueType?,
+    ) -> Unit,
 ) {
     val formState = remember { mutableStateMapOf<String, String>() }
 
@@ -47,7 +47,7 @@ fun PerformanceForm(
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         fields.forEach { formField ->
             val data = formData?.find { it.tei == key && it.dataElement == formField.uid }
@@ -57,7 +57,7 @@ fun PerformanceForm(
                     label = formField.label,
                     placeholder = formField.placeholder,
                     data = formField.options ?: emptyList(),
-                    selectedItem = data?.itemOptions
+                    selectedItem = data?.itemOptions,
                 ) { item ->
                     onNext(Triple(formField.uid, item.code, null))
                 }
@@ -70,7 +70,7 @@ fun PerformanceForm(
                             key,
                             formField.uid,
                             it,
-                            formField.type
+                            formField.type,
                         )
                     },
                     placeholder = formField.placeholder,
@@ -85,7 +85,7 @@ fun PerformanceForm(
                                 }
                                 onNext(Triple(formField.uid, fieldValue?.value, formField.type))
                             }
-                        }
+                        },
                 )
             }
         }

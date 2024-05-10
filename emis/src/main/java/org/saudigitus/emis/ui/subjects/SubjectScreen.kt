@@ -39,9 +39,8 @@ fun SubjectScreen(
     onBack: () -> Unit,
     onFilterClick: (String) -> Unit,
     infoCard: InfoCard,
-    onClick: (String, String) -> Unit
+    onClick: (String, String) -> Unit,
 ) {
-
     var displayFilters by remember { mutableStateOf(true) }
     var selected by remember { mutableStateOf("") }
 
@@ -53,18 +52,18 @@ fun SubjectScreen(
                     containerColor = Color(0xFF2C98F0),
                     navigationIconContentColor = Color.White,
                     titleContentColor = Color.White,
-                    actionIconContentColor = Color.White
+                    actionIconContentColor = Color.White,
                 ),
                 navigationAction = { onBack.invoke() },
                 disableNavigation = false,
                 actionState = ToolbarActionState(
                     syncVisibility = false,
                     filterVisibility = false,
-                    showCalendar = false
+                    showCalendar = false,
                 ),
-                filterAction = { displayFilters = !displayFilters }
+                filterAction = { displayFilters = !displayFilters },
             )
-        }
+        },
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -72,7 +71,7 @@ fun SubjectScreen(
                 .background(color = Color(0xFF2C98F0))
                 .padding(paddingValues),
             verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.Start
+            horizontalAlignment = Alignment.Start,
         ) {
             Column(
                 modifier = Modifier
@@ -84,11 +83,11 @@ fun SubjectScreen(
                                 topStart = CornerSize(16.dp),
                                 topEnd = CornerSize(16.dp),
                                 bottomStart = CornerSize(0.dp),
-                                bottomEnd = CornerSize(0.dp)
-                            )
+                                bottomEnd = CornerSize(0.dp),
+                            ),
                     ),
                 verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
-                horizontalAlignment = Alignment.Start
+                horizontalAlignment = Alignment.Start,
             ) {
                 DetailsWithOptions(
                     modifier = Modifier.fillMaxWidth(),
@@ -100,7 +99,7 @@ fun SubjectScreen(
                     onItemClick = {
                         selected = it.itemName
                         onFilterClick.invoke(it.id)
-                    }
+                    },
                 )
                 LazyColumn(
                     modifier = Modifier.fillMaxSize()
@@ -112,8 +111,10 @@ fun SubjectScreen(
                             attrValue = selected,
                             color = if (subject.color != null) {
                                 Color(ColorUtils().parseColor(subject.color))
-                            } else null,
-                            onClick = { onClick.invoke(subject.uid, subject.displayName ?: "-") }
+                            } else {
+                                null
+                            },
+                            onClick = { onClick.invoke(subject.uid, subject.displayName ?: "-") },
                         )
                     }
                 }

@@ -41,7 +41,7 @@ import javax.inject.Inject
 class DataManagerImpl
 @Inject constructor(
     val d2: D2,
-    val networkUtils: NetworkUtils
+    val networkUtils: NetworkUtils,
 ) : DataManager {
     private fun getAttributeOptionCombo() =
         d2.categoryModule().categoryOptionCombos()
@@ -51,7 +51,7 @@ class DataManagerImpl
         tei: String,
         ou: String,
         program: String,
-        programStage: String
+        programStage: String,
     ): String {
         val enrollment = d2.enrollmentModule().enrollments()
             .byTrackedEntityInstance().eq(tei)
@@ -63,7 +63,7 @@ class DataManagerImpl
                     .organisationUnit(ou)
                     .program(program).programStage(programStage)
                     .attributeOptionCombo(getAttributeOptionCombo())
-                    .enrollment(enrollment?.uid()).build()
+                    .enrollment(enrollment?.uid()).build(),
             )
     }
 
@@ -71,7 +71,7 @@ class DataManagerImpl
         tei: String,
         program: String,
         programStage: String,
-        date: String?
+        date: String?,
     ): String? {
         return d2.eventModule().events()
             .byTrackedEntityInstanceUids(listOf(tei))
@@ -85,7 +85,7 @@ class DataManagerImpl
         ou: String,
         program: String,
         programStage: String,
-        attendance: AttendanceEntity
+        attendance: AttendanceEntity,
     ): Unit =
         withContext(Dispatchers.IO) {
             try {
@@ -93,12 +93,12 @@ class DataManagerImpl
                     attendance.tei,
                     program,
                     programStage,
-                    attendance.date
+                    attendance.date,
                 ) ?: createEventProjection(
                     attendance.tei,
                     ou,
                     program,
-                    programStage
+                    programStage,
                 )
 
                 d2.trackedEntityModule().trackedEntityDataValues()
@@ -121,7 +121,6 @@ class DataManagerImpl
             }
         }
 
-
     override suspend fun getConfig(id: String): List<EMISConfigItem>? =
         withContext(Dispatchers.IO) {
             val dataStore = d2.dataStoreModule()
@@ -133,9 +132,8 @@ class DataManagerImpl
             return@withContext EMISConfig.fromJson(dataStore?.value())
         }
 
-
     override suspend fun getOptions(
-        dataElement: String
+        dataElement: String,
     ): List<DropdownItem> = withContext(Dispatchers.IO) {
         val optionSet = d2.dataElement(dataElement)?.optionSetUid()
 
@@ -144,14 +142,14 @@ class DataManagerImpl
                 id = it.uid(),
                 itemName = "${it.displayName()}",
                 code = it.code() ?: "",
-                sortOrder = it.sortOrder()
+                sortOrder = it.sortOrder(),
             )
         }
     }
 
     override suspend fun getOptionsByCode(
         dataElement: String,
-        codes: List<String>
+        codes: List<String>,
     ): List<DropdownItem> = withContext(Dispatchers.IO) {
         val optionSet = d2.dataElement(dataElement)?.optionSetUid()
 
@@ -160,13 +158,13 @@ class DataManagerImpl
                 id = it.uid(),
                 itemName = "${it.displayName()}",
                 code = it.code() ?: "",
-                sortOrder = it.sortOrder()
+                sortOrder = it.sortOrder(),
             )
         }
     }
 
     override suspend fun getAttendanceOptions(
-        program: String
+        program: String,
     ) = withContext(Dispatchers.IO) {
         val config = getConfig(Constants.KEY)?.find { it.program == program }
             ?.attendance ?: return@withContext emptyList()
@@ -187,9 +185,11 @@ class DataManagerImpl
                     icon = Utils.dynamicIcons("${status.icon}"),
                     iconName = "${status.icon}",
                     color = Color(colorUtils.parseColor("${status.color}")),
-                    actionOrder = it.sortOrder
+                    actionOrder = it.sortOrder,
                 )
-            } else null
+            } else {
+                null
+            }
         }.sortedWith(compareBy { it.actionOrder })
     }
 
@@ -203,10 +203,12 @@ class DataManagerImpl
         program: String,
         stage: String,
         dataElementIds: List<String>,
-        options: List<String>
+        options: List<String>,
     ): List<SearchTeiModel> = withContext(Dispatchers.IO) {
         return@withContext d2.eventsWithTrackedDataValues(
-            ou, program, stage
+            ou,
+            program,
+            stage,
         ).filter {
             val dataElements = it.trackedEntityDataValues()?.associate { trackedEntityDataValue ->
                 Pair(trackedEntityDataValue.dataElement(), trackedEntityDataValue.value())
@@ -228,7 +230,7 @@ class DataManagerImpl
 
     override suspend fun trackedEntityInstances(
         ou: String,
-        program: String
+        program: String,
     ) = withContext(Dispatchers.IO) {
         val repository = d2.trackedEntityModule().trackedEntityInstanceQuery()
 
@@ -256,7 +258,7 @@ class DataManagerImpl
         dataElement: String,
         reasonDataElement: String?,
         teis: List<String>,
-        date: String?
+        date: String?,
     ) = withContext(Dispatchers.IO) {
         val config = getConfig(Constants.KEY)?.find { it.program == program }
             ?.attendance ?: return@withContext emptyList()
@@ -272,7 +274,7 @@ class DataManagerImpl
                     Date.valueOf(date)
                 } else {
                     DateUtils.getInstance().today
-                }
+                },
             )
             .withTrackedEntityDataValues()
             .blockingGet()
@@ -287,7 +289,7 @@ class DataManagerImpl
                 attendanceEntity.withBtnSettings(
                     icon = Utils.dynamicIcons("${status?.icon}"),
                     iconName = "${status?.icon}",
-                    iconColor = Color(colorUtils.parseColor("${status?.color}"))
+                    iconColor = Color(colorUtils.parseColor("${status?.color}")),
                 )
             }
     }
@@ -312,13 +314,13 @@ class DataManagerImpl
             .byProgramStage().eq(stage)
             .blockingGet()
             .map { stageDl ->
-                val dl = d2.dataElement( stageDl.dataElement()?.uid() ?: "")
+                val dl = d2.dataElement(stageDl.dataElement()?.uid() ?: "")
 
                 Subject(
                     uid = dl?.uid() ?: "",
-                    code = dl?.code()?.ifEmpty{ "" },
+                    code = dl?.code()?.ifEmpty { "" },
                     color = dl?.style()?.color(),
-                    displayName = dl?.displayFormName()
+                    displayName = dl?.displayFormName(),
                 )
             }
     }
@@ -333,7 +335,7 @@ class DataManagerImpl
                 DropdownItem(
                     id = it.uid(),
                     itemName = it.displayName() ?: "",
-                    code = it.code()
+                    code = it.code(),
                 )
             }
     }
@@ -360,15 +362,17 @@ class DataManagerImpl
                 },
                 reasonOfAbsence = reason?.value(),
                 date = DateHelper.formatDate(
-                    event.eventDate()?.time ?: DateUtils.getInstance().today.time
-                ).toString()
+                    event.eventDate()?.time ?: DateUtils.getInstance().today.time,
+                ).toString(),
             )
-        } else null
+        } else {
+            null
+        }
     }
 
     private fun transform(
         tei: TrackedEntityInstance?,
-        program: String?
+        program: String?,
     ): SearchTeiModel {
         val searchTei = SearchTeiModel()
         searchTei.tei = tei
@@ -417,7 +421,7 @@ class DataManagerImpl
     private fun addAttribute(
         searchTei: SearchTeiModel,
         attrValue: TrackedEntityAttributeValue,
-        attribute: TrackedEntityAttribute?
+        attribute: TrackedEntityAttribute?,
     ) {
         val friendlyValue = attrValue.userFriendlyValue(d2)
 
