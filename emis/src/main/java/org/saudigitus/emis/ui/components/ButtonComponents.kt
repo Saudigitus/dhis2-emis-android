@@ -21,7 +21,7 @@ fun TextButton(
     title: String,
     containerColor: Color,
     contentColor: Color,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Button(
         onClick = { onClick.invoke() },
@@ -29,8 +29,8 @@ fun TextButton(
         shape = ShapeDefaults.Small,
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.White,
-            contentColor = contentColor
-        )
+            contentColor = contentColor,
+        ),
     ) {
         Text(text = title)
     }
@@ -46,18 +46,18 @@ fun ActionButtons(
     Row(
         modifier = modifier.padding(16.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.End),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         TextButton(
             title = stringResource(R.string.cancel),
             containerColor = Color.White,
-            contentColor = contentColor
+            contentColor = contentColor,
         ) { onCancel.invoke() }
 
         TextButton(
             title = stringResource(R.string.done),
             containerColor = Color.White,
-            contentColor = contentColor
+            contentColor = contentColor,
         ) { onDone.invoke() }
     }
 }

@@ -517,6 +517,7 @@ private fun testingProgramModel() = ProgramViewModel(
     false,
     downloadState = ProgramDownloadState.NONE,
     stockConfig = null,
+    isSEMIS = false,
 )
 
 const val HOME_ITEMS = "HOME_ITEMS"

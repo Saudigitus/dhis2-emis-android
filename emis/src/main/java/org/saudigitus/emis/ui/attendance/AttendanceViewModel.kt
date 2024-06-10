@@ -26,7 +26,7 @@ import javax.inject.Inject
 @HiltViewModel
 class AttendanceViewModel
 @Inject constructor(
-    private val repository: DataManager
+    private val repository: DataManager,
 ) : BaseViewModel(repository) {
 
     private val _datastoreAttendance = MutableStateFlow<Attendance?>(null)
@@ -60,7 +60,7 @@ class AttendanceViewModel
     init {
         _toolbarHeaders.update {
             it.copy(
-                title = "Attendance"
+                title = "Attendance",
             )
         }
     }
@@ -98,19 +98,19 @@ class AttendanceViewModel
         }
         _toolbarHeaders.update {
             it.copy(
-                subtitle = DateHelper.formatDateWithWeekDay(date)
+                subtitle = DateHelper.formatDateWithWeekDay(date),
             )
         }
     }
 
     private suspend fun getAttendanceOptions(
-        program: String
+        program: String,
     ) {
         _attendanceOptions.value = repository.getAttendanceOptions(program)
     }
 
     private suspend fun attendanceEvents(
-        date: String? = DateHelper.formatDate(DateUtils.getInstance().today.time)
+        date: String? = DateHelper.formatDate(DateUtils.getInstance().today.time),
     ) {
         teis.collect {
             try {
@@ -120,7 +120,7 @@ class AttendanceViewModel
                     dataElement = datastoreAttendance.value?.status ?: "",
                     reasonDataElement = datastoreAttendance.value?.absenceReason ?: "",
                     teis = teiUIds.value,
-                    date = date.toString()
+                    date = date.toString(),
                 )
 
                 clearCache()
@@ -141,7 +141,7 @@ class AttendanceViewModel
                 attendanceValue = attendance.value,
                 containerColor = attendanceOptions.value.find {
                     it.code == attendance.value
-                }?.color ?: Color.Black
+                }?.color ?: Color.Black,
             )
         }.toMutableList()
 
@@ -152,7 +152,7 @@ class AttendanceViewModel
         index: Int,
         tei: String,
         attendanceValue: String,
-        containerColor: Color
+        containerColor: Color,
     ) = AttendanceActionButtonState(
         btnIndex = index,
         btnId = tei,
@@ -160,15 +160,15 @@ class AttendanceViewModel
         buttonState = AttendanceButtonSettings(
             buttonType = attendanceValue,
             containerColor = containerColor,
-            contentColor = WHITE
-        )
+            contentColor = WHITE,
+        ),
     )
 
     private fun getAttendanceUiState(
         index: Int,
         tei: String,
         value: String,
-        color: Color?
+        color: Color?,
     ): MutableList<AttendanceActionButtonState> {
         val uiCache = attendanceBtnStateCache.find { it.btnId == tei }
 
@@ -176,7 +176,7 @@ class AttendanceViewModel
             index = index,
             tei = tei,
             attendanceValue = value,
-            containerColor = color ?: Color.LightGray
+            containerColor = color ?: Color.LightGray,
         )
 
         if (uiCache == null) {
@@ -208,7 +208,7 @@ class AttendanceViewModel
                     tei = it,
                     value = value,
                     reasonOfAbsence = reasonOfAbsence,
-                    hasPersisted = false
+                    hasPersisted = false,
                 )
             }
         }
@@ -231,7 +231,7 @@ class AttendanceViewModel
             value = value,
             reasonDataElement = datastoreAttendance.value?.absenceReason,
             reasonOfAbsence = reasonOfAbsence,
-            date = eventDate.value
+            date = eventDate.value,
         )
 
         val cacheItem = attendanceCache.find { it.tei == attendance.tei }
@@ -249,7 +249,7 @@ class AttendanceViewModel
                     ou = ou,
                     program = program.value,
                     programStage = datastoreAttendance.value?.programStage ?: "",
-                    attendance = attendance
+                    attendance = attendance,
                 )
             }
         }
@@ -260,7 +260,7 @@ class AttendanceViewModel
         ou: String? = null,
         tei: String? = null,
         value: String? = null,
-        reasonOfAbsence: String? = null
+        reasonOfAbsence: String? = null,
     ) {
         if (index != null) {
             _absenceState.update {
@@ -294,12 +294,12 @@ class AttendanceViewModel
             ou = absenceState.value.ou,
             tei = absenceState.value.tei,
             value = absenceState.value.value,
-            reasonOfAbsence = absenceState.value.reasonOfAbsence
+            reasonOfAbsence = absenceState.value.reasonOfAbsence,
         )
 
         val cache = mutableListOf<Absence>()
 
-        cache.addAll( absenceStateCache.value)
+        cache.addAll(absenceStateCache.value)
         cache.add(absenceState.value)
 
         _absenceStateCache.value = cache
@@ -313,7 +313,7 @@ class AttendanceViewModel
                         ou = ou.value,
                         program = program.value,
                         programStage = datastoreAttendance.value?.programStage ?: "",
-                        attendance = attendance
+                        attendance = attendance,
                     )
                 }
             }.await()

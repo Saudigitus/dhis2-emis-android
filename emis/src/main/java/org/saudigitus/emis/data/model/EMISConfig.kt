@@ -1,6 +1,5 @@
 package org.saudigitus.emis.data.model
 
-
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.saudigitus.emis.utils.Mapper.translateJsonToObject
 
@@ -16,16 +15,19 @@ class EMISConfig {
                     json,
                     mapper.typeFactory.constructCollectionType(
                         List::class.java,
-                        EMISConfigItem::class.java
-                    )
+                        EMISConfigItem::class.java,
+                    ),
                 )
-        } else null
+        } else {
+            null
+        }
 
         fun schoolCalendarJson(json: String?): CalendarConfig? =
             if (json != null) {
                 translateJsonToObject()
                     .readValue(json, CalendarConfig::class.java)
-            } else null
-
+            } else {
+                null
+            }
     }
 }

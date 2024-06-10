@@ -113,6 +113,7 @@ private fun testingProgramModel(downloadState: ProgramDownloadState) = ProgramVi
     false,
     downloadState = downloadState,
     stockConfig = null,
+    isSEMIS = false,
 )
 
 const val PROGRAM_TO_ENROLL = "PROGRAM_TO_ENROLL_%s"

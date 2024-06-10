@@ -137,7 +137,7 @@ internal class ProgramRepositoryImpl(
                     } else {
                         null
                     },
-                    isSEMIS = isSEMIS(program.uid())
+                    isSEMIS = isSEMIS(program.uid()),
                 )
             }.toList().toFlowable().blockingFirst()
     }

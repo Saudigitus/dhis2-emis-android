@@ -85,11 +85,11 @@ class SyncPresenterImpl(
                 Completable.fromObservable(
                     d2.dataStoreModule()
                         .dataStoreDownloader()
-                        .download()
+                        .download(),
                 ).doOnError {
                     Timber.d("error while downloading Data store")
                 }.onErrorComplete()
-                    .doOnComplete { Timber.d("finished datastore download")  }
+                    .doOnComplete { Timber.d("finished datastore download") },
             )
             .andThen(
                 Completable.fromObservable(

@@ -53,15 +53,15 @@ data class DropdownItem(
     val id: String,
     val itemName: String,
     val code: String? = null,
-    val sortOrder: Int? = -1
+    val sortOrder: Int? = -1,
 ) {
-    override fun toString() =  itemName
+    override fun toString() = itemName
 }
 
 data class DropdownState(
     val filterType: FilterType,
     val displayName: String,
-    val data: List<DropdownItem>
+    val data: List<DropdownItem>,
 )
 
 @Composable
@@ -71,7 +71,7 @@ fun DropDownOu(
     leadingIcon: ImageVector,
     selectedSchool: OU? = null,
     program: String,
-    onItemClick: (OU) -> Unit
+    onItemClick: (OU) -> Unit,
 ) {
     val context = LocalContext.current
     val fragmentManager = (context as? FragmentActivity)?.supportFragmentManager
@@ -84,7 +84,7 @@ fun DropDownOu(
             program = program,
             onSchoolSelected = {
                 onItemClick.invoke(it)
-            }
+            },
         )
     }
 
@@ -96,7 +96,7 @@ fun DropDownOu(
                     elevation = 2.dp,
                     ambientColor = Color.Black.copy(alpha = 0.1f),
                     shape = RoundedCornerShape(30.dp),
-                    clip = false
+                    clip = false,
                 )
                 .background(color = Color.White, shape = RoundedCornerShape(30.dp)),
             shape = RoundedCornerShape(30.dp),
@@ -109,7 +109,7 @@ fun DropDownOu(
                 Icon(
                     imageVector = leadingIcon,
                     contentDescription = null,
-                    tint = Color(0xFF2C98F0)
+                    tint = Color(0xFF2C98F0),
                 )
             },
             trailingIcon = {
@@ -120,13 +120,13 @@ fun DropDownOu(
                         program = program,
                         onSchoolSelected = {
                             onItemClick.invoke(it)
-                        }
+                        },
                     )
                 }) {
                     Icon(
                         imageVector = Icons.Default.ArrowDropDown,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = MaterialTheme.colorScheme.primary,
                     )
                 }
             },
@@ -134,7 +134,7 @@ fun DropDownOu(
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color.White,
                 unfocusedBorderColor = Color.White,
-            )
+            ),
         )
     }
 }
@@ -143,14 +143,14 @@ fun launchOuTreeSelector(
     supportFragmentManager: FragmentManager,
     selectedSchool: OU? = null,
     program: String,
-    onSchoolSelected: (school: OU) -> Unit
+    onSchoolSelected: (school: OU) -> Unit,
 ) {
     OUTreeFragment.Builder()
         .showAsDialog()
         .singleSelection()
         .orgUnitScope(OrgUnitSelectorScope.ProgramCaptureScope(program))
         .withPreselectedOrgUnits(
-            selectedSchool?.let { listOf(it.uid) } ?: emptyList()
+            selectedSchool?.let { listOf(it.uid) } ?: emptyList(),
         )
         .onSelection { selectedOrgUnits ->
             val selectedOrgUnit = selectedOrgUnits.firstOrNull()
@@ -158,8 +158,8 @@ fun launchOuTreeSelector(
                 onSchoolSelected(
                     OU(
                         uid = selectedOrgUnit.uid(),
-                        displayName = selectedOrgUnit.displayName()
-                    )
+                        displayName = selectedOrgUnit.displayName(),
+                    ),
                 )
             }
         }
@@ -176,7 +176,7 @@ fun <T>DropDown(
     data: List<T>?,
     selectedItemName: String = "",
     elevation: Dp = 2.dp,
-    onItemClick: (T) -> Unit
+    onItemClick: (T) -> Unit,
 ) {
     var selectedItemIndex by remember { mutableStateOf(-1) }
     var selectedItem by remember { mutableStateOf(selectedItemName) }
@@ -227,7 +227,7 @@ fun <T>DropDown(
                     elevation = elevation,
                     ambientColor = Color.Black.copy(alpha = 0.1f),
                     shape = RoundedCornerShape(30.dp),
-                    clip = false
+                    clip = false,
                 )
                 .background(color = Color.White, shape = RoundedCornerShape(30.dp)),
             shape = RoundedCornerShape(30.dp),
@@ -242,7 +242,7 @@ fun <T>DropDown(
                 Icon(
                     imageVector = leadingIcon,
                     contentDescription = null,
-                    tint = Color(0xFF2C98F0)
+                    tint = Color(0xFF2C98F0),
                 )
             },
             trailingIcon = {
@@ -251,16 +251,17 @@ fun <T>DropDown(
                         Icon(
                             imageVector = trailingIcon,
                             contentDescription = null,
-                            tint = Color(0xFF2C98F0)
+                            tint = Color(0xFF2C98F0),
                         )
                     } else {
                         Icon(
-                            imageVector = if (!expand)
+                            imageVector = if (!expand) {
                                 Icons.Default.ArrowDropDown
-                            else
-                                Icons.Default.ArrowDropUp,
+                            } else {
+                                Icons.Default.ArrowDropUp
+                            },
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = MaterialTheme.colorScheme.primary,
                         )
                     }
                 }
@@ -269,7 +270,7 @@ fun <T>DropDown(
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color.White,
                 unfocusedBorderColor = Color.White,
-            )
+            ),
         )
 
         DropdownMenu(
@@ -280,7 +281,7 @@ fun <T>DropDown(
             expanded = expand,
             onDismissRequest = {
                 expand = !expand
-            }
+            },
         ) {
             data?.forEachIndexed { index, item ->
                 Row(Modifier.padding(horizontal = 10.dp)) {
@@ -288,11 +289,12 @@ fun <T>DropDown(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(
-                                color = if (selectedItemIndex == index)
+                                color = if (selectedItemIndex == index) {
                                     Color.LightGray.copy(.5f)
-                                else
-                                    Color.Transparent,
-                                shape = RoundedCornerShape(16.dp)
+                                } else {
+                                    Color.Transparent
+                                },
+                                shape = RoundedCornerShape(16.dp),
                             )
                             .padding(paddingValue),
                         text = {
@@ -302,8 +304,8 @@ fun <T>DropDown(
                                 overflow = TextOverflow.Ellipsis,
                                 softWrap = true,
                                 style = LocalTextStyle.current.copy(
-                                    fontFamily = FontFamily(Font(R.font.rubik_regular))
-                                )
+                                    fontFamily = FontFamily(Font(R.font.rubik_regular)),
+                                ),
                             )
                         },
                         onClick = {
@@ -316,16 +318,15 @@ fun <T>DropDown(
                             Icon(
                                 imageVector = leadingIcon,
                                 contentDescription = "$item",
-                                tint = Color(0xFF2C98F0)
+                                tint = Color(0xFF2C98F0),
                             )
-                        }
+                        },
                     )
                 }
             }
         }
     }
 }
-
 
 @Composable
 fun DropDownWithSelectionByCode(
@@ -334,9 +335,9 @@ fun DropDownWithSelectionByCode(
     leadingIcon: ImageVector,
     data: List<DropdownItem>?,
     selectedCodeItem: String = "",
-    onItemClick: (DropdownItem) -> Unit
+    onItemClick: (DropdownItem) -> Unit,
 ) {
-    var selectedItemIndex by remember { mutableStateOf( -1) }
+    var selectedItemIndex by remember { mutableStateOf(-1) }
     var selectedItem by remember { mutableStateOf("") }
     var expand by remember { mutableStateOf(false) }
 
@@ -382,7 +383,7 @@ fun DropDownWithSelectionByCode(
                     elevation = 2.dp,
                     ambientColor = Color.Black.copy(alpha = 0.1f),
                     shape = RoundedCornerShape(30.dp),
-                    clip = false
+                    clip = false,
                 )
                 .background(color = Color.White, shape = RoundedCornerShape(30.dp)),
             shape = RoundedCornerShape(30.dp),
@@ -397,19 +398,19 @@ fun DropDownWithSelectionByCode(
                 Icon(
                     imageVector = leadingIcon,
                     contentDescription = null,
-                    tint = Color(0xFF2C98F0)
+                    tint = Color(0xFF2C98F0),
                 )
             },
             trailingIcon = {
                 IconButton(onClick = { expand = !expand }) {
-
                     Icon(
-                        imageVector = if (!expand)
+                        imageVector = if (!expand) {
                             Icons.Default.ArrowDropDown
-                        else
-                            Icons.Default.ArrowDropUp,
+                        } else {
+                            Icons.Default.ArrowDropUp
+                        },
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = MaterialTheme.colorScheme.primary,
                     )
                 }
             },
@@ -417,7 +418,7 @@ fun DropDownWithSelectionByCode(
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color.White,
                 unfocusedBorderColor = Color.White,
-            )
+            ),
         )
 
         DropdownMenu(
@@ -428,7 +429,7 @@ fun DropDownWithSelectionByCode(
             expanded = expand,
             onDismissRequest = {
                 expand = !expand
-            }
+            },
         ) {
             data?.forEachIndexed { index, item ->
                 Row(Modifier.padding(horizontal = 10.dp)) {
@@ -436,11 +437,12 @@ fun DropDownWithSelectionByCode(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(
-                                color = if (selectedItemIndex == index)
+                                color = if (selectedItemIndex == index) {
                                     Color.LightGray.copy(.5f)
-                                else
-                                    Color.Transparent,
-                                shape = RoundedCornerShape(16.dp)
+                                } else {
+                                    Color.Transparent
+                                },
+                                shape = RoundedCornerShape(16.dp),
                             )
                             .padding(paddingValue),
                         text = {
@@ -450,8 +452,8 @@ fun DropDownWithSelectionByCode(
                                 overflow = TextOverflow.Ellipsis,
                                 softWrap = true,
                                 style = LocalTextStyle.current.copy(
-                                    fontFamily = FontFamily(Font(R.font.rubik_regular))
-                                )
+                                    fontFamily = FontFamily(Font(R.font.rubik_regular)),
+                                ),
                             )
                         },
                         onClick = {
@@ -464,9 +466,9 @@ fun DropDownWithSelectionByCode(
                             Icon(
                                 imageVector = leadingIcon,
                                 contentDescription = item.itemName,
-                                tint = Color(0xFF2C98F0)
+                                tint = Color(0xFF2C98F0),
                             )
-                        }
+                        },
                     )
                 }
             }

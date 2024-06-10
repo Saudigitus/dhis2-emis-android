@@ -23,14 +23,14 @@ object AppModule {
     @Provides
     @Singleton
     fun providesNetworkUtils(
-        @ApplicationContext context: Context
+        @ApplicationContext context: Context,
     ): NetworkUtils = NetworkUtils(context)
 
     @Provides
     @Singleton
     fun providesDataManager(
         d2: D2,
-        networkUtils: NetworkUtils
+        networkUtils: NetworkUtils,
     ): DataManager = DataManagerImpl(d2, networkUtils)
 
     @Provides

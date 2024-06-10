@@ -14,9 +14,9 @@ import org.saudigitus.emis.data.model.DefaultConfig
 import org.saudigitus.emis.data.model.OU
 import org.saudigitus.emis.data.model.Registration
 import org.saudigitus.emis.ui.base.BaseViewModel
+import org.saudigitus.emis.ui.components.DropdownItem
 import org.saudigitus.emis.ui.components.DropdownState
 import org.saudigitus.emis.ui.components.InfoCard
-import org.saudigitus.emis.ui.components.DropdownItem
 import org.saudigitus.emis.ui.components.ToolbarHeaders
 import org.saudigitus.emis.ui.teis.FilterState
 import org.saudigitus.emis.ui.teis.FilterType
@@ -26,7 +26,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel
 @Inject constructor(
-    private val repository: DataManager
+    private val repository: DataManager,
 ) : BaseViewModel(repository) {
 
     private val _dataElementFilters = MutableStateFlow<List<DropdownState>>(emptyList())
@@ -48,11 +48,10 @@ class HomeViewModel
     val toolbarHeader: StateFlow<ToolbarHeaders> = _toolbarHeader
 
     private val _schoolOptions = MutableStateFlow<List<DropdownItem>>(emptyList())
-    val schoolOptions:  StateFlow<List<DropdownItem>> = _schoolOptions
+    val schoolOptions: StateFlow<List<DropdownItem>> = _schoolOptions
 
     private val _gradeOptions = MutableStateFlow<List<DropdownItem>>(emptyList())
-    val gradeOptions:  StateFlow<List<DropdownItem>> = _gradeOptions
-
+    val gradeOptions: StateFlow<List<DropdownItem>> = _gradeOptions
 
     override fun setConfig(program: String) {
         viewModelScope.launch {
@@ -61,23 +60,26 @@ class HomeViewModel
             if (config != null) {
                 _defaultConfig.value = config.default
                 _registration.value = config.registration
+                _filterState.update {
+                    it.copy(key = config.key)
+                }
 
                 _dataElementFilters.value = listOf(
                     DropdownState(
                         FilterType.ACADEMIC_YEAR,
                         getDataElementName("${registration.value?.academicYear}"),
-                        options("${registration.value?.academicYear}")
+                        options("${registration.value?.academicYear}"),
                     ),
                     DropdownState(
                         FilterType.GRADE,
                         getDataElementName("${registration.value?.grade}"),
-                        options("${registration.value?.grade}")
+                        options("${registration.value?.grade}"),
                     ),
                     DropdownState(
                         FilterType.SECTION,
                         getDataElementName("${registration.value?.section}"),
-                        options("${registration.value?.section}")
-                    )
+                        options("${registration.value?.section}"),
+                    ),
                 )
             }
         }
@@ -89,7 +91,7 @@ class HomeViewModel
     override fun save() {}
 
     private suspend fun getDataElementName(uid: String) =
-        repository.getDataElement(uid).displayFormName() ?: ""
+        repository.getDataElement(uid)?.displayFormName() ?: ""
 
     private fun getTeis() {
         viewModelScope.launch {
@@ -104,12 +106,8 @@ class HomeViewModel
                             "${registration.value?.grade}",
                             "${registration.value?.section}",
                         ),
-                        options = listOf(
-                            "${filterState.value.academicYear?.code}",
-                            "${filterState.value.grade?.code}",
-                            "${filterState.value.section?.code}",
-                        )
-                    )
+                        options = filterState.value.options(),
+                    ),
                 )
 
                 setInfoCard(
@@ -118,8 +116,9 @@ class HomeViewModel
                         section = filterState.value.section?.itemName ?: "",
                         academicYear = filterState.value.academicYear?.itemName ?: "",
                         orgUnitName = filterState.value.school?.displayName ?: "",
-                        teiCount = teis.value.size
-                    )
+                        teiCount = teis.value.size,
+                        isStaff = filterState.value.isStaff(),
+                    ),
                 )
             }
         }

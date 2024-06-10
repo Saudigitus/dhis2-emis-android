@@ -59,7 +59,7 @@ fun ReasonForAbsenceDialog(
     selectedItemCode: String? = null,
     onItemClick: (DropdownItem) -> Unit,
     onCancel: () -> Unit,
-    onDone: () -> Unit
+    onDone: () -> Unit,
 ) {
     var selectedIndex by remember {
         mutableStateOf(reasons.indexOfFirst { it.code == selectedItemCode })
@@ -76,14 +76,14 @@ fun ReasonForAbsenceDialog(
             maxLines = 1,
             style = LocalTextStyle.current.copy(
                 fontSize = 20.sp,
-                fontFamily = FontFamily(Font(R.font.rubik_regular))
-            )
+                fontFamily = FontFamily(Font(R.font.rubik_regular)),
+            ),
         )
         Spacer(modifier = Modifier.height(16.dp))
         Divider(
             modifier = Modifier.fillMaxWidth(),
             color = Color.LightGray.copy(.75f),
-            thickness = .5.dp
+            thickness = .5.dp,
         )
         reasons.forEachIndexed { index, option ->
             Row(
@@ -95,14 +95,14 @@ fun ReasonForAbsenceDialog(
                         onItemClick(option)
                     },
                 horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 RadioButton(
                     selected = selectedIndex == index,
                     onClick = {
                         selectedIndex = index
                         onItemClick(option)
-                    }
+                    },
                 )
                 Text(text = option.itemName)
             }
@@ -110,7 +110,7 @@ fun ReasonForAbsenceDialog(
         Divider(
             modifier = Modifier.fillMaxWidth(),
             color = Color.LightGray.copy(.75f),
-            thickness = .5.dp
+            thickness = .5.dp,
         )
         ActionButtons(
             modifier = Modifier.align(Alignment.End),
@@ -119,7 +119,7 @@ fun ReasonForAbsenceDialog(
                 selectedIndex = -1
                 onCancel.invoke()
             },
-            onDone = onDone
+            onDone = onDone,
         )
     }
 }
@@ -130,7 +130,7 @@ fun AttendanceSummaryDialog(
     data: List<Triple<Int, ImageVector?, Color?>>,
     themeColor: Color,
     onCancel: () -> Unit,
-    onDone: () -> Unit
+    onDone: () -> Unit,
 ) {
     AlertDialogTemplate {
         Spacer(modifier = Modifier.height(16.dp))
@@ -146,51 +146,50 @@ fun AttendanceSummaryDialog(
             textAlign = TextAlign.Start,
             style = LocalTextStyle.current.copy(
                 fontSize = 20.sp,
-                fontFamily = FontFamily(Font(R.font.rubik_regular))
+                fontFamily = FontFamily(Font(R.font.rubik_regular)),
             ),
         )
         Spacer(modifier = Modifier.height(16.dp))
         Divider(
             modifier = Modifier.fillMaxWidth(),
             color = Color.LightGray.copy(.75f),
-            thickness = .5.dp
+            thickness = .5.dp,
         )
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            for(summary in data) {
+            for (summary in data) {
                 SummaryComponent(
                     summary = "${summary.first}",
                     containerColor = summary.third ?: Color.LightGray,
-                    icon = summary.second ?: Icons.Default.Help
+                    icon = summary.second ?: Icons.Default.Help,
                 )
             }
         }
         Divider(
             modifier = Modifier.fillMaxWidth(),
             color = Color.LightGray.copy(.75f),
-            thickness = .5.dp
+            thickness = .5.dp,
         )
         ActionButtons(
             modifier = Modifier.align(Alignment.End),
             contentColor = themeColor,
             onCancel = onCancel,
-            onDone = onDone
+            onDone = onDone,
         )
     }
 }
-
 
 @Composable
 fun SummaryComponent(
     title: String? = null,
     summary: String,
     containerColor: Color,
-    icon: ImageVector
+    icon: ImageVector,
 ) {
     Card(
         modifier = Modifier
@@ -199,21 +198,21 @@ fun SummaryComponent(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = containerColor,
-            contentColor = Color.White
+            contentColor = Color.White,
         ),
-        elevation = CardDefaults.cardElevation(5.dp)
+        elevation = CardDefaults.cardElevation(5.dp),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(10.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = title,
-                tint = Color.White
+                tint = Color.White,
             )
             Text(text = summary)
         }
@@ -225,7 +224,7 @@ fun SummaryComponent(
     title: String? = null,
     summary: String,
     containerColor: Color,
-    icon: Painter
+    icon: Painter,
 ) {
     Card(
         modifier = Modifier
@@ -234,22 +233,22 @@ fun SummaryComponent(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = containerColor,
-            contentColor = Color.White
+            contentColor = Color.White,
         ),
-        elevation = CardDefaults.cardElevation(5.dp)
+        elevation = CardDefaults.cardElevation(5.dp),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(10.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
                 painter = icon,
                 contentDescription = title,
                 tint = Color.White,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(24.dp),
             )
             Text(text = summary)
         }
@@ -260,21 +259,23 @@ fun SummaryComponent(
 private fun DialogTemplate(
     title: String,
     themeColor: Color,
-    content: @Composable() (ColumnScope.() -> Unit)
+    content:
+    @Composable()
+    (ColumnScope.() -> Unit),
 ) {
     Dialog(
         onDismissRequest = {},
         properties = DialogProperties(
             dismissOnBackPress = false,
-            dismissOnClickOutside = false
-        )
+            dismissOnClickOutside = false,
+        ),
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(color = Color.White),
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Row(
                 modifier = Modifier
@@ -282,12 +283,12 @@ private fun DialogTemplate(
                     .height(48.dp)
                     .background(color = themeColor),
                 horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     text = title,
                     modifier = Modifier.padding(start = 16.dp),
-                    color = Color.White
+                    color = Color.White,
                 )
             }
             content()
@@ -298,14 +299,16 @@ private fun DialogTemplate(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AlertDialogTemplate(
-    content: @Composable() (ColumnScope.() -> Unit)
+    content:
+    @Composable()
+    (ColumnScope.() -> Unit),
 ) {
     AlertDialog(
         onDismissRequest = {},
         properties = DialogProperties(
             dismissOnBackPress = false,
-            dismissOnClickOutside = false
-        )
+            dismissOnClickOutside = false,
+        ),
     ) {
         Surface(
             modifier = Modifier
@@ -313,12 +316,12 @@ fun AlertDialogTemplate(
                 .wrapContentHeight(),
             shape = MaterialTheme.shapes.large,
             color = Color.White,
-            tonalElevation = AlertDialogDefaults.TonalElevation
+            tonalElevation = AlertDialogDefaults.TonalElevation,
         ) {
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 content()
             }

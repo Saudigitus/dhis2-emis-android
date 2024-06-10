@@ -8,7 +8,6 @@ import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -34,21 +33,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.android.material.datepicker.CompositeDateValidator
 import org.saudigitus.emis.R
-import org.saudigitus.emis.data.model.CalendarConfig
-
 
 data class ToolbarHeaders(
     val title: String,
-    val subtitle: String? = null
+    val subtitle: String? = null,
 )
 
 data class ToolbarActionState(
     val syncVisibility: Boolean = true,
     val filterVisibility: Boolean = true,
     val showCalendar: Boolean = false,
-    val showFavorite: Boolean = false
+    val showFavorite: Boolean = false,
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,14 +55,14 @@ fun Toolbar(
     navigationAction: () -> Unit,
     disableNavigation: Boolean = true,
     actions: @Composable RowScope.() -> Unit = {},
-    colors: TopAppBarColors =  TopAppBarDefaults.topAppBarColors()
+    colors: TopAppBarColors = TopAppBarDefaults.topAppBarColors(),
 ) {
     TopAppBar(
         title = {
             Column(
                 modifier = Modifier.offset(x = (-16).dp),
                 verticalArrangement = Arrangement.Bottom,
-                horizontalAlignment = Alignment.Start
+                horizontalAlignment = Alignment.Start,
             ) {
                 Text(
                     text = headers.title,
@@ -75,7 +71,7 @@ fun Toolbar(
                     lineHeight = 24.sp,
                     overflow = TextOverflow.Ellipsis,
                     softWrap = true,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
                 )
                 headers.subtitle?.let { subtitle ->
                     Text(
@@ -83,7 +79,7 @@ fun Toolbar(
                         maxLines = 1,
                         fontSize = 12.sp,
                         overflow = TextOverflow.Ellipsis,
-                        softWrap = true
+                        softWrap = true,
                     )
                 }
             }
@@ -94,13 +90,13 @@ fun Toolbar(
                 IconButton(onClick = { navigationAction.invoke() }) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
-                        contentDescription = stringResource(R.string.back)
+                        contentDescription = stringResource(R.string.back),
                     )
                 }
             }
         },
         actions = actions,
-        colors = colors
+        colors = colors,
     )
 }
 
@@ -109,7 +105,7 @@ fun Toolbar(
 fun Toolbar(
     headers: ToolbarHeaders,
     modifier: Modifier = Modifier,
-    colors: TopAppBarColors =  TopAppBarDefaults.topAppBarColors(),
+    colors: TopAppBarColors = TopAppBarDefaults.topAppBarColors(),
     navigationAction: () -> Unit,
     disableNavigation: Boolean = true,
     actionState: ToolbarActionState = ToolbarActionState(),
@@ -117,23 +113,22 @@ fun Toolbar(
     dateValidator: (Long) -> Boolean = { true },
     favoriteAction: () -> Unit = {},
     syncAction: () -> Unit = {},
-    filterAction: () -> Unit = {}
+    filterAction: () -> Unit = {},
 ) {
-
     var isCalendarShown by remember { mutableStateOf(false) }
 
     CustomDatePicker(
         show = isCalendarShown,
         dismiss = { isCalendarShown = !isCalendarShown },
         onDatePick = { calendarAction.invoke(it) },
-        dateValidator = dateValidator
+        dateValidator = dateValidator,
     )
 
     TopAppBar(
         title = {
             Column(
                 verticalArrangement = Arrangement.Bottom,
-                horizontalAlignment = Alignment.Start
+                horizontalAlignment = Alignment.Start,
             ) {
                 Text(
                     text = headers.title,
@@ -143,8 +138,8 @@ fun Toolbar(
                     softWrap = true,
                     style = LocalTextStyle.current.copy(
                         lineHeight = 24.sp,
-                        fontFamily = FontFamily(Font(R.font.rubik_medium))
-                    )
+                        fontFamily = FontFamily(Font(R.font.rubik_medium)),
+                    ),
                 )
                 headers.subtitle?.let { subtitle ->
                     Text(
@@ -154,9 +149,9 @@ fun Toolbar(
                         overflow = TextOverflow.Ellipsis,
                         softWrap = true,
                         style = LocalTextStyle.current.copy(
-                            fontFamily = FontFamily(Font(R.font.rubik_regular))
+                            fontFamily = FontFamily(Font(R.font.rubik_regular)),
                         ),
-                        color = Color.White.copy(.5f)
+                        color = Color.White.copy(.5f),
                     )
                 }
             }
@@ -167,7 +162,7 @@ fun Toolbar(
                 IconButton(onClick = { navigationAction.invoke() }) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
-                        contentDescription = stringResource(R.string.back)
+                        contentDescription = stringResource(R.string.back),
                     )
                 }
             }
@@ -177,7 +172,7 @@ fun Toolbar(
                 IconButton(onClick = { isCalendarShown = !isCalendarShown }) {
                     Icon(
                         imageVector = Icons.Default.CalendarMonth,
-                        contentDescription = stringResource(R.string.calendar)
+                        contentDescription = stringResource(R.string.calendar),
                     )
                 }
             }
@@ -185,7 +180,7 @@ fun Toolbar(
                 IconButton(onClick = { syncAction.invoke() }) {
                     Icon(
                         imageVector = Icons.Default.Sync,
-                        contentDescription = stringResource(R.string.sync)
+                        contentDescription = stringResource(R.string.sync),
                     )
                 }
             }
@@ -193,11 +188,11 @@ fun Toolbar(
                 IconButton(onClick = { filterAction.invoke() }) {
                     Icon(
                         imageVector = ImageVector.vectorResource(R.drawable.ic_filter),
-                        contentDescription = stringResource(R.string.filter)
+                        contentDescription = stringResource(R.string.filter),
                     )
                 }
             }
         },
-        colors = colors
+        colors = colors,
     )
 }

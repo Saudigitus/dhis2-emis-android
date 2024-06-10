@@ -28,7 +28,7 @@ fun SubjectItem(
     displayName: String,
     attrValue: String? = null,
     color: Color?,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = {},
 ) {
     Column(
         modifier = Modifier
@@ -36,20 +36,20 @@ fun SubjectItem(
             .background(color = Color.White)
             .clickable { onClick.invoke() },
         verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.Start
+        horizontalAlignment = Alignment.Start,
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp, horizontal = 16.dp),
             horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             MetadataIcon(
                 backgroundColor = color ?: MaterialTheme.colorScheme.primary,
                 painter = painterResource(R.drawable.subject_icon),
                 colorFilter = ColorFilter.tint(Color.White),
-                paddingAll = 3.dp
+                paddingAll = 3.dp,
             )
             Spacer(modifier = Modifier.size(15.dp))
             TitleSubtitleComponent(
@@ -64,7 +64,7 @@ fun SubjectItem(
                 .align(Alignment.End)
                 .wrapContentWidth(Alignment.End, false)
                 .padding(end = 5.dp),
-            thickness = .75.dp
+            thickness = .75.dp,
         )
     }
 }

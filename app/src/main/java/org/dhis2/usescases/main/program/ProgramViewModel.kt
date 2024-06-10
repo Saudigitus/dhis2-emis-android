@@ -21,7 +21,7 @@ data class ProgramViewModel(
     val downloadState: ProgramDownloadState,
     val downloadActive: Boolean = false,
     val stockConfig: AppConfig?,
-    val isSEMIS: Boolean
+    val isSEMIS: Boolean,
 ) {
     private var hasShownCompleteSyncAnimation = false
 

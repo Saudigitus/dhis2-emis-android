@@ -30,7 +30,7 @@ fun HomeItem(
     icon: Painter,
     label: String,
     enabled: Boolean = true,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Card(
         modifier = modifier,
@@ -38,36 +38,36 @@ fun HomeItem(
         elevation = 3.dp,
         shape = RoundedCornerShape(16.dp),
         enabled = enabled,
-        onClick = onClick
+        onClick = onClick,
     ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Column(
                 modifier = Modifier.fillMaxWidth()
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Image(
                     modifier = Modifier.size(64.dp),
                     painter = icon,
-                    contentDescription = label
+                    contentDescription = label,
                 )
             }
             Divider(
                 modifier = Modifier.fillMaxWidth()
                     .padding(vertical = 2.dp),
                 color = Color.LightGray.copy(.85f),
-                thickness = .9.dp
+                thickness = .9.dp,
             )
             Row(
                 modifier = Modifier.fillMaxWidth()
                     .padding(12.dp),
                 horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     text = label,
@@ -76,7 +76,7 @@ fun HomeItem(
                     fontSize = MaterialTheme.typography.titleMedium.fontSize,
                     maxLines = 2,
                     softWrap = true,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
         }

@@ -24,7 +24,7 @@ sealed class HomeItemData(
         override val accessDataWrite: Boolean,
         val trackedEntityType: String,
         val stockConfig: AppConfig?,
-        val isSEMIS: Boolean
+        val isSEMIS: Boolean,
     ) : HomeItemData(uid, label, accessDataWrite)
 
     data class EventProgram(
@@ -94,7 +94,7 @@ fun ActivityResultLauncher<Intent>.navigateTo(context: Context, homeItemData: Ho
                 putExtras(ProgramEventDetailActivity.getBundle(homeItemData.uid))
                 launch(this)
             }
-            }
+        }
 
         is HomeItemData.TrackerProgram -> {
             if (homeItemData.isSEMIS) {

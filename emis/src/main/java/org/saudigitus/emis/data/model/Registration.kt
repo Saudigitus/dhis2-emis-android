@@ -1,6 +1,5 @@
 package org.saudigitus.emis.data.model
 
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 
@@ -13,5 +12,5 @@ data class Registration(
     @JsonProperty("programStage")
     val programStage: String?,
     @JsonProperty("section")
-    val section: String?
+    val section: String?,
 )

@@ -16,36 +16,36 @@ interface DataManager {
         ou: String,
         program: String,
         programStage: String,
-        attendance: AttendanceEntity
+        attendance: AttendanceEntity,
     )
     suspend fun getConfig(id: String): List<EMISConfigItem>?
 
     suspend fun getOptions(
-        dataElement: String
+        dataElement: String,
     ): List<DropdownItem>
 
     suspend fun getOptionsByCode(
         dataElement: String,
-        codes: List<String>
+        codes: List<String>,
     ): List<DropdownItem>
 
     suspend fun getAttendanceOptions(
-        program: String
+        program: String,
     ): List<AttendanceOption>
 
-    suspend fun getDataElement(uid: String): DataElement
+    suspend fun getDataElement(uid: String): DataElement?
 
     suspend fun getTeisBy(
         ou: String,
         program: String,
         stage: String,
         dataElementIds: List<String>,
-        options: List<String>
+        options: List<String>,
     ): List<SearchTeiModel>
 
     suspend fun trackedEntityInstances(
         ou: String,
-        program: String
+        program: String,
     ): List<SearchTeiModel>
 
     suspend fun getAttendanceEvent(
@@ -54,7 +54,7 @@ interface DataManager {
         dataElement: String,
         reasonDataElement: String? = null,
         teis: List<String>,
-        date: String?
+        date: String?,
     ): List<AttendanceEntity>
 
     suspend fun dateValidation(id: String): CalendarConfig?

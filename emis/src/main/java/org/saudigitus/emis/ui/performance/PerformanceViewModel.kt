@@ -24,21 +24,21 @@ import javax.inject.Inject
 class PerformanceViewModel
 @Inject constructor(
     private val repository: DataManager,
-    private val formRepository: FormRepository
-): BaseViewModel(repository) {
+    private val formRepository: FormRepository,
+) : BaseViewModel(repository) {
 
     private val viewModelState = MutableStateFlow(
         PerformanceUiState(
             toolbarHeaders = this.toolbarHeaders.value,
-            students = this.teis.value
-        )
+            students = this.teis.value,
+        ),
     )
 
     val uiState = viewModelState
         .stateIn(
             viewModelScope,
             SharingStarted.Eagerly,
-            viewModelState.value
+            viewModelState.value,
         )
 
     private val _cache = MutableStateFlow<List<EventTuple>>(emptyList())
@@ -57,10 +57,10 @@ class PerformanceViewModel
         _toolbarHeaders.update {
             it.copy(
                 title = "Performance",
-                subtitle = null
+                subtitle = null,
             )
         }
-        viewModelState.update { 
+        viewModelState.update {
             it.copy(toolbarHeaders = this.toolbarHeaders.value)
         }
     }
@@ -102,7 +102,7 @@ class PerformanceViewModel
     fun onClickNext(
         tei: String,
         ou: String,
-        fieldData: Triple<String, String?, ValueType?>
+        fieldData: Triple<String, String?, ValueType?>,
     ) {
         val data = mutableListOf<EventTuple>()
         data.addAll(cache.value)
@@ -116,16 +116,15 @@ class PerformanceViewModel
                 id = dataElement.value.ifEmpty { fieldData.first },
                 type = ActionType.ON_NEXT,
                 value = fieldData.second,
-                valueType = fieldData.third
+                valueType = fieldData.third,
             ),
-            eventDate.value
+            eventDate.value,
         )
 
         data.add(eventTuple)
 
         _cache.value = data
     }
-
 
     fun getFields(stage: String, dl: String) {
         viewModelScope.launch {
@@ -138,7 +137,7 @@ class PerformanceViewModel
 
     fun setDefault(
         stage: String,
-        dl: String
+        dl: String,
     ) {
         if (saveOnce.value == 0) {
             _saveOnce.value = 1
@@ -153,7 +152,7 @@ class PerformanceViewModel
                                 programStage = stage,
                                 dataElement = dl,
                                 teis = teiUIds.value,
-                            )
+                            ),
                     )
                 }
             }
@@ -172,7 +171,7 @@ class PerformanceViewModel
                             programStage = programStage.value,
                             dataElement = dl,
                             teis = teiUIds.value,
-                        )
+                        ),
                 )
             }
         }
@@ -188,7 +187,7 @@ class PerformanceViewModel
         key: String,
         dataElement: String,
         value: String,
-        valueType: ValueType?
+        valueType: ValueType?,
     ) {
         val junkData = mutableListOf<Field>()
 
@@ -208,8 +207,8 @@ class PerformanceViewModel
                     key = key,
                     dataElement = dataElement,
                     value = value,
-                    valueType = valueType
-                )
+                    valueType = valueType,
+                ),
             )
         } else {
             junkData.add(
@@ -217,8 +216,8 @@ class PerformanceViewModel
                     key = key,
                     dataElement = dataElement,
                     value = value,
-                    valueType = valueType
-                )
+                    valueType = valueType,
+                ),
             )
         }
 

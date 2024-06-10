@@ -41,7 +41,7 @@ fun <T> DropdownField(
     placeholder: String,
     data: List<T>,
     selectedItem: T? = null,
-    onClick: (T) -> Unit
+    onClick: (T) -> Unit,
 ) {
     var isExpanded by rememberSaveable { mutableStateOf(false) }
     var selectedIndex by rememberSaveable { mutableStateOf(-1) }
@@ -77,7 +77,7 @@ fun <T> DropdownField(
                 IconButton(
                     onClick = {
                         isExpanded = !isExpanded
-                    }
+                    },
                 ) {
                     Icon(
                         if (isExpanded) {
@@ -86,20 +86,20 @@ fun <T> DropdownField(
                             Icons.Default.ArrowDropDown
                         },
                         contentDescription = null,
-                        tint = Color(0xFF2C98F0)
+                        tint = Color(0xFF2C98F0),
                     )
                 }
             },
             interactionSource = interactionSource,
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent
+                unfocusedContainerColor = Color.Transparent,
             ),
             modifier = Modifier
                 .fillMaxWidth()
                 .onGloballyPositioned { coordinates ->
                     textFieldSize = coordinates.size.toSize()
-                }
+                },
         )
 
         MaterialTheme(shapes = MaterialTheme.shapes.copy(medium = RoundedCornerShape(16.dp))) {
@@ -109,7 +109,7 @@ fun <T> DropdownField(
                 modifier = Modifier
                     .width(with(LocalDensity.current) { textFieldSize.width.toDp() })
                     .background(shape = RoundedCornerShape(16.dp), color = Color.White),
-                offset = DpOffset(x = 0.dp, y = 2.dp)
+                offset = DpOffset(x = 0.dp, y = 2.dp),
             ) {
                 data.forEachIndexed { index, item ->
                     DropdownMenuItem(
@@ -129,14 +129,14 @@ fun <T> DropdownField(
                                 } else {
                                     Color.White
                                 },
-                                shape = RoundedCornerShape(16.dp)
+                                shape = RoundedCornerShape(16.dp),
                             )
                             .padding(
                                 start = 8.dp,
                                 top = paddingValue,
                                 end = 8.dp,
-                                bottom = paddingValue
-                            )
+                                bottom = paddingValue,
+                            ),
                     )
                 }
             }

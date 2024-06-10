@@ -1,7 +1,6 @@
 package org.dhis2.usescases.main.program
 
 import android.content.Context
-import android.graphics.Color
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -99,6 +98,7 @@ class ProgramUiTest {
             hasOverdueEvent = true,
             false,
             downloadState = ProgramDownloadState.NONE,
-            stockConfig = null
+            stockConfig = null,
+            isSEMIS = false
         )
 }
