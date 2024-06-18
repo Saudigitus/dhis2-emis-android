@@ -1,18 +1,17 @@
 package org.dhis2.usescases.main.program
 
-import android.graphics.Color
 import androidx.lifecycle.MutableLiveData
 import io.reactivex.Flowable
 import io.reactivex.schedulers.TestScheduler
-import java.util.concurrent.TimeUnit
-import org.dhis2.commons.R
 import org.dhis2.commons.filters.FilterManager
 import org.dhis2.commons.matomo.MatomoAnalyticsController
 import org.dhis2.data.schedulers.TestSchedulerProvider
 import org.dhis2.data.service.SyncStatusController
 import org.dhis2.data.service.SyncStatusData
 import org.dhis2.ui.MetadataIconData
+import org.dhis2.ui.toColor
 import org.hisp.dhis.android.core.common.State
+import org.hisp.dhis.mobile.ui.designsystem.component.internal.ImageCardData
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -22,6 +21,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
+import java.util.concurrent.TimeUnit
 
 class ProgramPresenterTest {
 
@@ -33,8 +33,6 @@ class ProgramPresenterTest {
     private val filterManager: FilterManager = mock()
     private val matomoAnalyticsController: MatomoAnalyticsController = mock()
     private val syncStatusController: SyncStatusController = mock()
-    private val identifyProgramType: IdentifyProgramType = mock()
-    private val stockManagementMapper: StockManagementMapper = mock()
 
     @Before
     fun setUp() {
@@ -45,8 +43,6 @@ class ProgramPresenterTest {
             filterManager,
             matomoAnalyticsController,
             syncStatusController,
-            identifyProgramType,
-            stockManagementMapper
         )
     }
 
@@ -61,14 +57,13 @@ class ProgramPresenterTest {
         whenever(filterManager.asFlowable().startWith(filterManager)) doReturn filterManagerFlowable
         whenever(filterManager.ouTreeFlowable()) doReturn Flowable.just(true)
         whenever(
-            syncStatusController.observeDownloadProcess()
+            syncStatusController.observeDownloadProcess(),
         ) doReturn MutableLiveData(syncStatusData)
         whenever(programRepository.homeItems(any())) doReturn programsFlowable
 
         presenter.init()
         schedulers.io().advanceTimeBy(1, TimeUnit.SECONDS)
         verify(view).showFilterProgress()
-        verify(view).swapProgramModelData(programs)
         verify(view).openOrgUnitTreeSelector()
     }
 
@@ -80,11 +75,11 @@ class ProgramPresenterTest {
         whenever(filterManager.asFlowable()) doReturn mock()
         whenever(filterManager.asFlowable().startWith(filterManager)) doReturn filterManagerFlowable
         whenever(
-            syncStatusController.observeDownloadProcess()
+            syncStatusController.observeDownloadProcess(),
         ) doReturn MutableLiveData(syncStatusData)
 
         whenever(
-            programRepository.homeItems(syncStatusData)
+            programRepository.homeItems(syncStatusData),
         ) doReturn Flowable.error(Exception(""))
 
         whenever(filterManager.ouTreeFlowable()) doReturn Flowable.just(true)
@@ -177,8 +172,8 @@ class ProgramPresenterTest {
             "uid",
             "displayName",
             MetadataIconData(
-                programColor = Color.parseColor("#84FFFF"),
-                iconResource = R.drawable.ic_home_positive
+                imageCardData = ImageCardData.IconCardData("", "", "ic_home_positive", "#84FFFF".toColor()),
+                color = "#84FFFF".toColor(),
             ),
             1,
             "type",
@@ -190,7 +185,8 @@ class ProgramPresenterTest {
             state = State.SYNCED,
             hasOverdueEvent = false,
             filtersAreActive = false,
-            downloadState = ProgramDownloadState.NONE
+            downloadState = ProgramDownloadState.NONE,
+            stockConfig = null,
         )
     }
 
@@ -199,8 +195,8 @@ class ProgramPresenterTest {
             "uid",
             "displayName",
             MetadataIconData(
-                programColor = Color.parseColor("#84FFFF"),
-                iconResource = R.drawable.ic_home_positive
+                imageCardData = ImageCardData.IconCardData("", "", "ic_home_positive", "#84FFFF".toColor()),
+                color = "#84FFFF".toColor(),
             ),
             1,
             "type",
@@ -212,7 +208,8 @@ class ProgramPresenterTest {
             state = State.SYNCED,
             hasOverdueEvent = false,
             filtersAreActive = false,
-            downloadState = ProgramDownloadState.NONE
+            downloadState = ProgramDownloadState.NONE,
+            stockConfig = null,
         )
     }
 }

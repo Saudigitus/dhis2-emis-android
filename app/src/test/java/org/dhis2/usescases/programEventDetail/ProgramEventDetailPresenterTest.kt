@@ -25,6 +25,7 @@ import org.dhis2.commons.filters.sorting.SortingStatus
 import org.dhis2.commons.filters.workingLists.EventFilterToWorkingListItemMapper
 import org.dhis2.commons.matomo.MatomoAnalyticsController
 import org.dhis2.data.schedulers.TrampolineSchedulerProvider
+import org.dhis2.ui.MetadataIconData
 import org.hisp.dhis.android.core.category.CategoryCombo
 import org.hisp.dhis.android.core.category.CategoryOptionCombo
 import org.hisp.dhis.android.core.event.Event
@@ -69,7 +70,7 @@ class ProgramEventDetailPresenterTest {
             workingListMapper,
             filterRepository,
             disableHomeFilters,
-            matomoAnalyticsController
+            matomoAnalyticsController,
         )
     }
 
@@ -97,7 +98,9 @@ class ProgramEventDetailPresenterTest {
             dataElementValues = emptyList(),
             groupedByStage = false,
             valueListIsOpen = false,
-            displayDate = "2/01/2021"
+            displayDate = "2/01/2021",
+            nameCategoryOptionCombo = "Category Option Combo",
+            metadataIconData = MetadataIconData.defaultIcon(),
         )
         val events =
             MutableLiveData<PagedList<EventViewModel>>().also {
@@ -107,22 +110,21 @@ class ProgramEventDetailPresenterTest {
         val mapEvents = Triple<FeatureCollection, BoundingBox, List<ProgramEventViewModel>>(
             FeatureCollection.fromFeature(Feature.fromGeometry(null)),
             BoundingBox.fromLngLats(0.0, 0.0, 0.0, 0.0),
-            listOf()
+            listOf(),
         )
         val mapData = ProgramEventMapData(
             mutableListOf(),
             mutableMapOf("key" to FeatureCollection.fromFeature(Feature.fromGeometry(null))),
-            BoundingBox.fromLngLats(0.0, 0.0, 0.0, 0.0)
+            BoundingBox.fromLngLats(0.0, 0.0, 0.0, 0.0),
         )
         filterManager.sortingItem = SortingItem(Filters.ORG_UNIT, SortingStatus.NONE)
         whenever(repository.getAccessDataWrite()) doReturn true
-        whenever(repository.hasAccessToAllCatOptions()) doReturn Single.just(true)
         whenever(repository.program()) doReturn Single.just(program)
         whenever(
-            repository.filteredProgramEvents()
+            repository.filteredProgramEvents(),
         ) doReturn events
         whenever(
-            repository.filteredEventsForMap()
+            repository.filteredEventsForMap(),
         ) doReturn Flowable.just(mapData)
         presenter.init()
         verify(view).setWritePermission(true)
@@ -140,7 +142,7 @@ class ProgramEventDetailPresenterTest {
     fun `Should start new event`() {
         presenter.addEvent()
 
-        verify(view).startNewEvent()
+        verify(view).selectOrgUnitForNewEvent()
     }
 
     @Test

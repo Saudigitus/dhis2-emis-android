@@ -35,7 +35,7 @@ fun PerformanceSummaryDialog(
     data: Pair<String, String>,
     themeColor: Color,
     onCancel: () -> Unit,
-    onDone: () -> Unit
+    onDone: () -> Unit,
 ) {
     AlertDialogTemplate {
         Spacer(modifier = Modifier.height(16.dp))
@@ -51,44 +51,44 @@ fun PerformanceSummaryDialog(
             textAlign = TextAlign.Start,
             style = LocalTextStyle.current.copy(
                 fontSize = 20.sp,
-                fontFamily = FontFamily(Font(R.font.rubik_regular))
+                fontFamily = FontFamily(Font(R.font.rubik_regular)),
             ),
         )
         Spacer(modifier = Modifier.height(16.dp))
         Divider(
             modifier = Modifier.fillMaxWidth(),
             color = Color.LightGray.copy(.75f),
-            thickness = .5.dp
+            thickness = .5.dp,
         )
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             SummaryComponent(
                 summary = data.first,
                 containerColor = light_success,
-                icon = Icons.Outlined.Check
+                icon = Icons.Outlined.Check,
             )
 
             SummaryComponent(
                 summary = data.second,
                 containerColor = light_error,
-                icon = painterResource(R.drawable.not_filled)
+                icon = painterResource(R.drawable.not_filled),
             )
         }
         Divider(
             modifier = Modifier.fillMaxWidth(),
             color = Color.LightGray.copy(.75f),
-            thickness = .5.dp
+            thickness = .5.dp,
         )
         ActionButtons(
             modifier = Modifier.align(Alignment.End),
             contentColor = themeColor,
             onCancel = onCancel,
-            onDone = onDone
+            onDone = onDone,
         )
     }
 }

@@ -7,6 +7,7 @@ import org.dhis2.form.model.StoreResult
 import org.dhis2.form.model.ValueStoreResult
 import org.dhis2.form.ui.FieldViewModelFactory
 import org.dhis2.form.ui.FieldViewModelFactoryImpl
+import org.dhis2.form.ui.provider.AutoCompleteProvider
 import org.dhis2.form.ui.provider.DisplayNameProvider
 import org.dhis2.form.ui.provider.HintProvider
 import org.dhis2.form.ui.provider.KeyboardActionProvider
@@ -18,20 +19,8 @@ import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.common.ObjectStyle
 import org.hisp.dhis.android.core.common.ValueType
 import org.hisp.dhis.android.core.option.Option
-import org.hisp.dhis.rules.models.RuleActionAssign
-import org.hisp.dhis.rules.models.RuleActionDisplayKeyValuePair
-import org.hisp.dhis.rules.models.RuleActionDisplayText
-import org.hisp.dhis.rules.models.RuleActionErrorOnCompletion
-import org.hisp.dhis.rules.models.RuleActionHideField
-import org.hisp.dhis.rules.models.RuleActionHideOption
-import org.hisp.dhis.rules.models.RuleActionHideOptionGroup
-import org.hisp.dhis.rules.models.RuleActionHideProgramStage
-import org.hisp.dhis.rules.models.RuleActionHideSection
-import org.hisp.dhis.rules.models.RuleActionSetMandatoryField
-import org.hisp.dhis.rules.models.RuleActionShowError
-import org.hisp.dhis.rules.models.RuleActionShowOptionGroup
-import org.hisp.dhis.rules.models.RuleActionShowWarning
-import org.hisp.dhis.rules.models.RuleActionWarningOnCompletion
+import org.hisp.dhis.android.core.program.ProgramRuleActionType
+import org.hisp.dhis.rules.models.RuleAction
 import org.hisp.dhis.rules.models.RuleEffect
 import org.junit.Assert
 import org.junit.Assert.assertEquals
@@ -63,7 +52,7 @@ class RulesUtilsProviderImplTest {
             provideDisplayName(
                 valueType = ValueType.TEXT,
                 value = "Old Value",
-                optionSet = "optionSetUid"
+                optionSet = "optionSetUid",
             )
         } doReturn "OldDisplayName"
     }
@@ -71,6 +60,7 @@ class RulesUtilsProviderImplTest {
     private val keyboardActionProvider: KeyboardActionProvider = mock()
     private val legendValueProvider: LegendValueProvider = mock()
     private val optionsRepository: OptionsRepository = mock()
+    private val autoCompleteProvider: AutoCompleteProvider = mock()
 
     private val testRuleEffects = ArrayList<RuleEffect>()
 
@@ -78,14 +68,14 @@ class RulesUtilsProviderImplTest {
     fun setUp() {
         ruleUtils = RulesUtilsProviderImpl(d2, optionsRepository)
         fieldFactory = FieldViewModelFactoryImpl(
-            false,
             uiStyleProvider,
             layoutProvider,
             hintProvider,
             displayNameProvider,
             uiEventTypesProvider,
             keyboardActionProvider,
-            legendValueProvider
+            legendValueProvider,
+            autoCompleteProvider,
         )
         testFieldViewModels = getTestingFieldViewModels().associateBy { it.uid }.toMutableMap()
     }
@@ -107,15 +97,15 @@ class RulesUtilsProviderImplTest {
                 ValueType.TEXT,
                 "section4",
                 value = null,
-                optionSet = "optionSetUid"
+                optionSet = "optionSetUid",
             ),
             randomFieldViewModel(
                 "uid12",
                 ValueType.TEXT,
                 "section4",
                 value = "Old Value",
-                optionSet = "optionSetUid"
-            )
+                optionSet = "optionSetUid",
+            ),
         )
     }
 
@@ -124,7 +114,7 @@ class RulesUtilsProviderImplTest {
         valueType: ValueType,
         section: String,
         value: String? = "test",
-        optionSet: String? = null
+        optionSet: String? = null,
     ): FieldUiModel {
         return fieldFactory.create(
             uid,
@@ -142,7 +132,7 @@ class RulesUtilsProviderImplTest {
             ObjectStyle.builder().build(),
             "",
             null,
-            null
+            null,
         )
     }
 
@@ -151,18 +141,25 @@ class RulesUtilsProviderImplTest {
         val testingUid = "uid1"
 
         testRuleEffects.add(
-            RuleEffect.create(
+            RuleEffect(
                 "ruleUid",
-                RuleActionShowWarning.create("content", "action_data", testingUid),
-                "data"
-            )
+                RuleAction(
+                    "action_data",
+                    ProgramRuleActionType.SHOWWARNING.name,
+                    mutableMapOf(
+                        Pair("content", "content"),
+                        Pair("field", testingUid),
+                    ),
+                ),
+                "data",
+            ),
         )
 
         ruleUtils.applyRuleEffects(
             true,
             testFieldViewModels,
             testRuleEffects,
-            valueStore
+            valueStore,
         )
 
         assertNotNull(testFieldViewModels["uid1"]!!.warning)
@@ -174,18 +171,25 @@ class RulesUtilsProviderImplTest {
         val testingUid = "uid1"
 
         testRuleEffects.add(
-            RuleEffect.create(
+            RuleEffect(
                 "ruleUid",
-                RuleActionShowError.create("content", "action_data", testingUid),
-                "data"
-            )
+                RuleAction(
+                    null,
+                    ProgramRuleActionType.SHOWERROR.name,
+                    mutableMapOf(
+                        "content" to "content",
+                        "field" to testingUid,
+                    ),
+                ),
+                "data",
+            ),
         )
 
         val result = ruleUtils.applyRuleEffects(
             true,
             testFieldViewModels,
             testRuleEffects,
-            valueStore
+            valueStore,
         )
 
         assertNotNull(testFieldViewModels[testingUid]!!.error)
@@ -198,25 +202,31 @@ class RulesUtilsProviderImplTest {
     fun `Should remove field from list`() {
         val testingUid = "uid3"
         testRuleEffects.add(
-            RuleEffect.create(
+            RuleEffect(
                 "ruleUid",
-                RuleActionHideField.create("content", testingUid),
-                "data"
-            )
+                RuleAction(
+                    "data",
+                    ProgramRuleActionType.HIDEFIELD.name,
+                    mutableMapOf(
+                        "content" to "content",
+                        "field" to testingUid,
+                    ),
+                ),
+            ),
         )
 
         whenever(valueStore.saveWithTypeCheck(testingUid, null)) doReturn Flowable.just(
             StoreResult(
                 testingUid,
-                ValueStoreResult.VALUE_CHANGED
-            )
+                ValueStoreResult.VALUE_CHANGED,
+            ),
         )
 
         val result = ruleUtils.applyRuleEffects(
             true,
             testFieldViewModels,
             testRuleEffects,
-            valueStore
+            valueStore,
         )
 
         Assert.assertFalse(testFieldViewModels.contains(testingUid))
@@ -227,11 +237,18 @@ class RulesUtilsProviderImplTest {
     @Test
     fun `RuleActionDisplayText Should not add new FieldUIModel`() {
         testRuleEffects.add(
-            RuleEffect.create(
+            RuleEffect(
                 "ruleUid",
-                RuleActionDisplayText.createForFeedback("content", "action data"),
-                "data"
-            )
+                RuleAction(
+                    "action_data",
+                    ProgramRuleActionType.DISPLAYTEXT.name,
+                    mutableMapOf(
+                        "content" to "content",
+                        "location" to "feedback",
+                    ),
+                ),
+                "data",
+            ),
         )
 
         val testFieldViewModelSize = testFieldViewModels.size
@@ -240,7 +257,7 @@ class RulesUtilsProviderImplTest {
             true,
             testFieldViewModels,
             testRuleEffects,
-            valueStore
+            valueStore,
         )
 
         assertTrue(testFieldViewModels.size == testFieldViewModelSize)
@@ -250,11 +267,18 @@ class RulesUtilsProviderImplTest {
     @Test
     fun `RuleActionDisplayKeyValuePair should not add new FieldUIModel`() {
         testRuleEffects.add(
-            RuleEffect.create(
+            RuleEffect(
                 "ruleUid",
-                RuleActionDisplayKeyValuePair.createForIndicators("content", "action data"),
-                "data"
-            )
+                RuleAction(
+                    "action_data",
+                    ProgramRuleActionType.DISPLAYKEYVALUEPAIR.name,
+                    mutableMapOf(
+                        "content" to "content",
+                        "location" to "indicators",
+                    ),
+                ),
+                "data",
+            ),
         )
 
         val testFieldViewModelSize = testFieldViewModels.size
@@ -263,7 +287,7 @@ class RulesUtilsProviderImplTest {
             true,
             testFieldViewModels,
             testRuleEffects,
-            valueStore
+            valueStore,
         )
 
         assertTrue(testFieldViewModels.size == testFieldViewModelSize)
@@ -274,11 +298,15 @@ class RulesUtilsProviderImplTest {
     fun `RuleActionHideSection should remove all fieldViewModel from a given section`() {
         val testingSectionUid = "section2"
         testRuleEffects.add(
-            RuleEffect.create(
+            RuleEffect(
                 "ruleUid",
-                RuleActionHideSection.create(testingSectionUid),
-                "data"
-            )
+                RuleAction(
+                    null,
+                    ProgramRuleActionType.HIDESECTION.name,
+                    mutableMapOf("programStageSection" to testingSectionUid),
+                ),
+                "data",
+            ),
         )
 
         val mandatoryFieldUid = "uid3"
@@ -290,7 +318,7 @@ class RulesUtilsProviderImplTest {
             true,
             testFieldViewModels,
             testRuleEffects,
-            valueStore
+            valueStore,
         )
 
         assertTrue(testFieldViewModels[mandatoryFieldUid] != null)
@@ -303,18 +331,25 @@ class RulesUtilsProviderImplTest {
         val testingUid = "uid1"
 
         testRuleEffects.add(
-            RuleEffect.create(
+            RuleEffect(
                 "ruleUid",
-                RuleActionAssign.create("content", "data", testingUid),
-                "data"
-            )
+                RuleAction(
+                    "data",
+                    ProgramRuleActionType.ASSIGN.name,
+                    mutableMapOf(
+                        "content" to "content",
+                        "field" to testingUid,
+                    ),
+                ),
+                "data",
+            ),
         )
 
         ruleUtils.applyRuleEffects(
             true,
             testFieldViewModels,
             testRuleEffects,
-            valueStore
+            valueStore,
         )
 
         verify(valueStore, times(1)).saveWithTypeCheck(testingUid, "data")
@@ -328,32 +363,46 @@ class RulesUtilsProviderImplTest {
         val testingUid2 = "uid3"
 
         testRuleEffects.add(
-            RuleEffect.create(
+            RuleEffect(
                 "ruleUid1",
-                RuleActionAssign.create("content", "data", testingUid),
-                "data"
-            )
+                RuleAction(
+                    "data",
+                    ProgramRuleActionType.ASSIGN.name,
+                    mutableMapOf(
+                        "content" to "content",
+                        "field" to testingUid,
+                    ),
+                ),
+                "data",
+            ),
         )
         testRuleEffects.add(
-            RuleEffect.create(
+            RuleEffect(
                 "ruleUid2",
-                RuleActionAssign.create("content", "data", testingUid2),
-                "test"
-            )
+                RuleAction(
+                    "data",
+                    ProgramRuleActionType.ASSIGN.name,
+                    mutableMapOf(
+                        "content" to "content",
+                        "field" to testingUid2,
+                    ),
+                ),
+                "test",
+            ),
         )
 
         whenever(valueStore.saveWithTypeCheck(any(), any())) doReturn Flowable.just(
             StoreResult(
                 testingUid,
-                ValueStoreResult.VALUE_CHANGED
-            )
+                ValueStoreResult.VALUE_CHANGED,
+            ),
         )
 
         val result = ruleUtils.applyRuleEffects(
             true,
             testFieldViewModels,
             testRuleEffects,
-            valueStore
+            valueStore,
         )
 
         verify(valueStore, times(1)).saveWithTypeCheck(testingUid, "data")
@@ -369,18 +418,24 @@ class RulesUtilsProviderImplTest {
     @Test
     fun `RuleActionAssign should set a value to calculated value`() {
         testRuleEffects.add(
-            RuleEffect.create(
+            RuleEffect(
                 "ruleUid",
-                RuleActionAssign.create("content", "data", null),
-                "data"
-            )
+                RuleAction(
+                    "data",
+                    ProgramRuleActionType.ASSIGN.name,
+                    mutableMapOf(
+                        "content" to "content",
+                    ),
+                ),
+                "data",
+            ),
         )
 
         val result = ruleUtils.applyRuleEffects(
             true,
             testFieldViewModels,
             testRuleEffects,
-            valueStore
+            valueStore,
         )
 
         assertTrue(result.fieldsToUpdate.isEmpty())
@@ -391,18 +446,25 @@ class RulesUtilsProviderImplTest {
         val newValue = "New Value"
         // Given a rule effect with an action of type ASSIGN
         testRuleEffects.add(
-            RuleEffect.create(
+            RuleEffect(
                 "ruleUid",
-                RuleActionAssign.create("content", newValue, "uid11"),
-                newValue
-            )
+                RuleAction(
+                    newValue,
+                    ProgramRuleActionType.ASSIGN.name,
+                    mutableMapOf(
+                        "content" to "content",
+                        "field" to "uid11",
+                    ),
+                ),
+                newValue,
+            ),
         )
         // And a target field with an empty value
         assertNull(testFieldViewModels["uid11"]!!.value)
 
         // And a target field with option set
         whenever(
-            optionsRepository.getOptionByCode("optionSetUid", newValue)
+            optionsRepository.getOptionByCode("optionSetUid", newValue),
         ) doReturn Option.builder()
             .uid("OptionUid")
             .code(newValue)
@@ -415,7 +477,7 @@ class RulesUtilsProviderImplTest {
             true,
             testFieldViewModels,
             testRuleEffects,
-            valueStore
+            valueStore,
         )
 
         // Then the field value has been updated
@@ -432,16 +494,23 @@ class RulesUtilsProviderImplTest {
         val optionSetUid = "optionSetUid"
         // Given a rule effect with an action of type ASSIGN
         testRuleEffects.add(
-            RuleEffect.create(
+            RuleEffect(
                 "ruleUid",
-                RuleActionAssign.create("content", newValue, "uid12"),
-                newValue
-            )
+                RuleAction(
+                    newValue,
+                    ProgramRuleActionType.ASSIGN.name,
+                    mutableMapOf(
+                        "content" to "content",
+                        "field" to "uid12",
+                    ),
+                ),
+                newValue,
+            ),
         )
         // And a target field with an existing value
         assertEquals(testFieldViewModels["uid12"]!!.value, oldValue)
         whenever(
-            optionsRepository.getOptionByDisplayName(optionSetUid, "OldDisplayName")
+            optionsRepository.getOptionByDisplayName(optionSetUid, "OldDisplayName"),
         ) doReturn Option.builder()
             .uid("OptionUid")
             .displayName("OldDisplayName")
@@ -451,7 +520,7 @@ class RulesUtilsProviderImplTest {
 
         // And a target field with option set
         whenever(
-            optionsRepository.getOptionByCode(optionSetUid, newValue)
+            optionsRepository.getOptionByCode(optionSetUid, newValue),
         ) doReturn Option.builder()
             .uid("OptionUid")
             .code(newValue)
@@ -464,7 +533,7 @@ class RulesUtilsProviderImplTest {
             true,
             testFieldViewModels,
             testRuleEffects,
-            valueStore
+            valueStore,
         )
 
         // Then the field value has been updated
@@ -479,18 +548,24 @@ class RulesUtilsProviderImplTest {
         val testingUid = "uid2"
 
         testRuleEffects.add(
-            RuleEffect.create(
+            RuleEffect(
                 "ruleUid",
-                RuleActionSetMandatoryField.create(testingUid),
-                "data"
-            )
+                RuleAction(
+                    "data",
+                    ProgramRuleActionType.SETMANDATORYFIELD.name,
+                    mutableMapOf(
+                        "field" to testingUid,
+                    ),
+                ),
+                "data",
+            ),
         )
 
         ruleUtils.applyRuleEffects(
             true,
             testFieldViewModels,
             testRuleEffects,
-            valueStore
+            valueStore,
         )
 
         assertTrue(testFieldViewModels[testingUid]!!.mandatory)
@@ -501,18 +576,25 @@ class RulesUtilsProviderImplTest {
         val testingUid = "uid1"
 
         testRuleEffects.add(
-            RuleEffect.create(
+            RuleEffect(
                 "ruleUid",
-                RuleActionWarningOnCompletion.create("content", "action_data", testingUid),
-                "data"
-            )
+                RuleAction(
+                    "action_data",
+                    ProgramRuleActionType.WARNINGONCOMPLETE.name,
+                    mutableMapOf(
+                        "content" to "content",
+                        "field" to testingUid,
+                    ),
+                ),
+                "data",
+            ),
         )
 
         val result = ruleUtils.applyRuleEffects(
             true,
             testFieldViewModels,
             testRuleEffects,
-            valueStore
+            valueStore,
         )
 
         assertEquals(testFieldViewModels[testingUid]!!.warning, "content data")
@@ -525,18 +607,25 @@ class RulesUtilsProviderImplTest {
         val testingUid = "uid1"
 
         testRuleEffects.add(
-            RuleEffect.create(
+            RuleEffect(
                 "ruleUid",
-                RuleActionErrorOnCompletion.create("content", "action_data", testingUid),
-                "data"
-            )
+                RuleAction(
+                    "action_data",
+                    ProgramRuleActionType.ERRORONCOMPLETE.name,
+                    mutableMapOf(
+                        "content" to "content",
+                        "field" to testingUid,
+                    ),
+                ),
+                "data",
+            ),
         )
 
         val result = ruleUtils.applyRuleEffects(
             true,
             testFieldViewModels,
             testRuleEffects,
-            valueStore
+            valueStore,
         )
 
         assertEquals(testFieldViewModels[testingUid]!!.error, "content data")
@@ -548,18 +637,24 @@ class RulesUtilsProviderImplTest {
     fun `RuleActionHideProgramStage should execute callback action`() {
         val testingUid = "stageUid"
         testRuleEffects.add(
-            RuleEffect.create(
+            RuleEffect(
                 "ruleUid",
-                RuleActionHideProgramStage.create(testingUid),
-                "data"
-            )
+                RuleAction(
+                    null,
+                    ProgramRuleActionType.HIDEPROGRAMSTAGE.name,
+                    mutableMapOf(
+                        "programStage" to testingUid,
+                    ),
+                ),
+                "data",
+            ),
         )
 
         ruleUtils.applyRuleEffects(
             true,
             testFieldViewModels,
             testRuleEffects,
-            valueStore
+            valueStore,
         )
     }
 
@@ -570,11 +665,19 @@ class RulesUtilsProviderImplTest {
     @Test
     fun `RuleActionHideOption should execute callback action`() {
         testRuleEffects.add(
-            RuleEffect.create(
+            RuleEffect(
                 "ruleUid",
-                RuleActionHideOption.create("content", "optionUid", "field"),
-                "data"
-            )
+                RuleAction(
+                    null,
+                    ProgramRuleActionType.HIDEOPTION.name,
+                    mutableMapOf(
+                        "content" to "content",
+                        "field" to "field",
+                        "option" to "optionUid",
+                    ),
+                ),
+                "data",
+            ),
         )
 
         testFieldViewModels["field"] = FieldUiModelImpl(
@@ -601,23 +704,24 @@ class RulesUtilsProviderImplTest {
             null,
             null,
             false,
-            null
+            null,
+            null,
         )
 
         whenever(valueStore.deleteOptionValueIfSelected(any(), any())) doReturn StoreResult(
             "field",
-            ValueStoreResult.VALUE_HAS_NOT_CHANGED
+            ValueStoreResult.VALUE_HAS_NOT_CHANGED,
         )
 
         val result = ruleUtils.applyRuleEffects(
             true,
             testFieldViewModels,
             testRuleEffects,
-            valueStore
+            valueStore,
         )
 
         assertTrue(
-            result.optionsToHide.isNotEmpty()
+            result.optionsToHide.isNotEmpty(),
         )
 
         verify(valueStore).deleteOptionValueIfSelected("field", "optionUid")
@@ -626,11 +730,19 @@ class RulesUtilsProviderImplTest {
     @Test
     fun `RuleActionHideOptionGroup should execute callback action`() {
         testRuleEffects.add(
-            RuleEffect.create(
+            RuleEffect(
                 "ruleUid",
-                RuleActionHideOptionGroup.create("content", "optionGroupUid", "field"),
-                "data"
-            )
+                RuleAction(
+                    null,
+                    ProgramRuleActionType.HIDEOPTIONGROUP.name,
+                    mutableMapOf(
+                        "content" to "content",
+                        "field" to "field",
+                        "optionGroup" to "optionGroupUid",
+                    ),
+                ),
+                "data",
+            ),
         )
 
         testFieldViewModels["field"] = FieldUiModelImpl(
@@ -657,44 +769,53 @@ class RulesUtilsProviderImplTest {
             null,
             null,
             false,
-            null
+            null,
+            null,
         )
 
         whenever(
             valueStore.deleteOptionValueIfSelectedInGroup(
                 any(),
                 any(),
-                any()
-            )
+                any(),
+            ),
         ) doReturn StoreResult(
             "field",
-            ValueStoreResult.VALUE_HAS_NOT_CHANGED
+            ValueStoreResult.VALUE_HAS_NOT_CHANGED,
         )
 
         val result = ruleUtils.applyRuleEffects(
             true,
             testFieldViewModels,
             testRuleEffects,
-            valueStore
+            valueStore,
         )
 
         assertTrue(
-            result.optionGroupsToHide.isNotEmpty()
+            result.optionGroupsToHide.isNotEmpty(),
         )
 
         verify(
-            valueStore
+            valueStore,
         ).deleteOptionValueIfSelectedInGroup("field", "optionGroupUid", true)
     }
 
     @Test
     fun `RuleActionShowOptionGroup should execute callback action`() {
         testRuleEffects.add(
-            RuleEffect.create(
+            RuleEffect(
                 "ruleUid",
-                RuleActionShowOptionGroup.create("content", "optionGroupUid", "field"),
-                "data"
-            )
+                RuleAction(
+                    null,
+                    ProgramRuleActionType.SHOWOPTIONGROUP.name,
+                    mutableMapOf(
+                        "content" to "content",
+                        "field" to "field",
+                        "optionGroup" to "optionGroupUid",
+                    ),
+                ),
+                "data",
+            ),
         )
 
         testFieldViewModels["field"] = FieldUiModelImpl(
@@ -721,18 +842,19 @@ class RulesUtilsProviderImplTest {
             null,
             null,
             false,
-            null
+            null,
+            null,
         )
 
         val result = ruleUtils.applyRuleEffects(
             true,
             testFieldViewModels,
             testRuleEffects,
-            valueStore
+            valueStore,
         )
 
         assertTrue(
-            result.optionGroupsToShow.isNotEmpty()
+            result.optionGroupsToShow.isNotEmpty(),
         )
         verify(valueStore).deleteOptionValueIfSelectedInGroup("field", "optionGroupUid", false)
     }
@@ -741,32 +863,46 @@ class RulesUtilsProviderImplTest {
     fun `Should not assign value to a hidden field`() {
         val testingUid = "uid3"
         testRuleEffects.add(
-            RuleEffect.create(
+            RuleEffect(
                 "ruleUid",
-                RuleActionHideField.create("content", testingUid),
-                "data"
-            )
+                RuleAction(
+                    null,
+                    ProgramRuleActionType.HIDEFIELD.name,
+                    mutableMapOf(
+                        "content" to "content",
+                        "field" to testingUid,
+                    ),
+                ),
+                "data",
+            ),
         )
         testRuleEffects.add(
-            RuleEffect.create(
+            RuleEffect(
                 "ruleUid2",
-                RuleActionAssign.create("content", "data", testingUid),
-                "data"
-            )
+                RuleAction(
+                    "data",
+                    ProgramRuleActionType.HIDEFIELD.name,
+                    mutableMapOf(
+                        "content" to "content",
+                        "field" to testingUid,
+                    ),
+                ),
+                "data",
+            ),
         )
 
         whenever(valueStore.saveWithTypeCheck(testingUid, null)) doReturn Flowable.just(
             StoreResult(
                 testingUid,
-                ValueStoreResult.VALUE_CHANGED
-            )
+                ValueStoreResult.VALUE_CHANGED,
+            ),
         )
 
         val result = ruleUtils.applyRuleEffects(
             true,
             testFieldViewModels,
             testRuleEffects,
-            valueStore
+            valueStore,
         )
 
         Assert.assertFalse(testFieldViewModels.contains(testingUid))
@@ -781,31 +917,52 @@ class RulesUtilsProviderImplTest {
         val numberUid = "uid9"
         val booleanUid = "uid10"
         testRuleEffects.add(
-            RuleEffect.create(
+            RuleEffect(
                 "ruleUid",
-                RuleActionAssign.create("content", "5.0", integerUid),
-                "5.0"
-            )
+                RuleAction(
+                    "5.0",
+                    ProgramRuleActionType.ASSIGN.name,
+                    mutableMapOf(
+                        "content" to "content",
+                        "field" to integerUid,
+                    ),
+                ),
+                "5.0",
+            ),
         )
         testRuleEffects.add(
-            RuleEffect.create(
+            RuleEffect(
                 "ruleUid",
-                RuleActionAssign.create("content", "2.52", numberUid),
-                "2.52"
-            )
+                RuleAction(
+                    "2.52",
+                    ProgramRuleActionType.ASSIGN.name,
+                    mutableMapOf(
+                        "content" to "content",
+                        "field" to numberUid,
+                    ),
+                ),
+                "2.52",
+            ),
         )
         testRuleEffects.add(
-            RuleEffect.create(
+            RuleEffect(
                 "ruleUid",
-                RuleActionAssign.create("content", "1", booleanUid),
-                "1"
-            )
+                RuleAction(
+                    "1",
+                    ProgramRuleActionType.ASSIGN.name,
+                    mutableMapOf(
+                        "content" to "content",
+                        "field" to booleanUid,
+                    ),
+                ),
+                "1",
+            ),
         )
         ruleUtils.applyRuleEffects(
             true,
             testFieldViewModels,
             testRuleEffects,
-            valueStore
+            valueStore,
         )
         assertTrue(testFieldViewModels[integerUid]?.value == "5")
         assertTrue(testFieldViewModels[numberUid]?.value == "2.52")

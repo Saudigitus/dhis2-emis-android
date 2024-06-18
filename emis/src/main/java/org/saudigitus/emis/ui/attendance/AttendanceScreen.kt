@@ -54,7 +54,7 @@ import org.saudigitus.emis.utils.DateHelper
 @Composable
 fun AttendanceScreen(
     viewModel: AttendanceViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
 ) {
     val students by viewModel.teis.collectAsStateWithLifecycle()
     val attendanceOptions by viewModel.attendanceOptions.collectAsStateWithLifecycle()
@@ -84,7 +84,9 @@ fun AttendanceScreen(
             themeColor = Color(0xFF2C98F0),
             selectedItemCode = if (absence.find { it.tei == cachedTEIId } != null) {
                 absence.find { it.tei == cachedTEIId }!!.reasonOfAbsence
-            } else null,
+            } else {
+                null
+            },
             onItemClick = {
                 viewModel.setAbsence(reasonOfAbsence = it.code)
             },
@@ -94,7 +96,7 @@ fun AttendanceScreen(
             onDone = {
                 isAbsent = false
                 viewModel.save()
-            }
+            },
         )
     }
 
@@ -103,7 +105,7 @@ fun AttendanceScreen(
             title = stringResource(R.string.attendance_summary),
             data = viewModel.getSummary(),
             themeColor = Color(0xFF2C98F0),
-            onCancel = { viewModel.setAttendanceStep(ButtonStep.HOLD_SAVING) }
+            onCancel = { viewModel.setAttendanceStep(ButtonStep.HOLD_SAVING) },
         ) {
             if (isBulk) {
                 viewModel.bulkSave()
@@ -119,7 +121,7 @@ fun AttendanceScreen(
         LaunchedEffect(key1 = snackbarHostState) {
             snackbarHostState.showSnackbar(
                 message = context.getString(R.string.attendance_saved),
-                duration = SnackbarDuration.Short
+                duration = SnackbarDuration.Short,
             )
         }
     }
@@ -136,7 +138,7 @@ fun AttendanceScreen(
                 )
             },
             onClear = viewModel::clearCache,
-            onCancel = { launchBulkAssign = false }
+            onCancel = { launchBulkAssign = false },
         )
     }
 
@@ -148,54 +150,58 @@ fun AttendanceScreen(
                     containerColor = Color(0xFF2C98F0),
                     navigationIconContentColor = Color.White,
                     titleContentColor = Color.White,
-                    actionIconContentColor = Color.White
+                    actionIconContentColor = Color.White,
                 ),
                 navigationAction = onBack::invoke,
                 disableNavigation = false,
                 actionState = ToolbarActionState(
                     syncVisibility = false,
                     filterVisibility = false,
-                    showCalendar = true
+                    showCalendar = true,
                 ),
                 calendarAction = viewModel::setDate,
                 dateValidator = {
                     val date = DateHelper.stringToLocalDate(DateHelper.formatDate(it)!!)
 
                     if (schoolCalendar != null) {
-                        (!DateHelper.isWeekend(date) && schoolCalendar?.weekDays?.saturday == false &&
-                            schoolCalendar?.weekDays?.sunday == false) &&
+                        (
+                            !DateHelper.isWeekend(date) && schoolCalendar?.weekDays?.saturday == false &&
+                                schoolCalendar?.weekDays?.sunday == false
+                            ) &&
                             schoolCalendar?.holidays?.let { holiday ->
                                 DateHelper.isHoliday(holiday, it)
                             } == true
-                    } else true
-                }
+                    } else {
+                        true
+                    }
+                },
             )
         },
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 text = {
-                   Text(
-                       text = if (attendanceStep == ButtonStep.EDITING) {
-                           stringResource(R.string.update)
-                       } else {
-                           stringResource(R.string.save)
-                       },
-                       color = Color(0xFF2C98F0),
-                       style = LocalTextStyle.current.copy(
-                           fontFamily = FontFamily(Font(R.font.rubik_medium))
-                       )
-                   )
+                    Text(
+                        text = if (attendanceStep == ButtonStep.EDITING) {
+                            stringResource(R.string.update)
+                        } else {
+                            stringResource(R.string.save)
+                        },
+                        color = Color(0xFF2C98F0),
+                        style = LocalTextStyle.current.copy(
+                            fontFamily = FontFamily(Font(R.font.rubik_medium)),
+                        ),
+                    )
                 },
                 icon = {
-                   Icon(
-                       imageVector = if (attendanceStep == ButtonStep.EDITING) {
-                           Icons.Default.Edit
-                       } else {
-                           Icons.Default.Save
-                       },
-                       contentDescription = null,
-                       tint = Color(0xFF2C98F0)
-                   )
+                    Icon(
+                        imageVector = if (attendanceStep == ButtonStep.EDITING) {
+                            Icons.Default.Edit
+                        } else {
+                            Icons.Default.Save
+                        },
+                        contentDescription = null,
+                        tint = Color(0xFF2C98F0),
+                    )
                 },
                 onClick = {
                     if (attendanceStep == ButtonStep.HOLD_SAVING) {
@@ -203,7 +209,7 @@ fun AttendanceScreen(
                     } else {
                         viewModel.setAttendanceStep(ButtonStep.HOLD_SAVING)
                     }
-                }
+                },
             )
         },
         snackbarHost = {
@@ -213,27 +219,27 @@ fun AttendanceScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
                     containerColor = light_success,
-                    contentColor = Color.White
+                    contentColor = Color.White,
                 ) {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.Start),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(
-                            painter = painterResource(R.drawable.success_icon), 
-                            contentDescription = it.visuals.message
+                            painter = painterResource(R.drawable.success_icon),
+                            contentDescription = it.visuals.message,
                         )
-                        
+
                         Text(
                             text = it.visuals.message,
                             style = LocalTextStyle.current.copy(
-                                fontFamily = FontFamily(Font(R.font.rubik_regular))
-                            )
+                                fontFamily = FontFamily(Font(R.font.rubik_regular)),
+                            ),
                         )
                     }
                 }
             }
-        }
+        },
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -241,7 +247,7 @@ fun AttendanceScreen(
                 .background(color = Color(0xFF2C98F0))
                 .padding(paddingValues),
             verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.Start
+            horizontalAlignment = Alignment.Start,
         ) {
             Column(
                 modifier = Modifier
@@ -253,17 +259,17 @@ fun AttendanceScreen(
                                 topStart = CornerSize(16.dp),
                                 topEnd = CornerSize(16.dp),
                                 bottomStart = CornerSize(0.dp),
-                                bottomEnd = CornerSize(0.dp)
-                            )
+                                bottomEnd = CornerSize(0.dp),
+                            ),
                     ),
                 verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
-                horizontalAlignment = Alignment.Start
+                horizontalAlignment = Alignment.Start,
             ) {
                 ShowCard(
                     infoCard,
-                    false,
+                    true,
                     enabledIconButton = attendanceStep == ButtonStep.HOLD_SAVING,
-                    onIconClick = { launchBulkAssign = true }
+                    onIconClick = { launchBulkAssign = true },
                 )
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
@@ -277,18 +283,18 @@ fun AttendanceScreen(
                                 student.attributeValues?.values?.toList()?.getOrNull(0)?.value()
                             }",
                             enableClickAction = false,
-                            onClick = {}
+                            onClick = {},
                         ) {
                             if (attendanceStep == ButtonStep.EDITING) {
                                 AttendanceItemState(
                                     tei = student.tei.uid(),
-                                    attendanceState = attendanceStatus
+                                    attendanceState = attendanceStatus,
                                 )
                             } else {
                                 AttendanceButtons(
                                     tei = student.tei.uid(),
                                     btnState = attendanceBtnState,
-                                    actions = attendanceOptions
+                                    actions = attendanceOptions,
                                 ) { index, tei, attendance, color ->
                                     if (attendance.lowercase() != ABSENT) {
                                         viewModel.setAttendance(
@@ -296,7 +302,7 @@ fun AttendanceScreen(
                                             ou = student.tei.organisationUnit() ?: "",
                                             tei = tei ?: student.tei.uid(),
                                             value = attendance,
-                                            color = color
+                                            color = color,
                                         )
                                     } else {
                                         cachedTEIId = tei ?: student.tei.uid()
@@ -305,7 +311,7 @@ fun AttendanceScreen(
                                             index = index,
                                             ou = student.tei.organisationUnit() ?: "",
                                             tei = tei ?: student.tei.uid(),
-                                            value = attendance
+                                            value = attendance,
                                         )
                                     }
                                 }

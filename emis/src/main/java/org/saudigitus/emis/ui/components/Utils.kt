@@ -1,6 +1,5 @@
 package org.saudigitus.emis.ui.components
 
-
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -40,11 +39,10 @@ import org.saudigitus.emis.R
 import org.saudigitus.emis.ui.theme.light_error
 import org.saudigitus.emis.ui.theme.light_info
 import org.saudigitus.emis.utils.DateHelper
-import org.saudigitus.emis.utils.Test
 
 @Composable
 fun NoResults(
-    message: String
+    message: String,
 ) {
     Column(
         modifier = Modifier
@@ -52,11 +50,11 @@ fun NoResults(
             .fillMaxHeight()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
     ) {
         Image(
             imageVector = ImageVector.vectorResource(id = R.drawable.ic_empty_folder),
-            contentDescription = ""
+            contentDescription = "",
         )
         Spacer(modifier = Modifier.size(16.dp))
         Text(
@@ -65,8 +63,8 @@ fun NoResults(
             color = Color.Black.copy(alpha = 0.38f),
             style = LocalTextStyle.current.copy(
                 lineHeight = 24.sp,
-                fontFamily = FontFamily(Font(R.font.rubik_regular))
-            )
+                fontFamily = FontFamily(Font(R.font.rubik_regular)),
+            ),
         )
     }
 }
@@ -77,7 +75,7 @@ fun CustomDatePicker(
     show: Boolean = false,
     dismiss: () -> Unit,
     onDatePick: (date: String) -> Unit,
-    dateValidator: (Long) -> Boolean = { true }
+    dateValidator: (Long) -> Boolean = { true },
 ) {
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = null,
@@ -87,8 +85,8 @@ fun CustomDatePicker(
     var selectedDate by remember {
         mutableStateOf(
             DateHelper.formatDate(
-                datePickerState.selectedDateMillis ?: DateUtils.getInstance().today.time
-            ) ?: ""
+                datePickerState.selectedDateMillis ?: DateUtils.getInstance().today.time,
+            ) ?: "",
         )
     }
 
@@ -99,7 +97,7 @@ fun CustomDatePicker(
                 TextButton(
                     title = stringResource(R.string.done),
                     containerColor = Color.White,
-                    contentColor = light_info
+                    contentColor = light_info,
                 ) {
                     selectedDate = DateHelper.formatDate(datePickerState.selectedDateMillis ?: 0) ?: ""
                     onDatePick.invoke(selectedDate)
@@ -110,26 +108,26 @@ fun CustomDatePicker(
                 TextButton(
                     title = stringResource(R.string.cancel),
                     containerColor = Color.White,
-                    contentColor = light_error
+                    contentColor = light_error,
                 ) { dismiss.invoke() }
             },
             properties = DialogProperties(
                 dismissOnBackPress = false,
-                dismissOnClickOutside = true
+                dismissOnClickOutside = true,
             ),
             colors = DatePickerDefaults.colors(
                 containerColor = Color.White,
                 todayContentColor = Color(0xFF2C98F0),
                 todayDateBorderColor = Color(0xFF2C98F0),
                 selectedDayContainerColor = Color(0xFF2C98F0),
-                selectedYearContainerColor = Color(0xFF2C98F0)
-            )
+                selectedYearContainerColor = Color(0xFF2C98F0),
+            ),
         ) {
             DatePicker(
                 state = datePickerState,
                 title = {},
                 showModeToggle = false,
-                dateValidator = dateValidator
+                dateValidator = dateValidator,
             )
         }
     }
@@ -141,7 +139,7 @@ fun FavoriteAlertDialog(
     onDismiss: () -> Unit,
     title: String = "",
     message: String = "",
-    openDialog: MutableState<Boolean>
+    openDialog: MutableState<Boolean>,
 ) {
     if (openDialog.value) {
         AlertDialog(
@@ -152,7 +150,7 @@ fun FavoriteAlertDialog(
                 Text(text = "$title")
             },
             text = {
-                //Text(text = "Would you like to clear the saved favorites?")
+                // Text(text = "Would you like to clear the saved favorites?")
                 Text(text = "$message")
             },
             confirmButton = {
@@ -163,7 +161,7 @@ fun FavoriteAlertDialog(
                     },
                     contentColor = Color(0xFF2C98F0),
                     containerColor = Color.White,
-                    title = "Yes"
+                    title = "Yes",
                     /**  TODO("SET String resource") */
                 )
             },
@@ -174,10 +172,10 @@ fun FavoriteAlertDialog(
                     },
                     contentColor = Color(0xFF2C98F0),
                     containerColor = Color.White,
-                    title = "Cancel"
+                    title = "Cancel",
                     /**  TODO("SET String resource") */
                 )
-            }
+            },
         )
     }
 }

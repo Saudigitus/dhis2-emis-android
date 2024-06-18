@@ -37,7 +37,7 @@ fun InputField(
     onValueChange: (String) -> Unit,
     label: String,
     placeholder: String,
-    inputType: ValueType?
+    inputType: ValueType?,
 ) {
     var action by remember { mutableStateOf("") }
 
@@ -57,7 +57,7 @@ fun InputField(
                     IconButton(onClick = { action = Intent.ACTION_SENDTO }) {
                         Icon(
                             painter = painterResource(R.drawable.ic_form_email),
-                            contentDescription = label
+                            contentDescription = label,
                         )
                     }
                 }
@@ -66,11 +66,10 @@ fun InputField(
                     IconButton(onClick = { action = Intent.ACTION_DIAL }) {
                         Icon(
                             painter = painterResource(R.drawable.ic_form_phone),
-                            contentDescription = label
+                            contentDescription = label,
                         )
                     }
                 }
-
             }
         },
         singleLine = inputType?.toKeyBoardInputType()?.multiline == true,
@@ -78,16 +77,16 @@ fun InputField(
         keyboardOptions = KeyboardOptions(
             keyboardType = inputType?.toKeyBoardInputType()?.toKeyboardType() ?: KeyboardType.Text,
             capitalization = inputType?.toKeyBoardInputType()?.keyboardCapitalization() ?: KeyboardCapitalization.None,
-            imeAction = ImeAction.Done
+            imeAction = ImeAction.Done,
         ),
         colors = TextFieldDefaults.textFieldColors(
-            backgroundColor = Color.Transparent
+            backgroundColor = Color.Transparent,
         ),
-        visualTransformation =  if (inputType?.toKeyBoardInputType()?.toKeyboardType() == KeyboardType.Password) {
+        visualTransformation = if (inputType?.toKeyBoardInputType()?.toKeyboardType() == KeyboardType.Password) {
             PasswordVisualTransformation()
         } else {
             VisualTransformation.None
         },
-        textStyle = TextStyle(fontSize = 25.sp, textAlign = TextAlign.Center)
+        textStyle = TextStyle(fontSize = 22.sp, textAlign = TextAlign.Center),
     )
 }

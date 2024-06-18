@@ -39,7 +39,7 @@ class MainActivity : FragmentActivity() {
         setContent {
             EMISAndroidTheme(
                 darkTheme = false,
-                dynamicColor = false
+                dynamicColor = false,
             ) {
                 viewModel.setBundle(intent?.extras)
 
@@ -47,17 +47,19 @@ class MainActivity : FragmentActivity() {
 
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    color = MaterialTheme.colorScheme.background,
                 ) {
                     NavHost(
                         navController = navController,
-                        startDestination = AppRoutes.HOME_ROUTE
+                        startDestination = AppRoutes.HOME_ROUTE,
                     ) {
                         composable(AppRoutes.HOME_ROUTE) {
+                            viewModel.setProgram(intent?.extras?.getString(Constants.PROGRAM_UID) ?: "")
+
                             HomeScreen(
                                 viewModel = viewModel,
                                 onBack = { finish() },
-                                navTo = navController::navigate
+                                navTo = navController::navigate,
                             )
                         }
                         composable(AppRoutes.TEI_LIST_ROUTE) {
@@ -71,8 +73,8 @@ class MainActivity : FragmentActivity() {
                             arguments = listOf(
                                 navArgument("ou") {
                                     type = NavType.StringType
-                                }
-                            )
+                                },
+                            ),
                         ) {
                             val attendanceViewModel: AttendanceViewModel = hiltViewModel()
 
@@ -98,7 +100,7 @@ class MainActivity : FragmentActivity() {
                                 navArgument("subjectName") {
                                     type = NavType.StringType
                                 },
-                            )
+                            ),
                         ) {
                             val performanceViewModel = hiltViewModel<PerformanceViewModel>()
                             val uiState by performanceViewModel.uiState.collectAsStateWithLifecycle()
@@ -130,8 +132,8 @@ class MainActivity : FragmentActivity() {
                                 setDate = performanceViewModel::setDate,
                                 onNext = performanceViewModel::onClickNext,
                                 step = performanceViewModel::setButtonStep,
-                                onFilterClick = performanceViewModel::updateFields,
-                                onSave = performanceViewModel::save
+                                onFilterClick = performanceViewModel::updateDataFields,
+                                onSave = performanceViewModel::save,
                             )
                         }
                         composable(
@@ -140,7 +142,7 @@ class MainActivity : FragmentActivity() {
                                 navArgument("ou") {
                                     type = NavType.StringType
                                 },
-                            )
+                            ),
                         ) {
                             val subjectViewModel = hiltViewModel<SubjectViewModel>()
                             val state by subjectViewModel.uiState.collectAsStateWithLifecycle()
@@ -156,7 +158,7 @@ class MainActivity : FragmentActivity() {
                                 infoCard = infoCard,
                                 onClick = { subjectId, subjectName ->
                                     navController.navigate("${AppRoutes.PERFORMANCE_ROUTE}/$ou/$stage/$subjectId/$subjectName")
-                                }
+                                },
                             )
                         }
                     }

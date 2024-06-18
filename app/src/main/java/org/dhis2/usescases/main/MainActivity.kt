@@ -22,12 +22,11 @@ import androidx.core.view.ViewCompat
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import java.io.File
-import javax.inject.Inject
-import org.dhis2.Bindings.app
-import org.dhis2.Bindings.hasPermissions
+import com.google.android.material.snackbar.Snackbar
 import org.dhis2.BuildConfig
 import org.dhis2.R
+import org.dhis2.bindings.app
+import org.dhis2.bindings.hasPermissions
 import org.dhis2.commons.filters.FilterItem
 import org.dhis2.commons.filters.FilterManager
 import org.dhis2.commons.filters.FiltersAdapter
@@ -47,8 +46,11 @@ import org.dhis2.utils.extension.navigateTo
 import org.dhis2.utils.granularsync.SyncStatusDialog
 import org.dhis2.utils.session.PIN_DIALOG_TAG
 import org.dhis2.utils.session.PinDialog
+import java.io.File
+import javax.inject.Inject
 
 private const val FRAGMENT = "Fragment"
+private const val SINGLE_PROGRAM_NAVIGATION = "SINGLE_PROGRAM_NAVIGATION"
 private const val INIT_DATA_SYNC = "INIT_DATA_SYNC"
 private const val WIPE_NOTIFICATION = "wipe_notification"
 private const val RESTART = "Restart"
@@ -73,10 +75,20 @@ class MainActivity :
 
     var notification: Boolean = false
     var forceToNotSynced = false
+    private var singleProgramNavigationDone = false
 
     private val getDevActivityContent =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             binding.navigationBar.pageConfiguration(pageConfigurator)
+        }
+
+    private val requestWritePermissions =
+        registerForActivityResult(
+            ActivityResultContracts.RequestPermission(),
+        ) { granted ->
+            if (granted) {
+                onDownloadNewVersion()
+            }
         }
 
     private var isPinLayoutVisible = false
@@ -89,18 +101,21 @@ class MainActivity :
             if (backDropActive) {
                 showHideFilter()
             }
-        }
+        },
     ) { titleRes, showFilterButton, showBottomNavigation ->
         setTitle(getString(titleRes))
         setFilterButtonVisibility(showFilterButton)
         setBottomNavigationVisibility(showBottomNavigation)
     }
 
+    private val navigationLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
+
     companion object {
         fun intent(
             context: Context,
             initScreen: MainNavigator.MainScreen? = null,
-            launchDataSync: Boolean = false
+            launchDataSync: Boolean = false,
         ): Intent {
             return Intent(context, MainActivity::class.java).apply {
                 initScreen?.let {
@@ -172,20 +187,21 @@ class MainActivity :
         elevation = ViewCompat.getElevation(binding.toolbar)
 
         val restoreScreenName = savedInstanceState?.getString(FRAGMENT)
+        singleProgramNavigationDone = savedInstanceState?.getBoolean(SINGLE_PROGRAM_NAVIGATION) ?: false
         val openScreen = intent.getStringExtra(FRAGMENT)
 
         when {
             openScreen != null || restoreScreenName != null -> {
                 changeFragment(
                     mainNavigator.currentNavigationViewItemId(
-                        openScreen ?: restoreScreenName!!
-                    )
+                        openScreen ?: restoreScreenName!!,
+                    ),
                 )
                 mainNavigator.restoreScreen(
                     screenToRestoreName = openScreen ?: restoreScreenName!!,
                     languageSelectorOpened = openScreen != null &&
                         MainNavigator.MainScreen.valueOf(openScreen) ==
-                        MainNavigator.MainScreen.TROUBLESHOOTING
+                        MainNavigator.MainScreen.TROUBLESHOOTING,
                 )
             }
 
@@ -200,11 +216,22 @@ class MainActivity :
 
         if (!presenter.wasSyncAlreadyDone()) {
             presenter.launchInitialDataSync()
+        } else if (!singleProgramNavigationDone && presenter.hasOneHomeItem()) {
+            navigateToSingleProgram()
+        }
+
+        checkNotificationPermission()
+    }
+
+    private fun checkNotificationPermission() {
+        if (!hasPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS))) {
+            requestNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
+        outState.putBoolean(SINGLE_PROGRAM_NAVIGATION, singleProgramNavigationDone)
         outState.putString(FRAGMENT, mainNavigator.currentScreenName())
     }
 
@@ -225,14 +252,30 @@ class MainActivity :
 
     private fun observeSyncState() {
         presenter.observeDataSync().observe(this) {
-            if (it.running) {
-                setFilterButtonVisibility(false)
-                setBottomNavigationVisibility(false)
-            } else {
-                setFilterButtonVisibility(true)
-                setBottomNavigationVisibility(true)
-                presenter.onDataSuccess()
+            when (it.running) {
+                true -> {
+                    setFilterButtonVisibility(false)
+                    setBottomNavigationVisibility(false)
+                }
+                false -> {
+                    setFilterButtonVisibility(true)
+                    setBottomNavigationVisibility(true)
+                    presenter.onDataSuccess()
+                    if (presenter.hasOneHomeItem()) {
+                        navigateToSingleProgram()
+                    }
+                }
+                else -> {
+                    // no action
+                }
             }
+        }
+    }
+
+    private fun navigateToSingleProgram() {
+        presenter.getSingleItemData()?.let { homeItemData ->
+            singleProgramNavigationDone = true
+            navigationLauncher.navigateTo(this, homeItemData)
         }
     }
 
@@ -260,8 +303,16 @@ class MainActivity :
                             mainNavigator.getCurrentIfProgram()?.presenter?.updateProgramQueries()
                         }
                     }
-                }
+                },
             )
+            .onNoConnectionListener {
+                val contextView = findViewById<View>(R.id.navigationBar)
+                Snackbar.make(
+                    contextView,
+                    R.string.sync_offline_check_connection,
+                    Snackbar.LENGTH_SHORT,
+                ).show()
+            }
             .show("ALL_SYNC")
     }
 
@@ -270,11 +321,11 @@ class MainActivity :
             LoginActivity::class.java,
             LoginActivity.bundle(
                 accountsCount = accountsCount,
-                isDeletion = isDeletion
+                isDeletion = isDeletion,
             ),
             true,
             true,
-            null
+            null,
         )
     }
 
@@ -306,7 +357,7 @@ class MainActivity :
                 ConstraintSet.TOP,
                 R.id.filterRecycler,
                 ConstraintSet.BOTTOM,
-                50
+                50,
             )
             binding.navigationBar.hide()
         } else {
@@ -315,7 +366,7 @@ class MainActivity :
                 ConstraintSet.TOP,
                 R.id.toolbar,
                 ConstraintSet.BOTTOM,
-                0
+                0,
             )
             binding.navigationBar.show()
         }
@@ -330,7 +381,7 @@ class MainActivity :
                 PinDialog.Mode.SET,
                 true,
                 { presenter.blockSession() },
-                {}
+                {},
             ).show(supportFragmentManager, PIN_DIALOG_TAG)
             isPinLayoutVisible = true
         } else {
@@ -338,6 +389,7 @@ class MainActivity :
         }
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         when {
             !mainNavigator.isHome() -> presenter.onNavigateBackToHome()
@@ -368,7 +420,7 @@ class MainActivity :
                 .showPeriodDialog(
                     this,
                     { datePeriods -> FilterManager.getInstance().addPeriod(datePeriods) },
-                    true
+                    true,
                 )
         }
     }
@@ -493,7 +545,7 @@ class MainActivity :
             val mChannel = NotificationChannel(
                 WIPE_NOTIFICATION,
                 RESTART,
-                NotificationManager.IMPORTANCE_HIGH
+                NotificationManager.IMPORTANCE_HIGH,
             )
             notificationManager.createNotificationChannel(mChannel)
         }
@@ -534,19 +586,27 @@ class MainActivity :
             spanText = version,
             dismissButton = ButtonUiModel(
                 getString(R.string.remind_me_later),
-                onClick = { presenter.remindLaterAlertNewVersion() }
+                onClick = { presenter.remindLaterAlertNewVersion() },
             ),
             confirmButton = ButtonUiModel(
                 getString(R.string.download_now),
                 onClick = {
-                    presenter.downloadVersion(
-                        context = context,
-                        onDownloadCompleted = { installAPK(it) },
-                        onLaunchUrl = { launchUrl(it) }
-                    )
-                }
-            )
+                    if (hasPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE))) {
+                        onDownloadNewVersion()
+                    } else {
+                        requestWritePermissions.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    }
+                },
+            ),
         ).show(supportFragmentManager)
+    }
+
+    private fun onDownloadNewVersion() {
+        presenter.downloadVersion(
+            context = context,
+            onDownloadCompleted = ::installAPK,
+            onLaunchUrl = ::launchUrl,
+        )
     }
 
     private fun installAPK(apkUri: Uri) {
@@ -554,7 +614,7 @@ class MainActivity :
             hasNoPermissionToInstall() ->
                 manageUnknownSources.launch(
                     Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES)
-                        .setData(Uri.parse(String.format("package:%s", packageName)))
+                        .setData(Uri.parse(String.format("package:%s", packageName))),
                 )
 
             !hasPermissions(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)) ->
@@ -581,30 +641,39 @@ class MainActivity :
                 Toast.makeText(
                     context,
                     getString(R.string.unknow_sources_denied),
-                    Toast.LENGTH_LONG
+                    Toast.LENGTH_LONG,
                 ).show()
             } else {
-                presenter.downloadVersion(
-                    context,
-                    onDownloadCompleted = { installAPK(it) },
-                    onLaunchUrl = { launchUrl(it) }
-                )
+                onDownloadNewVersion()
             }
         }
 
     private val requestReadStoragePermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
             if (granted) {
-                presenter.downloadVersion(
-                    context,
-                    onDownloadCompleted = { installAPK(it) },
-                    onLaunchUrl = { launchUrl(it) }
-                )
+                onDownloadNewVersion()
             } else {
                 Toast.makeText(
                     context,
                     getString(R.string.storage_denied),
-                    Toast.LENGTH_LONG
+                    Toast.LENGTH_LONG,
+                ).show()
+            }
+        }
+
+    private val requestNotificationPermission =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (granted) {
+                Toast.makeText(
+                    context,
+                    getString(R.string.permission_notification_granted),
+                    Toast.LENGTH_SHORT,
+                ).show()
+            } else {
+                Toast.makeText(
+                    context,
+                    getString(R.string.permission_notification_denied),
+                    Toast.LENGTH_SHORT,
                 ).show()
             }
         }

@@ -6,8 +6,11 @@ import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import org.dhis2.commons.Constants.PREFS_URLS
 import org.dhis2.commons.Constants.PREFS_USERS
 import org.dhis2.commons.Constants.USER_TEST_ANDROID
@@ -22,7 +25,9 @@ import org.dhis2.commons.prefs.SECURE_PASS
 import org.dhis2.commons.prefs.SECURE_SERVER_URL
 import org.dhis2.commons.prefs.SECURE_USER_NAME
 import org.dhis2.commons.reporting.CrashReportController
+import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.commons.schedulers.SchedulerProvider
+import org.dhis2.commons.viewmodel.DispatcherProvider
 import org.dhis2.data.fingerprint.FingerPrintController
 import org.dhis2.data.fingerprint.Type
 import org.dhis2.data.server.UserManager
@@ -41,18 +46,21 @@ import org.hisp.dhis.android.core.systeminfo.SystemInfo
 import org.hisp.dhis.android.core.user.openid.OpenIDConnectConfig
 import retrofit2.Response
 import timber.log.Timber
+import java.io.File
 
 const val VERSION = "version"
 
 class LoginViewModel(
     private val view: LoginContracts.View,
     private val preferenceProvider: PreferenceProvider,
+    private val resourceManager: ResourceManager,
     private val schedulers: SchedulerProvider,
+    private val dispatchers: DispatcherProvider,
     private val fingerPrintController: FingerPrintController,
     private val analyticsHelper: AnalyticsHelper,
     private val crashReportController: CrashReportController,
     private val network: NetworkUtils,
-    private var userManager: UserManager?
+    private var userManager: UserManager?,
 ) : ViewModel() {
 
     private val syncIsPerformedInteractor = SyncIsPerformedInteractor(userManager)
@@ -68,6 +76,12 @@ class LoginViewModel(
     var testingCredentials: MutableMap<String, TestingCredential>? = null
     private val _loginProgressVisible = MutableLiveData(false)
     val loginProgressVisible: LiveData<Boolean> = _loginProgressVisible
+
+    private val _hasAccounts = MutableLiveData<Boolean>()
+    val hasAccounts: LiveData<Boolean> = _hasAccounts
+
+    private val _displayMoreActions = MutableLiveData<Boolean>(true)
+    val displayMoreActions: LiveData<Boolean> = _displayMoreActions
 
     init {
         this.userManager?.let {
@@ -88,7 +102,7 @@ class LoginViewModel(
                                 val serverUrl =
                                     preferenceProvider.getString(
                                         SECURE_SERVER_URL,
-                                        view.getDefaultServerProtocol()
+                                        view.getDefaultServerProtocol(),
                                     )
                                 val user = preferenceProvider.getString(SECURE_USER_NAME, "")
                                 if (!serverUrl.isNullOrEmpty() && !user.isNullOrEmpty()) {
@@ -99,10 +113,11 @@ class LoginViewModel(
                                 }
                             }
                         },
-                        { exception -> Timber.e(exception) }
-                    )
+                        { exception -> Timber.e(exception) },
+                    ),
             )
         } ?: view.setUrl(view.getDefaultServerProtocol())
+        displayManageAccount()
     }
 
     private fun trackServerVersion() {
@@ -128,7 +143,7 @@ class LoginViewModel(
                                     val serverUrl =
                                         preferenceProvider.getString(
                                             SECURE_SERVER_URL,
-                                            view.getDefaultServerProtocol()
+                                            view.getDefaultServerProtocol(),
                                         )
                                     val user = preferenceProvider.getString(SECURE_USER_NAME, "")
                                     if (!serverUrl.isNullOrEmpty() && !user.isNullOrEmpty()) {
@@ -140,8 +155,8 @@ class LoginViewModel(
                                 }
                             }
                         },
-                        { Timber.e(it) }
-                    )
+                        { Timber.e(it) },
+                    ),
             )
         } ?: view.setUrl(view.getDefaultServerProtocol())
 
@@ -152,7 +167,8 @@ class LoginViewModel(
         return if (userManager.isUserLoggedIn.blockingFirst() &&
             userManager.d2.systemInfoModule().systemInfo().blockingGet() != null
         ) {
-            userManager.d2.systemInfoModule().systemInfo().blockingGet()
+            userManager.d2.systemInfoModule().systemInfo().blockingGet() ?: SystemInfo.builder()
+                .build()
         } else {
             SystemInfo.builder().build()
         }
@@ -170,8 +186,8 @@ class LoginViewModel(
                     .observeOn(schedulers.ui())
                     .subscribe(
                         { view.showBiometricButton() },
-                        { Timber.e(it) }
-                    )
+                        { Timber.e(it) },
+                    ),
             )
         }
     }
@@ -198,7 +214,7 @@ class LoginViewModel(
                     userManager.logIn(
                         userName.value!!.trim { it <= ' ' },
                         password.value!!,
-                        serverUrl.value!!
+                        serverUrl.value!!,
                     )
                         .map {
                             run {
@@ -215,8 +231,8 @@ class LoginViewModel(
                 .observeOn(schedulers.ui())
                 .subscribe(
                     this::handleResponse,
-                    this::handleError
-                )
+                    this::handleError,
+                ),
         )
     }
 
@@ -236,8 +252,8 @@ class LoginViewModel(
                         },
                         {
                             Timber.e(it)
-                        }
-                    )
+                        },
+                    ),
             )
         } catch (throwable: Throwable) {
             Timber.e(throwable)
@@ -261,8 +277,8 @@ class LoginViewModel(
                     .observeOn(schedulers.ui())
                     .subscribe(
                         this::handleResponse,
-                        this::handleError
-                    )
+                        this::handleError,
+                    ),
             )
         }
     }
@@ -294,8 +310,8 @@ class LoginViewModel(
                             preferenceProvider.setValue(SESSION_LOCKED, false)
                             view.handleLogout()
                         },
-                        { view.handleLogout() }
-                    )
+                        { view.handleLogout() },
+                    ),
             )
         }
     }
@@ -349,10 +365,6 @@ class LoginViewModel(
             ?.blockingGet()?.value() == null
     }
 
-    fun stopReadingFingerprint() {
-        fingerPrintController.cancel()
-    }
-
     fun canHandleBiometrics(): Boolean? {
         return canHandleBiometrics
     }
@@ -363,7 +375,7 @@ class LoginViewModel(
                 preferenceProvider.areSameCredentials(
                     serverUrl.value!!,
                     userName.value!!,
-                    password.value!!
+                    password.value!!,
                 )
             ).also { areSameCredentials -> if (!areSameCredentials) saveUserCredentials() }
     }
@@ -372,7 +384,7 @@ class LoginViewModel(
         preferenceProvider.saveUserCredentials(
             serverUrl.value!!,
             userName.value!!,
-            ""
+            "",
         )
     }
 
@@ -384,7 +396,7 @@ class LoginViewModel(
                     if (preferenceProvider.contains(
                             SECURE_SERVER_URL,
                             SECURE_USER_NAME,
-                            SECURE_PASS
+                            SECURE_PASS,
                         )
                     ) {
                         Result.success(result)
@@ -403,7 +415,7 @@ class LoginViewModel(
                                             data,
                                             preferenceProvider.getString(SECURE_SERVER_URL)!!,
                                             preferenceProvider.getString(SECURE_USER_NAME)!!,
-                                            preferenceProvider.getString(SECURE_PASS)!!
+                                            preferenceProvider.getString(SECURE_PASS)!!,
                                         )
 
                                     Type.INFO -> {
@@ -413,19 +425,19 @@ class LoginViewModel(
                                     Type.ERROR ->
                                         view.showCredentialsData(
                                             data,
-                                            it.getOrNull()?.message!!
+                                            it.getOrNull()?.message!!,
                                         )
                                 }
                             },
                             onFailure = {
                                 view.showEmptyCredentialsMessage()
-                            }
+                            },
                         )
                     },
                     {
                         view.displayMessage(AUTH_ERROR)
-                    }
-                )
+                    },
+                ),
         )
     }
 
@@ -439,7 +451,7 @@ class LoginViewModel(
     }
 
     fun getAutocompleteData(
-        testingCredentials: List<TestingCredential>
+        testingCredentials: List<TestingCredential>,
     ): Pair<MutableList<String>, MutableList<String>> {
         val urls = preferenceProvider.getSet(PREFS_URLS, emptySet())!!.toMutableList()
         val users = preferenceProvider.getSet(PREFS_USERS, emptySet())!!.toMutableList()
@@ -465,9 +477,9 @@ class LoginViewModel(
         return Pair(urls, users)
     }
 
-    fun displayManageAccount(): Boolean {
+    fun displayManageAccount() {
         val users = userManager?.d2?.userModule()?.accountManager()?.getAccounts()?.count() ?: 0
-        return users >= 1
+        _hasAccounts.value = (users >= 1)
     }
 
     fun onManageAccountClicked() {
@@ -534,7 +546,7 @@ class LoginViewModel(
             isTestingEnvironment.value = Trio.create(
                 serverUrl,
                 credentials.user_name,
-                credentials.user_pass
+                credentials.user_pass,
             )
         }
     }
@@ -551,7 +563,40 @@ class LoginViewModel(
         this.userName.value = userName
     }
 
-    fun testCoverage() {
-        view.setUser("Coverage test")
+    fun onImportDataBase(file: File) {
+        userManager?.let {
+            viewModelScope.launch {
+                val resultJob = async {
+                    try {
+                        val importedMetadata =
+                            it.d2.maintenanceModule().databaseImportExport().importDatabase(file)
+                        Result.success(importedMetadata)
+                    } catch (e: Exception) {
+                        Result.failure(e)
+                    }
+                }
+
+                val result = resultJob.await()
+
+                result.fold(
+                    onSuccess = {
+                        setAccountInfo(it.serverUrl, it.username)
+                        view.setUrl(it.serverUrl)
+                        view.setUser(it.username)
+                        displayManageAccount()
+                    },
+                    onFailure = {
+                        view.displayMessage(resourceManager.parseD2Error(it))
+                    },
+                )
+
+                view.onDbImportFinished(result.isSuccess)
+            }
+        }
+    }
+
+    fun displayMoreActions() = displayMoreActions
+    fun setDisplayMoreActions(shouldDisplayMoreActions: Boolean) {
+        _displayMoreActions.postValue(shouldDisplayMoreActions)
     }
 }

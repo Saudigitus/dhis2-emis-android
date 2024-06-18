@@ -4,6 +4,7 @@ import android.graphics.Rect
 import android.view.ViewTreeObserver
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,7 +18,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -56,12 +56,13 @@ import org.dhis2.composetable.actions.TextInputInteractions
 import org.dhis2.composetable.model.TextInputModel
 import org.dhis2.composetable.model.extensions.keyboardCapitalization
 import org.dhis2.composetable.model.extensions.toKeyboardType
+import org.hisp.dhis.mobile.ui.designsystem.component.IconButton
 
 @Composable
 fun TextInput(
     textInputModel: TextInputModel,
     textInputInteractions: TextInputInteractions,
-    focusRequester: FocusRequester
+    focusRequester: FocusRequester,
 ) {
     Column(
         modifier = Modifier
@@ -69,9 +70,10 @@ fun TextInput(
             .fillMaxWidth()
             .background(
                 color = Color.White,
-                shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+                shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
             )
-            .padding(start = 16.dp, end = 4.dp, top = 16.dp, bottom = 4.dp)
+            .padding(start = 16.dp, end = 4.dp, top = 16.dp, bottom = 4.dp),
+        verticalArrangement = spacedBy(8.dp),
     ) {
         InputTitle(textInputModel.mainLabel, textInputModel.secondaryLabels)
         TextInputContent(
@@ -79,7 +81,7 @@ fun TextInput(
             onTextChanged = textInputInteractions::onTextChanged,
             onSave = textInputInteractions::onSave,
             onNextSelected = textInputInteractions::onNextSelected,
-            focusRequester = focusRequester
+            focusRequester = focusRequester,
         )
     }
 }
@@ -123,12 +125,12 @@ private fun InputTitle(mainTitle: String, secondaryTitle: List<String>) {
             .semantics {
                 mainLabel = mainTitle
                 secondaryLabel = secondaryTitle.joinToString(separator = ",")
-            }
+            },
     ) {
         Text(
             text = displayName(mainTitle, secondaryTitle),
             fontSize = 10.sp,
-            maxLines = 1
+            maxLines = 1,
         )
     }
 }
@@ -139,7 +141,7 @@ private fun TextInputContent(
     onTextChanged: (TextInputModel) -> Unit,
     onSave: () -> Unit,
     onNextSelected: () -> Unit,
-    focusRequester: FocusRequester
+    focusRequester: FocusRequester,
 ) {
     val focusManager = LocalFocusManager.current
 
@@ -148,7 +150,7 @@ private fun TextInputContent(
     val dividerColor = dividerColor(
         hasError = textInputModel.error != null,
         hasWarning = textInputModel.warning != null,
-        hasFocus = hasFocus
+        hasFocus = hasFocus,
     )
 
     val keyboardOptions by remember(textInputModel.keyboardInputType) {
@@ -156,8 +158,8 @@ private fun TextInputContent(
             KeyboardOptions(
                 capitalization = textInputModel.keyboardInputType.keyboardCapitalization(),
                 imeAction = ImeAction.Next,
-                keyboardType = textInputModel.keyboardInputType.toKeyboardType()
-            )
+                keyboardType = textInputModel.keyboardInputType.toKeyboardType(),
+            ),
         )
     }
 
@@ -176,19 +178,19 @@ private fun TextInputContent(
         mutableStateOf(
             TextFieldValue(
                 text = textInputModel.currentValue ?: "",
-                selection = TextRange(textInputModel.currentValue?.length ?: 0)
-            )
+                selection = TextRange(textInputModel.currentValue?.length ?: 0),
+            ),
         )
     }
 
     Column {
         Row(
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)
+                    .weight(1f),
             ) {
                 BasicTextField(
                     modifier = Modifier
@@ -209,25 +211,25 @@ private fun TextInputContent(
                             textInputModel.copy(
                                 currentValue = it.text,
                                 selection = it.selection,
-                                error = null
-                            )
+                                error = null,
+                            ),
                         )
                     },
                     textStyle = TextStyle.Default.copy(
                         fontSize = 12.sp,
-                        textAlign = TextAlign.Start
+                        textAlign = TextAlign.Start,
                     ),
                     keyboardOptions = keyboardOptions,
                     keyboardActions = KeyboardActions(
                         onNext = {
                             onNextSelected()
-                        }
-                    )
+                        },
+                    ),
                 )
                 Spacer(modifier = Modifier.size(3.dp))
                 Divider(
                     color = dividerColor,
-                    thickness = 1.dp
+                    thickness = 1.dp,
                 )
             }
             Spacer(modifier = Modifier.size(8.dp))
@@ -235,7 +237,7 @@ private fun TextInputContent(
                 modifier = Modifier
                     .testTag(INPUT_ICON_TEST_TAG),
                 hasFocus = hasFocus,
-                onActionIconClick = onActionIconClick
+                onActionIconClick = onActionIconClick,
             )
         }
         if (textInputModel.hasErrorOrWarning()) {
@@ -246,10 +248,21 @@ private fun TextInputContent(
                     color = LocalTableColors.current.cellTextColor(
                         textInputModel.error != null,
                         textInputModel.warning != null,
-                        true
+                        true,
                     ),
-                    fontSize = 10.sp
-                )
+                    fontSize = 10.sp,
+                ),
+            )
+        }
+        if (textInputModel.hasHelperText()) {
+            Text(
+                modifier = Modifier
+                    .testTag(INPUT_HELPER_TEXT_TEST_TAG),
+                text = textInputModel.helperText!!,
+                style = TextStyle(
+                    color = LocalTableColors.current.headerText,
+                ),
+                fontSize = 10.sp,
             )
         }
     }
@@ -267,7 +280,7 @@ private fun dividerColor(hasError: Boolean, hasWarning: Boolean, hasFocus: Boole
 private fun TextInputContentActionIcon(
     modifier: Modifier = Modifier,
     hasFocus: Boolean,
-    onActionIconClick: () -> Unit
+    onActionIconClick: () -> Unit,
 ) {
     val icon = if (hasFocus) {
         R.drawable.ic_finish_edit_input
@@ -277,34 +290,35 @@ private fun TextInputContentActionIcon(
 
     Row(
         horizontalArrangement = Arrangement.SpaceAround,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(
             modifier = modifier
                 .semantics {
                     drawableId = icon
                 },
-            onClick = onActionIconClick
-        ) {
-            Icon(
-                painter = painterResource(id = icon),
-                tint = LocalTableColors.current.primary,
-                contentDescription = ""
-            )
-        }
+            onClick = onActionIconClick,
+            icon = {
+                Icon(
+                    painter = painterResource(id = icon),
+                    tint = LocalTableColors.current.primary,
+                    contentDescription = "",
+                )
+            },
+        )
     }
 }
 
 @Composable
 fun displayName(
     dataElementName: String,
-    categoryOptionComboOptionNames: List<String>
+    categoryOptionComboOptionNames: List<String>,
 ): AnnotatedString {
     return buildAnnotatedString {
         withStyle(
             style = SpanStyle(
-                color = LocalTableColors.current.headerText
-            )
+                color = LocalTableColors.current.headerText,
+            ),
         ) {
             append(dataElementName)
         }
@@ -312,15 +326,15 @@ fun displayName(
         categoryOptionComboOptionNames.forEach { catOptionName ->
             withStyle(
                 style = SpanStyle(
-                    color = LocalTableColors.current.primary
-                )
+                    color = LocalTableColors.current.primary,
+                ),
             ) {
                 append(" / ")
             }
             withStyle(
                 style = SpanStyle(
-                    color = LocalTableColors.current.disabledCellText
-                )
+                    color = LocalTableColors.current.disabledCellText,
+                ),
             ) {
                 append(catOptionName)
             }
@@ -335,13 +349,33 @@ fun DefaultTextInputStatusPreview() {
         id = "",
         mainLabel = "Row",
         secondaryLabels = listOf("header 1", "header 2"),
-        currentValue = "Test"
+        helperText = "description",
+        currentValue = "Test",
     )
 
     TextInput(
         textInputModel = previewTextInput,
         textInputInteractions = object : TextInputInteractions {},
-        focusRequester = FocusRequester()
+        focusRequester = FocusRequester(),
+    )
+}
+
+@Preview
+@Composable
+fun DefaultTextInputErrorStatusPreview() {
+    val previewTextInput = TextInputModel(
+        id = "",
+        mainLabel = "Row",
+        secondaryLabels = listOf("header 1", "header 2"),
+        error = "error message",
+        helperText = "description",
+        currentValue = "Test",
+    )
+
+    TextInput(
+        textInputModel = previewTextInput,
+        textInputInteractions = object : TextInputInteractions {},
+        focusRequester = FocusRequester(),
     )
 }
 
@@ -349,6 +383,7 @@ const val INPUT_TEST_TAG = "INPUT_TEST_TAG"
 const val INPUT_TEST_FIELD_TEST_TAG = "INPUT_TEST_FIELD_TEST_TAG"
 const val INPUT_ERROR_MESSAGE_TEST_TAG = "INPUT_ERROR_MESSAGE_TEST_TAG"
 const val INPUT_ICON_TEST_TAG = "INPUT_ICON_TEST_TAG"
+const val INPUT_HELPER_TEXT_TEST_TAG = "INPUT_HELPER_TEXT_TEST_TAG"
 
 val DrawableId = SemanticsPropertyKey<Int>("DrawableResId")
 var SemanticsPropertyReceiver.drawableId by DrawableId

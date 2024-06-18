@@ -10,7 +10,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class FormViewModel
-@Inject constructor(): ViewModel() {
+@Inject constructor() : ViewModel() {
 
     private val _formState = MutableStateFlow<List<Field>>(emptyList())
     val formState: StateFlow<List<Field>> = _formState
@@ -19,7 +19,7 @@ class FormViewModel
         key: String,
         dataElement: String,
         value: String,
-        valueType: ValueType? = null
+        valueType: ValueType? = null,
     ) {
         val junkData = mutableListOf<Field>()
 
@@ -37,8 +37,8 @@ class FormViewModel
                     key = key,
                     dataElement = dataElement,
                     value = value,
-                    valueType = valueType
-                )
+                    valueType = valueType,
+                ),
             )
         } else {
             junkData.add(
@@ -46,8 +46,8 @@ class FormViewModel
                     key = key,
                     dataElement = dataElement,
                     value = value,
-                    valueType = valueType
-                )
+                    valueType = valueType,
+                ),
             )
         }
 

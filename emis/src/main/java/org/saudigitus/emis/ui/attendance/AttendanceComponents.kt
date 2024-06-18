@@ -27,38 +27,37 @@ import org.saudigitus.emis.utils.Utils.getIconByName
 @Composable
 fun AttendanceItemState(
     tei: String,
-    attendanceState: List<AttendanceEntity>
+    attendanceState: List<AttendanceEntity>,
 ) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         if (attendanceState.isEmpty()) {
             Icon(
                 imageVector = Icons.Filled.Help,
                 contentDescription = null,
                 modifier = Modifier.size(40.dp),
-                tint = Color.LightGray
+                tint = Color.LightGray,
             )
         } else {
             val attendance = attendanceState.find { it.tei == tei }
 
             if (attendance != null) {
-
                 Icon(
                     imageVector = attendance.setting?.icon ?: ImageVector.vectorResource(
-                        getIconByName("${attendance.setting?.iconName}")
+                        getIconByName("${attendance.setting?.iconName}"),
                     ),
                     contentDescription = attendance.value,
                     modifier = Modifier.size(40.dp),
-                    tint = attendance.setting?.iconColor ?: Color.Black
+                    tint = attendance.setting?.iconColor ?: Color.Black,
                 )
             } else {
                 Icon(
                     imageVector = Icons.Filled.Help,
                     contentDescription = null,
                     modifier = Modifier.size(40.dp),
-                    tint = Color.LightGray
+                    tint = Color.LightGray,
                 )
             }
         }
@@ -74,8 +73,8 @@ fun AttendanceButtons(
         index: Int,
         tei: String?,
         attendanceState: String,
-        color: Color
-    ) -> Unit
+        color: Color,
+    ) -> Unit,
 ) {
     var btnCode by remember { mutableStateOf("") }
     var selectedIndex by remember { mutableStateOf(-1) }
@@ -83,7 +82,7 @@ fun AttendanceButtons(
     Row(
         modifier = Modifier.layoutId(layoutId = tei),
         horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         actions.forEachIndexed { index, action ->
             IconButton(
@@ -95,28 +94,28 @@ fun AttendanceButtons(
                         index,
                         tei,
                         action.code ?: "",
-                        action.color ?: Color.LightGray
+                        action.color ?: Color.LightGray,
                     )
                 },
                 modifier = Modifier.size(40.dp),
                 colors = IconButtonDefaults.iconButtonColors(
                     containerColor =
-                        getContainerColor(btnState, tei, action.code.toString(), selectedIndex, index),
+                    getContainerColor(btnState, tei, action.code.toString(), selectedIndex, index),
                     contentColor =
-                        if (selectedIndex == index || btnState.isNotEmpty()) {
-                            getContentColor(btnState, tei, action.code.toString(), selectedIndex, index)?.let {
-                                Color(it)
-                            }
-                                ?: action.color ?: Color.White
-                        } else {
-                            action.color ?: Color.White
+                    if (selectedIndex == index || btnState.isNotEmpty()) {
+                        getContentColor(btnState, tei, action.code.toString(), selectedIndex, index)?.let {
+                            Color(it)
                         }
+                            ?: action.color ?: Color.White
+                    } else {
+                        action.color ?: Color.White
+                    },
 
-                )
+                ),
             ) {
                 Icon(
                     imageVector = action.icon ?: ImageVector.vectorResource(getIconByName("${action.iconName}")),
-                    contentDescription = action.name
+                    contentDescription = action.name,
                 )
             }
         }
@@ -128,7 +127,7 @@ private fun getContainerColor(
     tei: String,
     code: String,
     selectedIndex: Int,
-    itemIndex: Int
+    itemIndex: Int,
 ): Color {
     val attendance = btnState.find { it.btnId == tei }
 
@@ -147,7 +146,7 @@ private fun getContentColor(
     tei: String,
     code: String,
     selectedIndex: Int,
-    itemIndex: Int
+    itemIndex: Int,
 ): Long? {
     val attendance = btnState.find { it.btnId == tei }
 

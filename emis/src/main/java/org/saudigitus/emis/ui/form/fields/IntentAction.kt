@@ -12,17 +12,17 @@ import timber.log.Timber
 @Composable
 fun IntentAction(
     action: String,
-    value: String
+    value: String,
 ) {
     val context = LocalContext.current
 
     val intent = Intent(action).apply {
         when (action) {
             Intent.ACTION_DIAL -> {
-                data = Uri.parse("tel:${value}")
+                data = Uri.parse("tel:$value")
             }
             Intent.ACTION_SENDTO -> {
-                data = Uri.parse("mailto:${value}")
+                data = Uri.parse("mailto:$value")
             }
         }
     }

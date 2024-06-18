@@ -11,7 +11,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.unit.dp
 import org.dhis2.composetable.ui.Keyboard
 import org.dhis2.composetable.ui.keyboardAsState
 import org.hisp.dhis.android.core.common.ValueType
@@ -33,8 +32,8 @@ fun PerformanceForm(
         key: String,
         dataElement: String,
         value: String,
-        valueType: ValueType?
-    ) -> Unit
+        valueType: ValueType?,
+    ) -> Unit,
 ) {
     val formState = remember { mutableStateMapOf<String, String>() }
 
@@ -47,8 +46,8 @@ fun PerformanceForm(
 
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.Top),
-        horizontalAlignment = Alignment.CenterHorizontally
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         fields.forEach { formField ->
             val data = formData?.find { it.tei == key && it.dataElement == formField.uid }
@@ -58,7 +57,7 @@ fun PerformanceForm(
                     label = formField.label,
                     placeholder = formField.placeholder,
                     data = formField.options ?: emptyList(),
-                    selectedItem = data?.itemOptions
+                    selectedItem = data?.itemOptions,
                 ) { item ->
                     onNext(Triple(formField.uid, item.code, null))
                 }
@@ -71,7 +70,7 @@ fun PerformanceForm(
                             key,
                             formField.uid,
                             it,
-                            formField.type
+                            formField.type,
                         )
                     },
                     placeholder = formField.placeholder,
@@ -86,7 +85,7 @@ fun PerformanceForm(
                                 }
                                 onNext(Triple(formField.uid, fieldValue?.value, formField.type))
                             }
-                        }
+                        },
                 )
             }
         }

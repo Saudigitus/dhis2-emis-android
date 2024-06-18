@@ -10,5 +10,5 @@ data class AttendanceOption(
     val icon: ImageVector? = null,
     val iconName: String? = null,
     val color: Color? = null,
-    val actionOrder: Int? = null
+    val actionOrder: Int? = null,
 )

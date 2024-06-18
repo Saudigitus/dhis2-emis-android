@@ -1,7 +1,6 @@
 package org.dhis2.usescases.main.program
 
 import android.content.Context
-import android.graphics.Color
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -10,7 +9,9 @@ import androidx.compose.ui.test.performClick
 import androidx.test.platform.app.InstrumentationRegistry
 import org.dhis2.R
 import org.dhis2.ui.MetadataIconData
+import org.dhis2.ui.toColor
 import org.hisp.dhis.android.core.common.State
+import org.hisp.dhis.mobile.ui.designsystem.component.internal.ImageCardData
 import org.junit.Rule
 import org.junit.Test
 
@@ -82,9 +83,9 @@ class ProgramUiTest {
         ProgramViewModel(
             uid = "qweqwe",
             title = "Program title",
-            metadataIconData = MetadataIconData(
-                programColor = Color.parseColor("#00BCD4"),
-                iconResource = R.drawable.ic_info
+            MetadataIconData(
+                imageCardData = ImageCardData.IconCardData("", "", "ic_info", "#00BCD4".toColor()),
+                color =  "#00BCD4".toColor(),
             ),
             count = 12,
             type = "type",
@@ -96,6 +97,8 @@ class ProgramUiTest {
             state = State.SYNCED,
             hasOverdueEvent = true,
             false,
-            downloadState = ProgramDownloadState.NONE
+            downloadState = ProgramDownloadState.NONE,
+            stockConfig = null,
+            isSEMIS = false
         )
 }

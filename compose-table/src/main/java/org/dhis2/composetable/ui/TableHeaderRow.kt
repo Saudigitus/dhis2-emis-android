@@ -4,7 +4,6 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -18,6 +17,7 @@ import org.dhis2.composetable.R
 import org.dhis2.composetable.model.ResizingCell
 import org.dhis2.composetable.model.TableCornerUiState
 import org.dhis2.composetable.model.TableModel
+import org.hisp.dhis.mobile.ui.designsystem.component.IconButton
 
 @Composable
 fun TableHeaderRow(
@@ -31,10 +31,10 @@ fun TableHeaderRow(
     onHeaderCellClick: (headerColumnIndex: Int, headerRowIndex: Int) -> Unit = { _, _ -> },
     onHeaderResize: (Int, Float) -> Unit,
     onResizing: (ResizingCell?) -> Unit,
-    onResetResize: () -> Unit = {}
+    onResetResize: () -> Unit = {},
 ) {
     ConstraintLayout(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize(),
     ) {
         val isHeaderActionEnabled = TableTheme.configuration.headerActionsEnabled
         val (tableActions, tableCorner, header) = createRefs()
@@ -51,17 +51,20 @@ fun TableHeaderRow(
                 title = tableModel.title,
                 actionIcons = {
                     if (TableTheme.dimensions.hasOverriddenWidths(tableModel.id ?: "")) {
-                        IconButton(onClick = onResetResize) {
-                            Icon(
-                                imageVector = ImageVector.vectorResource(
-                                    id = R.drawable.ic_restart_alt
-                                ),
-                                contentDescription = "",
-                                tint = Color.Black.copy(alpha = 0.87f)
-                            )
-                        }
+                        IconButton(
+                            onClick = onResetResize,
+                            icon = {
+                                Icon(
+                                    imageVector = ImageVector.vectorResource(
+                                        id = R.drawable.ic_restart_alt,
+                                    ),
+                                    contentDescription = "",
+                                    tint = Color.Black.copy(alpha = 0.87f),
+                                )
+                            },
+                        )
                     }
-                }
+                },
             )
         }
 
@@ -81,7 +84,7 @@ fun TableHeaderRow(
                 .zIndex(1f),
             tableCornerUiState = cornerUiState,
             tableId = tableModel.id ?: "",
-            onClick = onTableCornerClick
+            onClick = onTableCornerClick,
         )
 
         TableHeader(
@@ -102,7 +105,7 @@ fun TableHeaderRow(
             cellStyle = cellStyle,
             onHeaderCellSelected = onHeaderCellClick,
             onHeaderResize = onHeaderResize,
-            onResizing = onResizing
+            onResizing = onResizing,
         )
     }
 }

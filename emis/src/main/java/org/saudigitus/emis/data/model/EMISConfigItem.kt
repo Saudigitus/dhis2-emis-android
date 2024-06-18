@@ -1,6 +1,5 @@
 package org.saudigitus.emis.data.model
 
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 
@@ -23,5 +22,5 @@ data class EMISConfigItem(
     @JsonProperty("socio-economics")
     val socioEconomics: SocioEconomics?,
     @JsonProperty("transfer")
-    val transfer: Transfer?
+    val transfer: Transfer?,
 )

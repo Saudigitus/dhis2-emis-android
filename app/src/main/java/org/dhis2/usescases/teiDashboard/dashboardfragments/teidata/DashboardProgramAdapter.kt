@@ -6,18 +6,18 @@ import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import org.dhis2.R
 import org.dhis2.databinding.ItemDashboardProgramBinding
-import org.dhis2.usescases.teiDashboard.DashboardProgramModel
+import org.dhis2.usescases.teiDashboard.DashboardTEIModel
 
 class DashboardProgramAdapter(
     private val presenter: TEIDataPresenter,
-    private val dashboardProgramModel: DashboardProgramModel
+    private val dashboardProgramModel: DashboardTEIModel,
 ) : RecyclerView.Adapter<DashboardProgramViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DashboardProgramViewHolder {
         val binding = DataBindingUtil.inflate<ItemDashboardProgramBinding>(
             LayoutInflater.from(parent.context),
             R.layout.item_dashboard_program,
             parent,
-            false
+            false,
         )
         return DashboardProgramViewHolder(binding)
     }
@@ -27,6 +27,6 @@ class DashboardProgramAdapter(
     }
 
     override fun getItemCount(): Int {
-        return dashboardProgramModel.programsWithActiveEnrollment.size
+        return dashboardProgramModel.getProgramsWithActiveEnrollment()?.size ?: 0
     }
 }

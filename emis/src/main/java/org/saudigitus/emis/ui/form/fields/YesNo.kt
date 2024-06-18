@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 @Composable
 fun YesNo() {
     Row {
-        RadioButton(selected =false, onClick = { /*TODO*/ })
-        RadioButton(selected =false, onClick = { /*TODO*/ })
+        RadioButton(selected = false, onClick = { /*TODO*/ })
+        RadioButton(selected = false, onClick = { /*TODO*/ })
     }
 }

@@ -30,11 +30,12 @@ import dagger.Module
 import dagger.Provides
 import kotlinx.coroutines.Dispatchers
 import org.dhis2.commons.prefs.PreferenceProvider
+import org.dhis2.commons.resources.ColorUtils
+import org.dhis2.commons.resources.DhisPeriodUtils
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.commons.schedulers.SchedulerProvider
 import org.dhis2.commons.sync.SyncContext
 import org.dhis2.commons.viewmodel.DispatcherProvider
-import org.dhis2.data.dhislogic.DhisPeriodUtils
 import org.dhis2.data.dhislogic.DhisProgramUtils
 import org.dhis2.data.service.workManager.WorkManagerController
 import org.hisp.dhis.android.core.D2
@@ -43,7 +44,7 @@ import org.hisp.dhis.android.core.D2
 class GranularSyncModule(
     private val context: Context,
     private val view: GranularSyncContracts.View,
-    private val syncContext: SyncContext
+    private val syncContext: SyncContext,
 ) {
 
     @Provides
@@ -52,24 +53,27 @@ class GranularSyncModule(
         schedulerProvider: SchedulerProvider,
         workManagerController: WorkManagerController,
         smsSyncProvider: SMSSyncProvider,
-        repository: GranularSyncRepository
+        repository: GranularSyncRepository,
     ): GranularSyncViewModelFactory {
         return GranularSyncViewModelFactory(
             d2,
             view,
             repository,
             schedulerProvider,
-            object : DispatcherProvider {
-                override fun io() = Dispatchers.IO
-
-                override fun computation() = Dispatchers.Default
-
-                override fun ui() = Dispatchers.Main
-            },
+            provideDispatchers(),
             syncContext,
             workManagerController,
-            smsSyncProvider
+            smsSyncProvider,
         )
+    }
+
+    @Provides
+    fun provideDispatchers() = object : DispatcherProvider {
+        override fun io() = Dispatchers.IO
+
+        override fun computation() = Dispatchers.Default
+
+        override fun ui() = Dispatchers.Main
     }
 
     @Provides
@@ -78,22 +82,23 @@ class GranularSyncModule(
         dhisProgramUtils: DhisProgramUtils,
         periodUtils: DhisPeriodUtils,
         preferenceProvider: PreferenceProvider,
-        resourceManager: ResourceManager
+        resourceManager: ResourceManager,
     ): GranularSyncRepository = GranularSyncRepository(
         d2,
         syncContext,
         preferenceProvider,
         dhisProgramUtils,
         periodUtils,
-        resourceManager
+        resourceManager,
+        provideDispatchers(),
     )
 
     @Provides
-    fun smsSyncProvider(d2: D2): SMSSyncProvider {
+    fun smsSyncProvider(d2: D2, colorUtils: ColorUtils): SMSSyncProvider {
         return SMSSyncProviderImpl(
             d2,
             syncContext,
-            ResourceManager(context)
+            ResourceManager(context, colorUtils),
         )
     }
 }

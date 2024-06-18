@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
-import javax.inject.Inject
+import com.google.android.material.snackbar.Snackbar
 import org.dhis2.R
 import org.dhis2.commons.Constants
 import org.dhis2.commons.sync.OnDismissListener
@@ -14,10 +14,12 @@ import org.dhis2.databinding.FragmentDataSetListBinding
 import org.dhis2.usescases.datasets.dataSetTable.DataSetTableActivity
 import org.dhis2.usescases.datasets.datasetDetail.DataSetDetailActivity
 import org.dhis2.usescases.datasets.datasetDetail.DataSetDetailModel
+import org.dhis2.usescases.datasets.datasetDetail.datasetList.mapper.DatasetCardMapper
 import org.dhis2.usescases.datasets.datasetInitial.DataSetInitialActivity
 import org.dhis2.usescases.general.FragmentGlobalAbstract
 import org.dhis2.utils.ActionObserver
 import org.dhis2.utils.granularsync.SyncStatusDialog
+import javax.inject.Inject
 
 class DataSetListFragment : FragmentGlobalAbstract() {
 
@@ -32,20 +34,23 @@ class DataSetListFragment : FragmentGlobalAbstract() {
     @Inject
     lateinit var viewModelFactory: DataSetListViewModelFactory
 
+    @Inject
+    lateinit var datasetCardMapper: DatasetCardMapper
+
     private val viewModel: DataSetListViewModel by viewModels { viewModelFactory }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         activity = requireActivity() as DataSetDetailActivity
         activity.dataSetDetailComponent.plus(DataSetListModule()).inject(this)
-        adapter = DataSetListAdapter(viewModel)
+        adapter = DataSetListAdapter(viewModel, datasetCardMapper)
 
         with(viewModel) {
-            datasets.observe(viewLifecycleOwner, { setData(it) })
-            canWrite.observe(viewLifecycleOwner, { setWritePermission(it) })
+            datasets.observe(viewLifecycleOwner) { setData(it) }
+            canWrite.observe(viewLifecycleOwner) { setWritePermission(it) }
             selectedDataset.observe(viewLifecycleOwner, ActionObserver { startDataSet(it) })
             selectedSync.observe(viewLifecycleOwner, ActionObserver { showSyncDialog(it) })
         }
@@ -120,15 +125,24 @@ class DataSetListFragment : FragmentGlobalAbstract() {
                     dataSetUid = dataSetUid,
                     periodId = dataSet.periodId(),
                     orgUnitUid = dataSet.orgUnitUid(),
-                    attributeOptionComboUid = dataSet.catOptionComboUid()
-                )
+                    attributeOptionComboUid = dataSet.catOptionComboUid(),
+                ),
             ).onDismissListener(object : OnDismissListener {
                 override fun onDismiss(hasChanged: Boolean) {
                     if (hasChanged) {
                         viewModel.updateData()
                     }
                 }
-            }).show(FRAGMENT_TAG)
+            })
+            .onNoConnectionListener {
+                val contextView = activity.findViewById<View>(R.id.navigationBar)
+                Snackbar.make(
+                    contextView,
+                    R.string.sync_offline_check_connection,
+                    Snackbar.LENGTH_SHORT,
+                ).show()
+            }
+            .show(FRAGMENT_TAG)
     }
 
     companion object {

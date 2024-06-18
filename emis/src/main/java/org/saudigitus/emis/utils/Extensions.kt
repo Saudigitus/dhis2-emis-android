@@ -19,17 +19,36 @@ fun D2.eventsWithTrackedDataValues(
     .blockingGet()
 
 fun D2.optionByOptionSet(
-    optionSet: String
+    optionSet: String?,
 ): List<Option> = optionModule()
     .options()
     .byOptionSetUid().eq(optionSet)
     .orderBySortOrder(RepositoryScope.OrderByDirection.ASC)
     .blockingGet()
 
+fun D2.optionsNotInOptionGroup(
+    optionGroups: List<String>,
+    optionSet: String?,
+): List<Option> = optionModule()
+    .optionGroups()
+    .byUid().notIn(optionGroups)
+    .byOptionSetUid().eq(optionSet)
+    .withOptions()
+    .orderByDisplayName(RepositoryScope.OrderByDirection.ASC)
+    .blockingGet()
+    .flatMap {
+        it.options() ?: emptyList()
+    }.flatMap {
+        optionModule()
+            .options()
+            .byUid().eq(it.uid())
+            .orderBySortOrder(RepositoryScope.OrderByDirection.ASC)
+            .blockingGet()
+    }
 
 fun D2.optionsByOptionSetAndCode(
-    optionSet: String,
-    codes: List<String>
+    optionSet: String?,
+    codes: List<String>,
 ): List<Option> = optionModule()
     .options()
     .byCode().`in`(codes)
@@ -37,7 +56,5 @@ fun D2.optionsByOptionSetAndCode(
     .orderBySortOrder(RepositoryScope.OrderByDirection.ASC)
     .blockingGet()
 
-
-
 fun List<DropdownState>.getByType(type: FilterType): DropdownState? =
-    find { it.filterType == type}
+    find { it.filterType == type }

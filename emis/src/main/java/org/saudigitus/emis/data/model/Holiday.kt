@@ -1,6 +1,5 @@
 package org.saudigitus.emis.data.model
 
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 
@@ -9,5 +8,5 @@ data class Holiday(
     @JsonProperty("date")
     val date: String,
     @JsonProperty("event")
-    val event: String
+    val event: String,
 )

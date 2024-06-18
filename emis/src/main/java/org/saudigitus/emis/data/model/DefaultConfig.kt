@@ -4,5 +4,5 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class DefaultConfig(
-    val currentAcademicYear: String?
+    val currentAcademicYear: String?,
 )

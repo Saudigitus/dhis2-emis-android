@@ -1,6 +1,5 @@
 package org.saudigitus.emis.data.model
 
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 
@@ -11,5 +10,5 @@ data class Transfer(
     @JsonProperty("programStage")
     val programStage: String?,
     @JsonProperty("status")
-    val status: String?
+    val status: String?,
 )

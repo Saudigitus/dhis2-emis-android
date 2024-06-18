@@ -8,5 +8,5 @@ data class EventTuple(
     val programStage: String,
     val tei: String,
     val rowAction: RowAction,
-    val date: String
+    val date: String,
 )

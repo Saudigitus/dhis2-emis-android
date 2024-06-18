@@ -1,6 +1,5 @@
 package org.saudigitus.emis.ui.components
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -24,14 +23,13 @@ fun <T>DetailsWithOptions(
     trailingIcon: ImageVector? = null,
     data: List<T>,
     defaultSelection: String = "",
-    onItemClick: (T) -> Unit
+    onItemClick: (T) -> Unit,
 ) {
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = Color.White,
         ),
-        border = BorderStroke(width = 0.85.dp, color = Color.LightGray.copy(.85f)),
         shape = RoundedCornerShape(16.dp),
     ) {
         ShowCard(infoCard = infoCard)
@@ -40,7 +38,7 @@ fun <T>DetailsWithOptions(
                 .fillMaxWidth()
                 .padding(vertical = 5.dp),
             color = Color.LightGray.copy(.85f),
-            thickness = .9.dp
+            thickness = .9.dp,
         )
         DropDown(
             placeholder = placeholder,
@@ -49,7 +47,7 @@ fun <T>DetailsWithOptions(
             data = data,
             elevation = 1.dp,
             selectedItemName = defaultSelection,
-            onItemClick = onItemClick
+            onItemClick = onItemClick,
         )
         Spacer(modifier = Modifier.size(5.dp))
     }

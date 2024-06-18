@@ -7,7 +7,9 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CornerSize
@@ -65,31 +67,33 @@ fun PerformanceScreen(
         key: String,
         dataElement: String,
         value: String,
-        valueType: ValueType?
+        valueType: ValueType?,
     ) -> Unit,
     setDate: (String) -> Unit,
     performanceStats: Pair<String, String>,
     onNext: (
         tei: String,
         ou: String,
-        fieldData: Triple<String, String?, ValueType?>
+        fieldData: Triple<String, String?, ValueType?>,
     ) -> Unit,
     performanceStep: ButtonStep,
     step: (ButtonStep) -> Unit,
     onFilterClick: (dataElement: String) -> Unit,
     onSave: () -> Unit,
-    dateValidator: (Long) -> Boolean = { true }
+    dateValidator: (Long) -> Boolean = { true },
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     var isCompleted by remember { mutableStateOf(false) }
     val context = LocalContext.current
+
+    var selectedSubject by remember { mutableStateOf(defaultSelection) }
 
     if (performanceStep == ButtonStep.SAVING) {
         PerformanceSummaryDialog(
             title = stringResource(R.string.performance_summary),
             data = performanceStats,
             themeColor = Color(0xFF2C98F0),
-            onCancel = { step.invoke(ButtonStep.HOLD_SAVING) }
+            onCancel = { step.invoke(ButtonStep.HOLD_SAVING) },
         ) {
             onSave()
             isCompleted = true
@@ -100,7 +104,7 @@ fun PerformanceScreen(
         LaunchedEffect(key1 = snackbarHostState) {
             snackbarHostState.showSnackbar(
                 message = context.getString(R.string.marks_saved),
-                duration = SnackbarDuration.Short
+                duration = SnackbarDuration.Short,
             )
         }
     }
@@ -113,17 +117,17 @@ fun PerformanceScreen(
                     containerColor = Color(0xFF2C98F0),
                     navigationIconContentColor = Color.White,
                     titleContentColor = Color.White,
-                    actionIconContentColor = Color.White
+                    actionIconContentColor = Color.White,
                 ),
                 navigationAction = onNavBack,
                 disableNavigation = false,
                 actionState = ToolbarActionState(
                     syncVisibility = false,
                     filterVisibility = false,
-                    showCalendar = true
+                    showCalendar = false,
                 ),
                 calendarAction = setDate,
-                dateValidator = dateValidator
+                dateValidator = dateValidator,
             )
         },
         floatingActionButton = {
@@ -137,8 +141,8 @@ fun PerformanceScreen(
                         },
                         color = Color(0xFF2C98F0),
                         style = LocalTextStyle.current.copy(
-                            fontFamily = FontFamily(Font(R.font.rubik_medium))
-                        )
+                            fontFamily = FontFamily(Font(R.font.rubik_medium)),
+                        ),
                     )
                 },
                 icon = {
@@ -149,10 +153,10 @@ fun PerformanceScreen(
                             Icons.Default.Save
                         },
                         contentDescription = null,
-                        tint = Color(0xFF2C98F0)
+                        tint = Color(0xFF2C98F0),
                     )
                 },
-                onClick = onSave
+                onClick = onSave,
             )
         },
         snackbarHost = {
@@ -162,27 +166,27 @@ fun PerformanceScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
                     containerColor = light_success,
-                    contentColor = Color.White
+                    contentColor = Color.White,
                 ) {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.Start),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.success_icon),
-                            contentDescription = it.visuals.message
+                            contentDescription = it.visuals.message,
                         )
 
                         Text(
                             text = it.visuals.message,
                             style = LocalTextStyle.current.copy(
-                                fontFamily = FontFamily(Font(R.font.rubik_regular))
-                            )
+                                fontFamily = FontFamily(Font(R.font.rubik_regular)),
+                            ),
                         )
                     }
                 }
             }
-        }
+        },
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -190,7 +194,7 @@ fun PerformanceScreen(
                 .background(color = Color(0xFF2C98F0))
                 .padding(paddingValues),
             verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.Start
+            horizontalAlignment = Alignment.Start,
         ) {
             Column(
                 modifier = Modifier
@@ -202,11 +206,11 @@ fun PerformanceScreen(
                                 topStart = CornerSize(16.dp),
                                 topEnd = CornerSize(16.dp),
                                 bottomStart = CornerSize(0.dp),
-                                bottomEnd = CornerSize(0.dp)
-                            )
+                                bottomEnd = CornerSize(0.dp),
+                            ),
                     ),
                 verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
-                horizontalAlignment = Alignment.Start
+                horizontalAlignment = Alignment.Start,
             ) {
                 DetailsWithOptions(
                     modifier = Modifier.fillMaxWidth(),
@@ -215,12 +219,15 @@ fun PerformanceScreen(
                     leadingIcon = ImageVector.vectorResource(R.drawable.ic_category),
                     trailingIcon = Icons.TwoTone.Edit,
                     data = state.subjects,
-                    defaultSelection = defaultSelection,
-                    onItemClick = { onFilterClick.invoke(it.uid) }
+                    defaultSelection = selectedSubject,
+                    onItemClick = {
+                        selectedSubject = it.displayName ?: ""
+                        onFilterClick.invoke(it.uid)
+                    },
                 )
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = 108.dp)
+                    contentPadding = PaddingValues(bottom = 108.dp),
                 ) {
                     items(state.students) { student ->
                         MetadataItem(
@@ -229,23 +236,26 @@ fun PerformanceScreen(
                             } ${student.attributeValues?.values?.toList()?.getOrNull(1)?.value() ?: ""}",
                             attrValue = student.attributeValues?.values?.toList()?.getOrNull(0)?.value() ?: "-",
                             enableClickAction = performanceStep == ButtonStep.HOLD_SAVING,
-                            onClick = {}
+                            onClick = {},
                         ) {
                             PerformanceForm(
-                                modifier = Modifier.fillMaxWidth(.35f)
+                                modifier = Modifier
+                                    .width(120.dp)
+                                    .height(60.dp)
+                                    .padding(bottom = 2.dp)
                                     .align(Alignment.End),
                                 state = state.fieldsState,
                                 key = student.uid(),
                                 fields = state.formFields,
                                 formData = state.formData,
                                 onNext = {
-                                     onNext.invoke(
-                                         student.uid(),
-                                         student.tei.organisationUnit() ?: "",
-                                         it
-                                     )
+                                    onNext.invoke(
+                                        student.uid(),
+                                        student.tei.organisationUnit() ?: "",
+                                        it,
+                                    )
                                 },
-                                setFormState = setPerformanceState
+                                setFormState = setPerformanceState,
                             )
                         }
                     }

@@ -11,13 +11,13 @@ import dhis2.org.analytics.charts.ui.AnalyticsAdapter
 import dhis2.org.analytics.charts.ui.AnalyticsModel
 import dhis2.org.analytics.charts.ui.ChartModel
 import dhis2.org.analytics.charts.ui.OrgUnitFilterType
-import javax.inject.Inject
 import org.dhis2.R
 import org.dhis2.commons.dialogs.AlertBottomDialog
 import org.dhis2.commons.orgunitselector.OUTreeFragment
 import org.dhis2.databinding.FragmentIndicatorsBinding
 import org.dhis2.usescases.general.FragmentGlobalAbstract
 import org.hisp.dhis.android.core.common.RelativePeriod
+import javax.inject.Inject
 
 const val VISUALIZATION_TYPE = "VISUALIZATION_TYPE"
 
@@ -30,24 +30,39 @@ class IndicatorsFragment : FragmentGlobalAbstract(), IndicatorsView {
     private val adapter: AnalyticsAdapter by lazy {
         AnalyticsAdapter().apply {
             onRelativePeriodCallback = { chartModel: ChartModel,
-                relativePeriod: RelativePeriod?,
-                current: RelativePeriod? ->
+                                         relativePeriod: RelativePeriod?,
+                                         current: RelativePeriod?,
+                                         lineListingColumnId: Int?,
+                ->
                 relativePeriod?.let {
                     if (it.isNotCurrent()) {
-                        showAlertDialogCurrentPeriod(chartModel, relativePeriod, current)
+                        showAlertDialogCurrentPeriod(
+                            chartModel,
+                            relativePeriod,
+                            current,
+                            lineListingColumnId,
+                        )
                     } else {
-                        presenter.filterByPeriod(chartModel, mutableListOf(it))
+                        presenter.filterByPeriod(chartModel, mutableListOf(it), lineListingColumnId)
                     }
                 }
             }
             onOrgUnitCallback =
-                { chartModel: ChartModel, orgUnitFilterType: OrgUnitFilterType ->
+                { chartModel: ChartModel,
+                  orgUnitFilterType: OrgUnitFilterType,
+                  lineListingColumnId: Int?,
+                    ->
                     when (orgUnitFilterType) {
-                        OrgUnitFilterType.SELECTION -> showOUTreeSelector(chartModel)
+                        OrgUnitFilterType.SELECTION -> showOUTreeSelector(
+                            chartModel,
+                            lineListingColumnId,
+                        )
+
                         else -> presenter.filterByOrgUnit(
                             chartModel,
                             emptyList(),
-                            orgUnitFilterType
+                            orgUnitFilterType,
+                            lineListingColumnId,
                         )
                     }
                 }
@@ -65,13 +80,13 @@ class IndicatorsFragment : FragmentGlobalAbstract(), IndicatorsView {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+        savedInstanceState: Bundle?,
+    ): View {
         binding = DataBindingUtil.inflate(
             inflater,
             R.layout.fragment_indicators,
             container,
-            false
+            false,
         )
         binding.indicatorsRecycler.adapter = adapter
         return binding.root
@@ -92,7 +107,7 @@ class IndicatorsFragment : FragmentGlobalAbstract(), IndicatorsView {
         adapter.submitList(analytics)
         binding.spinner.visibility = View.GONE
 
-        if (!analytics.isNullOrEmpty()) {
+        if (analytics.isNotEmpty()) {
             binding.emptyIndicators.visibility = View.GONE
         } else {
             binding.emptyIndicators.visibility = View.VISIBLE
@@ -102,7 +117,8 @@ class IndicatorsFragment : FragmentGlobalAbstract(), IndicatorsView {
     private fun showAlertDialogCurrentPeriod(
         chartModel: ChartModel,
         relativePeriod: RelativePeriod?,
-        current: RelativePeriod?
+        current: RelativePeriod?,
+        lineListingColumnId: Int?,
     ) {
         val periodList = mutableListOf<RelativePeriod>()
         AlertBottomDialog.instance
@@ -110,27 +126,31 @@ class IndicatorsFragment : FragmentGlobalAbstract(), IndicatorsView {
             .setMessage(getString(dhis2.org.R.string.include_this_period_body))
             .setNegativeButton(getString(dhis2.org.R.string.no)) {
                 relativePeriod?.let { periodList.add(relativePeriod) }
-                presenter.filterByPeriod(chartModel, periodList)
+                presenter.filterByPeriod(chartModel, periodList, lineListingColumnId)
             }
             .setPositiveButton(getString(dhis2.org.R.string.yes)) {
                 relativePeriod?.let { periodList.add(relativePeriod) }
                 current?.let { periodList.add(current) }
-                presenter.filterByPeriod(chartModel, periodList)
+                presenter.filterByPeriod(chartModel, periodList, lineListingColumnId)
             }
             .show(parentFragmentManager, AlertBottomDialog::class.java.simpleName)
     }
 
-    private fun showOUTreeSelector(chartModel: ChartModel) {
+    private fun showOUTreeSelector(
+        chartModel: ChartModel,
+        lineListingColumnId: Int?,
+    ) {
         OUTreeFragment.Builder()
             .showAsDialog()
             .withPreselectedOrgUnits(
-                chartModel.graph.orgUnitsSelected.toMutableList()
+                chartModel.graph.orgUnitsSelected(lineListingColumnId).toMutableList(),
             )
             .onSelection { selectedOrgUnits ->
                 presenter.filterByOrgUnit(
                     chartModel,
                     selectedOrgUnits,
-                    OrgUnitFilterType.SELECTION
+                    OrgUnitFilterType.SELECTION,
+                    lineListingColumnId,
                 )
             }
             .build()

@@ -37,7 +37,7 @@ class GraphToLineChart {
                 enableGridDashedLine(
                     DEFAULT_GRID_LINE_LENGTH,
                     DEFAULT_GRID_SPACE_LENGTH,
-                    DEFAULT_GRIP_PHASE
+                    DEFAULT_GRIP_PHASE,
                 )
                 setDrawLimitLinesBehindData(true)
                 position = XAxis.XAxisPosition.BOTTOM
@@ -47,7 +47,7 @@ class GraphToLineChart {
                     DateLabelFormatter(
                         datePattern = graph.eventPeriodType.datePattern(),
                         dateFromValue = { graph.dateFromSteps(it) },
-                        localDateFromValue = { graph.localDateFromSteps(it) }
+                        localDateFromValue = { graph.localDateFromSteps(it) },
                     )
                 }
                 granularity = DEFAULT_GRANULARITY
@@ -60,7 +60,7 @@ class GraphToLineChart {
                 enableGridDashedLine(
                     DEFAULT_GRID_LINE_LENGTH,
                     DEFAULT_GRID_SPACE_LENGTH,
-                    DEFAULT_GRIP_PHASE
+                    DEFAULT_GRIP_PHASE,
                 )
                 var minValue = graph.minValue()
                 if (graph.isSingleValue()) {
@@ -69,7 +69,7 @@ class GraphToLineChart {
                 val padding = ceil((graph.maxValue() - minValue) * 0.05f)
                 axisMaximum = graph.maxValue() + padding
                 axisMinimum = minValue - padding
-                if (graph.isSingleValue() && graph.series[0].coordinates[0].fieldValue < 0) {
+                if (graph.isSingleValue() && graph.series[0].coordinates[0].numericValue() < 0) {
                     axisMaximum = minValue - padding
                     axisMinimum = graph.maxValue() + padding
                 }

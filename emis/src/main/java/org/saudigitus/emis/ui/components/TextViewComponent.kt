@@ -20,11 +20,11 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun TextAttribute(
     attribute: String,
-    attributeValue: String
+    attributeValue: String,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(5.dp, Alignment.Start)
+        horizontalArrangement = Arrangement.spacedBy(5.dp, Alignment.Start),
     ) {
         Text(
             modifier = Modifier
@@ -34,20 +34,20 @@ fun TextAttribute(
             softWrap = true,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            //fontFamily = Rubik,
+            // fontFamily = Rubik,
             fontSize = 14.sp,
             fontStyle = FontStyle.Normal,
-            //color = colorResource(R.color.textPrimary)
+            // color = colorResource(R.color.textPrimary)
         )
         Text(
             text = attributeValue,
             softWrap = true,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            //fontFamily = Rubik,
+            // fontFamily = Rubik,
             fontSize = 12.sp,
             fontStyle = FontStyle.Normal,
-            //color = colorResource(R.color.textSecondary)
+            // color = colorResource(R.color.textSecondary)
         )
     }
 }
@@ -58,7 +58,7 @@ data class TitleSubtitleDefaults(
     val titleFontWeight: FontWeight = FontWeight.Normal,
     val subtitleFontWeight: FontWeight = FontWeight.Normal,
     val titleColor: Color = Color.Black,
-    val subtitleColor: Color = Color.Black.copy(.65f)
+    val subtitleColor: Color = Color.Black.copy(.65f),
 )
 
 /**
@@ -69,21 +69,21 @@ fun TitleSubtitleComponent(
     title: String,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
-    fontDefaults: TitleSubtitleDefaults = TitleSubtitleDefaults()
+    fontDefaults: TitleSubtitleDefaults = TitleSubtitleDefaults(),
 ) {
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.Start
+        horizontalAlignment = Alignment.Start,
     ) {
         Text(
             text = title,
             maxLines = 1,
             softWrap = true,
             overflow = TextOverflow.Ellipsis,
-            fontSize =  fontDefaults.titleFontSize,
+            fontSize = fontDefaults.titleFontSize,
             fontWeight = fontDefaults.titleFontWeight,
-            color = fontDefaults.titleColor
+            color = fontDefaults.titleColor,
         )
         subtitle?.let {
             Text(
@@ -91,9 +91,9 @@ fun TitleSubtitleComponent(
                 maxLines = 1,
                 softWrap = true,
                 overflow = TextOverflow.Ellipsis,
-                fontSize =  fontDefaults.subtitleFontSize,
+                fontSize = fontDefaults.subtitleFontSize,
                 fontWeight = fontDefaults.subtitleFontWeight,
-                color = fontDefaults.subtitleColor
+                color = fontDefaults.subtitleColor,
             )
         }
     }

@@ -3,29 +3,26 @@ package org.dhis2.usescases.enrollment
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.databinding.DataBindingUtil
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.CircleCrop
-import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import java.io.File
-import javax.inject.Inject
 import org.dhis2.App
 import org.dhis2.R
-import org.dhis2.commons.Constants
 import org.dhis2.commons.Constants.ENROLLMENT_UID
 import org.dhis2.commons.Constants.PROGRAM_UID
 import org.dhis2.commons.Constants.TEI_UID
 import org.dhis2.commons.data.TeiAttributesInfo
-import org.dhis2.commons.dialogs.imagedetail.ImageDetailBottomDialog
+import org.dhis2.commons.dialogs.imagedetail.ImageDetailActivity
+import org.dhis2.commons.featureconfig.data.FeatureConfigRepository
+import org.dhis2.commons.featureconfig.model.Feature
+import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.databinding.EnrollmentActivityBinding
 import org.dhis2.form.data.GeometryController
 import org.dhis2.form.data.GeometryParserImpl
 import org.dhis2.form.model.EnrollmentRecords
+import org.dhis2.form.model.EventMode
 import org.dhis2.form.ui.FormView
 import org.dhis2.form.ui.provider.EnrollmentResultDialogUiProvider
 import org.dhis2.maps.views.MapSelectorActivity
@@ -34,13 +31,12 @@ import org.dhis2.ui.dialogs.bottomsheet.BottomSheetDialogUiModel
 import org.dhis2.ui.dialogs.bottomsheet.DialogButtonStyle
 import org.dhis2.usescases.events.ScheduledEventActivity
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureActivity
-import org.dhis2.usescases.eventsWithoutRegistration.eventInitial.EventInitialActivity
 import org.dhis2.usescases.general.ActivityGlobalAbstract
 import org.dhis2.usescases.teiDashboard.TeiDashboardMobileActivity
-import org.dhis2.utils.EventMode
 import org.dhis2.utils.granularsync.OPEN_ERROR_LOCATION
 import org.hisp.dhis.android.core.common.FeatureType
 import org.hisp.dhis.android.core.enrollment.EnrollmentStatus
+import javax.inject.Inject
 
 class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
 
@@ -50,10 +46,16 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
     private lateinit var formView: FormView
 
     @Inject
+    lateinit var resourceManager: ResourceManager
+
+    @Inject
     lateinit var presenter: EnrollmentPresenterImpl
 
     @Inject
     lateinit var enrollmentResultDialogUiProvider: EnrollmentResultDialogUiProvider
+
+    @Inject
+    lateinit var featureConfig: FeatureConfigRepository
 
     lateinit var binding: EnrollmentActivityBinding
     lateinit var mode: EnrollmentMode
@@ -72,7 +74,7 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
             enrollmentUid: String,
             programUid: String,
             enrollmentMode: EnrollmentMode,
-            forRelationship: Boolean? = false
+            forRelationship: Boolean? = false,
         ): Intent {
             val intent = Intent(context, EnrollmentActivity::class.java)
             intent.putExtra(ENROLLMENT_UID_EXTRA, enrollmentUid)
@@ -97,8 +99,8 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
                 enrollmentUid,
                 programUid,
                 enrollmentMode,
-                context
-            )
+                context,
+            ),
         ).inject(this)
 
         formView = FormView.Builder()
@@ -119,11 +121,14 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
                 EnrollmentRecords(
                     enrollmentUid = enrollmentUid,
                     enrollmentMode = org.dhis2.form.model.EnrollmentMode.valueOf(
-                        enrollmentMode.name
-                    )
-                )
+                        enrollmentMode.name,
+                    ),
+                ),
             )
             .openErrorLocation(openErrorLocation)
+            .useComposeForm(
+                featureConfig.isFeatureEnable(Feature.COMPOSE_FORMS),
+            )
             .build()
 
         super.onCreate(savedInstanceState)
@@ -161,6 +166,7 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
         super.onDestroy()
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {
@@ -168,13 +174,14 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
                     if (data?.hasExtra(MapSelectorActivity.DATA_EXTRA) == true) {
                         handleGeometry(
                             FeatureType.valueOfFeatureType(
-                                data.getStringExtra(MapSelectorActivity.LOCATION_TYPE_EXTRA)
+                                data.getStringExtra(MapSelectorActivity.LOCATION_TYPE_EXTRA),
                             ),
                             data.getStringExtra(MapSelectorActivity.DATA_EXTRA)!!,
-                            requestCode
+                            requestCode,
                         )
                     }
                 }
+
                 RQ_EVENT -> openDashboard(presenter.getEnrollment()!!.uid()!!)
             }
         }
@@ -185,41 +192,21 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
         if (presenter.isEventScheduleOrSkipped(eventUid)) {
             val scheduleEventIntent = ScheduledEventActivity.getIntent(this, eventUid)
             openEventForResult.launch(scheduleEventIntent)
-        } else if (presenter.openInitial(eventUid)) {
-            val bundle = EventInitialActivity.getBundle(
-                presenter.getProgram().uid(),
-                eventUid,
-                null,
-                presenter.getEnrollment()!!.trackedEntityInstance(),
-                null,
-                presenter.getEnrollment()!!.organisationUnit(),
-                presenter.getEventStage(eventUid),
-                presenter.getEnrollment()!!.uid(),
-                0,
-                presenter.getEnrollment()!!.status()
-            )
-            val eventInitialIntent = Intent(abstracContext, EventInitialActivity::class.java)
-            eventInitialIntent.putExtras(bundle)
-            startActivityForResult(eventInitialIntent, RQ_EVENT)
         } else {
             val eventCreationIntent = Intent(abstracContext, EventCaptureActivity::class.java)
             eventCreationIntent.putExtras(
                 EventCaptureActivity.getActivityBundle(
                     eventUid,
-                    presenter.getProgram().uid(),
-                    EventMode.CHECK
-                )
-            )
-            eventCreationIntent.putExtra(
-                Constants.TRACKED_ENTITY_INSTANCE,
-                presenter.getEnrollment()!!.trackedEntityInstance()
+                    presenter.getProgram()?.uid() ?: "",
+                    EventMode.NEW,
+                ),
             )
             startActivityForResult(eventCreationIntent, RQ_EVENT)
         }
     }
 
     private val openEventForResult = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
+        ActivityResultContracts.StartActivityForResult(),
     ) {
         openDashboard(presenter.getEnrollment()!!.uid()!!)
     }
@@ -232,7 +219,7 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
             finish()
         } else {
             val bundle = Bundle()
-            bundle.putString(PROGRAM_UID, presenter.getProgram().uid())
+            bundle.putString(PROGRAM_UID, presenter.getProgram()?.uid())
             bundle.putString(TEI_UID, presenter.getEnrollment()!!.trackedEntityInstance())
             bundle.putString(ENROLLMENT_UID, enrollmentUid)
             startActivity(TeiDashboardMobileActivity::class.java, bundle, true, false, null)
@@ -243,6 +230,7 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
         onBackPressed()
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         formView.onEditionFinish()
         attemptFinish()
@@ -263,19 +251,19 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
                 message = getString(R.string.discard_go_back),
                 iconResource = R.drawable.ic_error_outline,
                 mainButton = DialogButtonStyle.MainButton(R.string.keep_editing),
-                secondaryButton = DialogButtonStyle.DiscardButton()
+                secondaryButton = DialogButtonStyle.DiscardButton(),
             ),
             onSecondaryButtonClicked = {
                 presenter.deleteAllSavedData()
                 finish()
-            }
+            },
         ).show(supportFragmentManager, BottomSheetDialogUiModel::class.java.simpleName)
     }
 
     private fun handleGeometry(featureType: FeatureType, dataExtra: String, requestCode: Int) {
         val geometry = GeometryController(GeometryParserImpl()).generateLocationFromCoordinates(
             featureType,
-            dataExtra
+            dataExtra,
         )
 
         if (geometry != null) {
@@ -283,6 +271,7 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
                 RQ_ENROLLMENT_GEOMETRY -> {
                     presenter.saveEnrollmentGeometry(geometry)
                 }
+
                 RQ_INCIDENT_GEOMETRY -> {
                     presenter.saveTeiGeometry(geometry)
                 }
@@ -300,49 +289,30 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
     /*region TEI*/
     override fun displayTeiInfo(teiInfo: TeiAttributesInfo) {
         if (mode != EnrollmentMode.NEW) {
-            binding.title.visibility = View.GONE
-            binding.teiDataHeader.root.visibility = View.VISIBLE
-
-            binding.teiDataHeader.mainAttributes.apply {
-                text = teiInfo.teiMainLabel(getString(R.string.tracked_entity_type_details))
-                setTextColor(Color.WHITE)
-            }
-            when (val secondaryLabel = teiInfo.teiSecondaryLabel()) {
-                null -> binding.teiDataHeader.secundaryAttribute.visibility = View.GONE
-                else -> {
-                    binding.teiDataHeader.secundaryAttribute.text = secondaryLabel
-                    binding.teiDataHeader.secundaryAttribute.setTextColor(Color.WHITE)
-                }
-            }
-
-            if (teiInfo.profileImage.isEmpty()) {
-                binding.teiDataHeader.teiImage.visibility = View.GONE
-                binding.teiDataHeader.imageSeparator.visibility = View.GONE
-            } else {
-                Glide.with(this).load(File(teiInfo.profileImage))
-                    .transition(DrawableTransitionOptions.withCrossFade())
-                    .transform(CircleCrop())
-                    .into(binding.teiDataHeader.teiImage)
-                binding.teiDataHeader.teiImage.setOnClickListener {
-                    presenter.onTeiImageHeaderClick()
-                }
-            }
-        } else {
-            binding.title.visibility = View.VISIBLE
-            binding.teiDataHeader.root.visibility = View.GONE
             binding.title.text =
-                String.format(getString(R.string.enroll_in), presenter.getProgram().displayName())
+                resourceManager.defaultEnrollmentLabel(
+                    programUid = presenter.getProgram()?.uid()!!,
+                    true,
+                    1,
+                )
+        } else {
+            binding.title.text =
+                resourceManager.formatWithEnrollmentLabel(
+                    programUid = presenter.getProgram()?.uid()!!,
+                    R.string.new_enrollment,
+                    1,
+                )
         }
     }
 
     override fun displayTeiPicture(picturePath: String) {
-        ImageDetailBottomDialog(
-            null,
-            File(picturePath)
-        ).show(
-            supportFragmentManager,
-            ImageDetailBottomDialog.TAG
+        val intent = ImageDetailActivity.intent(
+            context = this,
+            title = null,
+            imagePath = picturePath,
         )
+
+        startActivity(intent)
     }
     /*endregion*/
     /*region ACCESS*/
@@ -358,9 +328,6 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
 
     override fun renderStatus(status: EnrollmentStatus) {
         binding.enrollmentStatus = status
-    }
-
-    override fun showStatusOptions(currentStatus: EnrollmentStatus) {
     }
 
     /*endregion*/

@@ -35,6 +35,17 @@ android {
         }
     }
 
+    signingConfigs {
+        create("release"){
+            keyAlias = System.getenv("SIGNING_KEY_ALIAS")
+            keyPassword = System.getenv("SIGNING_KEY_PASSWORD")
+            System.getenv("SIGNING_KEYSTORE_PATH")?.let {path->
+                storeFile = file(path)
+            }
+            storePassword = System.getenv("SIGNING_STORE_PASSWORD")
+        }
+    }
+
     testOptions {
         execution = "ANDROIDX_TEST_ORCHESTRATOR"
         unitTests {
@@ -61,7 +72,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.dhis2"
+        applicationId = "com.dhis2.semis"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.sdk.get().toInt()
         versionCode = libs.versions.vCode.get().toInt()
@@ -75,7 +86,7 @@ android {
         val mapboxAccessToken = System.getenv("MAPBOX_ACCESS_TOKEN") ?: defMapboxToken
         val bitriseSentryDSN = System.getenv("SENTRY_DSN") ?: ""
 
-        buildConfigField("String", "SDK_VERSION", "\"" + libs.versions.dhis2sdk + "\"")
+        buildConfigField("String", "SDK_VERSION", "\"" + libs.versions.dhis2sdk.get() + "\"")
         buildConfigField("String", "MAPBOX_ACCESS_TOKEN", "\"" + mapboxAccessToken + "\"")
         buildConfigField("String", "MATOMO_URL", "\"https://usage.analytics.dhis2.org/matomo.php\"")
         buildConfigField("long", "VERSION_CODE", "${defaultConfig.versionCode}")
@@ -91,7 +102,7 @@ android {
             .annotationProcessorOptions.arguments["dagger.hilt.disableModulesHaveInstallInCheck"] =
             "true"
     }
-    packagingOptions {
+    packaging {
         jniLibs {
             excludes.addAll(listOf("META-INF/licenses/**"))
         }
@@ -143,31 +154,31 @@ android {
                 getDefaultProguardFile("proguard-android.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
             buildConfigField("int", "MATOMO_ID", "1")
             buildConfigField("String", "BUILD_DATE", "\"" + getBuildDate() + "\"")
             buildConfigField("String", "GIT_SHA", "\"" + getCommitHash() + "\"")
         }
     }
-
-    flavorDimensions("default")
+    flavorDimensions += listOf("default")
 
     productFlavors {
         create("dhis") {
-            applicationId = "com.dhis2"
+            applicationId = "com.dhis2.semis"
             dimension = "default"
             versionCode = libs.versions.vCode.get().toInt()
             versionName = libs.versions.vName.get()
         }
 
         create("dhisPlayServices") {
-            applicationId = "com.dhis2"
+            applicationId = "com.dhis2.semis"
             dimension = "default"
             versionCode = libs.versions.vCode.get().toInt()
             versionName = libs.versions.vName.get()
         }
 
         create("dhisUITesting") {
-            applicationId = "com.dhis2"
+            applicationId = "com.dhis2.semis"
             dimension = "default"
             versionCode = libs.versions.vCode.get().toInt()
             versionName = libs.versions.vName.get()
@@ -184,13 +195,24 @@ android {
         compose = true
         dataBinding = true
         viewBinding = true
+        buildConfig = true
     }
 
     configurations.all {
         resolutionStrategy {
             preferProjectModules()
-            force("junit:junit:4.12", "com.squareup.okhttp3:okhttp:3.12.0")
-            setForcedModules("com.squareup.okhttp3:okhttp:3.12.0")
+            force(
+                "junit:junit:4.12",
+                "com.squareup.okhttp3:okhttp:4.9.3",
+                "com.squareup.okhttp3:mockwebserver:4.9.3",
+                "com.squareup.okhttp3:logging-interceptor:4.9.3"
+            )
+            setForcedModules(
+                "com.squareup.okhttp3:okhttp:4.9.3",
+                "com.squareup.okhttp3:mockwebserver:4.9.3",
+                "com.squareup.okhttp3:logging-interceptor:4.9.3"
+            )
+            cacheDynamicVersionsFor(0, TimeUnit.SECONDS)
         }
     }
 
@@ -216,6 +238,7 @@ dependencies {
     implementation(project(":dhis2_android_maps"))
     implementation(project(":compose-table"))
     implementation(project(":stock-usecase"))
+    implementation(project(":dhis2-mobile-program-rules"))
     implementation(project(":emis"))
 
     implementation(libs.security.conscrypt)
@@ -288,8 +311,9 @@ dependencies {
     androidTestImplementation(libs.test.rules)
     androidTestImplementation(libs.test.coreKtx)
     androidTestImplementation(libs.test.junitKtx)
-    androidTestImplementation(libs.test.mockito.android)
     androidTestImplementation(libs.test.mockitoCore)
+    androidTestImplementation(libs.test.dexmaker.mockitoInline)
+    androidTestImplementation(libs.test.mockitoKotlin)
     androidTestImplementation(libs.test.support.annotations)
     androidTestImplementation(libs.test.espresso.idlingresource)
     androidTestImplementation(libs.test.rx2.idler)

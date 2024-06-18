@@ -1,13 +1,11 @@
 package org.dhis2.form.ui.binding
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.databinding.BindingAdapter
-import java.io.File
+import org.dhis2.commons.extensions.getBitmap
 import org.dhis2.form.R
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.UiEventType
@@ -24,7 +22,7 @@ import org.dhis2.ui.theme.warningColor
 fun ComposeView.setPicture(fieldUiModel: FieldUiModel) {
     setContent {
         setViewCompositionStrategy(
-            ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+            ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed,
         )
         Dhis2Theme {
             FormInputBox(
@@ -38,7 +36,7 @@ fun ComposeView.setPicture(fieldUiModel: FieldUiModel) {
                     fieldUiModel.error != null -> errorColor
                     fieldUiModel.warning != null -> warningColor
                     else -> textSecondary
-                }
+                },
             ) {
                 PictureInput(
                     imageValue = fieldUiModel.displayName?.getBitmap(),
@@ -48,22 +46,18 @@ fun ComposeView.setPicture(fieldUiModel: FieldUiModel) {
                         true -> AddButtonData(
                             onClick = { fieldUiModel.invokeUiEvent(UiEventType.ADD_PICTURE) },
                             icon = painterResource(id = R.drawable.ic_add_image),
-                            label = stringResource(id = R.string.add_image)
+                            label = stringResource(id = R.string.add_image),
                         )
                         false -> AddButtonData(
                             onClick = { fieldUiModel.invokeUiEvent(UiEventType.ADD_SIGNATURE) },
                             icon = painterResource(id = R.drawable.ic_signature),
-                            label = stringResource(id = R.string.add_signature)
+                            label = stringResource(id = R.string.add_signature),
                         )
                     },
                     onClick = { fieldUiModel.invokeUiEvent(UiEventType.SHOW_PICTURE) },
-                    onClear = { fieldUiModel.onClear() }
+                    onClear = { fieldUiModel.onClear() },
                 )
             }
         }
     }
 }
-
-fun String.getBitmap(): Bitmap? = File(this)
-    .takeIf { it.exists() }
-    ?.let { BitmapFactory.decodeFile(it.absolutePath) }
