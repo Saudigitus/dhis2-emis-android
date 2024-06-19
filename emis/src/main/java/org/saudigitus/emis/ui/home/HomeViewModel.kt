@@ -178,7 +178,7 @@ class HomeViewModel
                     FilterType.GRADE,
                     getDataElementName("${registration.value?.grade}"),
                     options("${registration.value?.grade}"),
-                )
+                ),
             )
 
             _dataElementFilters.value = filters
@@ -204,6 +204,6 @@ class HomeViewModel
     private suspend fun options(uid: String) = repository.getOptions(
         ou = filterState.value.school?.uid,
         program = program.value,
-        dataElement = uid
+        dataElement = uid,
     )
 }

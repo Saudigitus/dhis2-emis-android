@@ -26,12 +26,12 @@ import org.hisp.dhis.rules.models.RuleVariable
 import javax.inject.Inject
 
 class RuleEngineRepository @Inject constructor(
-    private val d2: D2
+    private val d2: D2,
 ) {
 
     private val ruleEngine by lazy { RuleEngine.getInstance() }
 
-    private suspend fun supplementaryData(ou: String) = withContext(Dispatchers.IO)  {
+    private suspend fun supplementaryData(ou: String) = withContext(Dispatchers.IO) {
         val suppData = HashMap<String, List<String>>()
 
         d2.organisationUnitModule().organisationUnits()
@@ -57,7 +57,7 @@ class RuleEngineRepository @Inject constructor(
                 it.toRuleVariable(
                     d2.trackedEntityModule().trackedEntityAttributes(),
                     d2.dataElementModule().dataElements(),
-                    d2.optionModule().options()
+                    d2.optionModule().options(),
                 )
             }
     }
@@ -136,14 +136,14 @@ class RuleEngineRepository @Inject constructor(
             rules = rules,
             ruleVariables = ruleVariables,
             supplementaryData = supplementaryData,
-            constantsValues = constants
+            constantsValues = constants,
         )
     }
 
     private suspend fun executeContext(
         ou: String,
         program: String,
-    )  = withContext(Dispatchers.IO) {
+    ) = withContext(Dispatchers.IO) {
         val rules = async { rules(program) }.await()
         val ruleVariables = ruleVariables(program)
         val constants = async { constants() }.await()
@@ -179,7 +179,6 @@ class RuleEngineRepository @Inject constructor(
         )
     }
 
-
     private fun getRuleEvent(eventUid: String): RuleEvent {
         val event = d2.event(eventUid) ?: throw NullPointerException()
         return RuleEvent(
@@ -209,15 +208,16 @@ class RuleEngineRepository @Inject constructor(
         return@withContext actions.mapNotNull {
             if (it.values["field"] == dataElement) {
                 it.values["optionGroup"]
-            } else null
+            } else {
+                null
+            }
         }
     }
-
 
     suspend fun evaluate(
         ou: String,
         program: String,
-        event: String
+        event: String,
     ) = withContext(Dispatchers.IO) {
         val ruleEngineContextData = ruleEngineContextData(ou, program)
 
@@ -225,7 +225,7 @@ class RuleEngineRepository @Inject constructor(
             target = getRuleEvent(event),
             ruleEnrollment = ruleEngineContextData.ruleEnrollment,
             ruleEvents = ruleEngineContextData.ruleEvents,
-            executionContext = ruleEngineContextData.ruleEngineContext
+            executionContext = ruleEngineContextData.ruleEngineContext,
         )
     }
 }

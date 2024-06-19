@@ -44,7 +44,7 @@ class DataManagerImpl
 @Inject constructor(
     val d2: D2,
     val networkUtils: NetworkUtils,
-    val ruleEngineRepository: RuleEngineRepository
+    val ruleEngineRepository: RuleEngineRepository,
 ) : DataManager {
     private fun getAttributeOptionCombo() =
         d2.categoryModule().categoryOptionCombos()
@@ -138,13 +138,15 @@ class DataManagerImpl
     override suspend fun getOptions(
         ou: String?,
         program: String?,
-        dataElement: String
+        dataElement: String,
     ): List<DropdownItem> = withContext(Dispatchers.IO) {
         val optionSet = d2.dataElement(dataElement)?.optionSetUid()
 
         val hideOptions = if (ou != null && program != null) {
             ruleEngineRepository.applyOptionRules(ou, program, dataElement)
-        } else emptyList()
+        } else {
+            emptyList()
+        }
 
         return@withContext if (hideOptions.isEmpty()) {
             d2.optionByOptionSet(optionSet).map {

@@ -36,7 +36,7 @@ object AppModule {
     fun providesDataManager(
         d2: D2,
         networkUtils: NetworkUtils,
-        ruleEngineRepository: RuleEngineRepository
+        ruleEngineRepository: RuleEngineRepository,
     ): DataManager = DataManagerImpl(d2, networkUtils, ruleEngineRepository)
 
     @Provides
