@@ -110,7 +110,6 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.dagger.hilt.android)
-    implementation(libs.kotlin.serialization.json)
 
     kapt(libs.dagger.hilt.android.compiler)
 

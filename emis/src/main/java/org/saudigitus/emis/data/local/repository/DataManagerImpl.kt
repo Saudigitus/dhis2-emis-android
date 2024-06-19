@@ -26,6 +26,7 @@ import org.saudigitus.emis.data.model.ProgramStage
 import org.saudigitus.emis.data.model.Subject
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
 import org.saudigitus.emis.data.model.dto.withBtnSettings
+import org.saudigitus.emis.service.RuleEngineRepository
 import org.saudigitus.emis.ui.attendance.AttendanceOption
 import org.saudigitus.emis.ui.components.DropdownItem
 import org.saudigitus.emis.utils.Constants
@@ -34,6 +35,7 @@ import org.saudigitus.emis.utils.Utils
 import org.saudigitus.emis.utils.eventsWithTrackedDataValues
 import org.saudigitus.emis.utils.optionByOptionSet
 import org.saudigitus.emis.utils.optionsByOptionSetAndCode
+import org.saudigitus.emis.utils.optionsNotInOptionGroup
 import timber.log.Timber
 import java.sql.Date
 import javax.inject.Inject
@@ -42,6 +44,7 @@ class DataManagerImpl
 @Inject constructor(
     val d2: D2,
     val networkUtils: NetworkUtils,
+    val ruleEngineRepository: RuleEngineRepository,
 ) : DataManager {
     private fun getAttributeOptionCombo() =
         d2.categoryModule().categoryOptionCombos()
@@ -133,17 +136,36 @@ class DataManagerImpl
         }
 
     override suspend fun getOptions(
+        ou: String?,
+        program: String?,
         dataElement: String,
     ): List<DropdownItem> = withContext(Dispatchers.IO) {
         val optionSet = d2.dataElement(dataElement)?.optionSetUid()
 
-        return@withContext d2.optionByOptionSet(optionSet).map {
-            DropdownItem(
-                id = it.uid(),
-                itemName = "${it.displayName()}",
-                code = it.code() ?: "",
-                sortOrder = it.sortOrder(),
-            )
+        val hideOptions = if (ou != null && program != null) {
+            ruleEngineRepository.applyOptionRules(ou, program, dataElement)
+        } else {
+            emptyList()
+        }
+
+        return@withContext if (hideOptions.isEmpty()) {
+            d2.optionByOptionSet(optionSet).map {
+                DropdownItem(
+                    id = it.uid(),
+                    itemName = "${it.displayName()}",
+                    code = it.code() ?: "",
+                    sortOrder = it.sortOrder(),
+                )
+            }
+        } else {
+            d2.optionsNotInOptionGroup(hideOptions, optionSet).map {
+                DropdownItem(
+                    id = it.uid(),
+                    itemName = "${it.displayName()}",
+                    code = it.code() ?: "",
+                    sortOrder = it.sortOrder(),
+                )
+            }.sortedBy { it.sortOrder }
         }
     }
 

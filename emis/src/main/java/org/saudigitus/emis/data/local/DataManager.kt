@@ -20,7 +20,16 @@ interface DataManager {
     )
     suspend fun getConfig(id: String): List<EMISConfigItem>?
 
+    /**
+     * @param ou OrganizationUnit uid
+     * @param program Program uid
+     * @param dataElement DataElement uid
+     *
+     * Set ou uid and program uid to apply the program rules
+     */
     suspend fun getOptions(
+        ou: String?,
+        program: String?,
         dataElement: String,
     ): List<DropdownItem>
 

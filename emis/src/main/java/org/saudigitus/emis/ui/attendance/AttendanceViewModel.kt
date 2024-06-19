@@ -191,7 +191,7 @@ class AttendanceViewModel
 
     private fun getReasonForAbsence(dataElement: String) {
         viewModelScope.launch {
-            _reasonOfAbsence.value = repository.getOptions(dataElement)
+            _reasonOfAbsence.value = repository.getOptions(null, null, dataElement)
         }
     }
 

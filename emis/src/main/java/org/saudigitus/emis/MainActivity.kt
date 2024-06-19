@@ -54,6 +54,8 @@ class MainActivity : FragmentActivity() {
                         startDestination = AppRoutes.HOME_ROUTE,
                     ) {
                         composable(AppRoutes.HOME_ROUTE) {
+                            viewModel.setProgram(intent?.extras?.getString(Constants.PROGRAM_UID) ?: "")
+
                             HomeScreen(
                                 viewModel = viewModel,
                                 onBack = { finish() },

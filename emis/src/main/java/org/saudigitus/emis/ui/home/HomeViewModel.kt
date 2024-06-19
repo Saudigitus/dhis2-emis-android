@@ -85,7 +85,9 @@ class HomeViewModel
         }
     }
 
-    override fun setProgram(program: String) {}
+    override fun setProgram(program: String) {
+        _program.value = program
+    }
 
     override fun setDate(date: String) {}
     override fun save() {}
@@ -152,20 +154,36 @@ class HomeViewModel
     }
 
     fun setSchool(ou: OU?) {
-        _filterState.update {
-            it.copy(school = ou)
+        viewModelScope.launch {
+            _filterState.update {
+                it.copy(school = ou)
+            }
+            setOU("${ou?.uid}")
+
+            val subtitle = if (filterState.value.academicYear?.itemName != null) {
+                "${filterState.value.academicYear?.itemName} | ${ou?.displayName}"
+            } else {
+                ou?.displayName
+            }
+
+            _toolbarHeader.update {
+                it.copy(subtitle = subtitle)
+            }
+
+            val filters = dataElementFilters.value.toMutableList()
+            filters.removeAt(1)
+            filters.add(
+                index = 1,
+                DropdownState(
+                    FilterType.GRADE,
+                    getDataElementName("${registration.value?.grade}"),
+                    options("${registration.value?.grade}"),
+                ),
+            )
+
+            _dataElementFilters.value = filters
         }
 
-        val subtitle = if (filterState.value.academicYear?.itemName != null) {
-            "${filterState.value.academicYear?.itemName} | ${ou?.displayName}"
-        } else {
-            ou?.displayName
-        }
-
-        _toolbarHeader.update {
-            it.copy(subtitle = subtitle)
-        }
-        setOU("${ou?.uid}")
         getTeis()
     }
 
@@ -183,5 +201,9 @@ class HomeViewModel
         getTeis()
     }
 
-    private suspend fun options(uid: String) = repository.getOptions(uid)
+    private suspend fun options(uid: String) = repository.getOptions(
+        ou = filterState.value.school?.uid,
+        program = program.value,
+        dataElement = uid,
+    )
 }

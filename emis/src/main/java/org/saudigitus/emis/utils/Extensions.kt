@@ -26,6 +26,26 @@ fun D2.optionByOptionSet(
     .orderBySortOrder(RepositoryScope.OrderByDirection.ASC)
     .blockingGet()
 
+fun D2.optionsNotInOptionGroup(
+    optionGroups: List<String>,
+    optionSet: String?,
+): List<Option> = optionModule()
+    .optionGroups()
+    .byUid().notIn(optionGroups)
+    .byOptionSetUid().eq(optionSet)
+    .withOptions()
+    .orderByDisplayName(RepositoryScope.OrderByDirection.ASC)
+    .blockingGet()
+    .flatMap {
+        it.options() ?: emptyList()
+    }.flatMap {
+        optionModule()
+            .options()
+            .byUid().eq(it.uid())
+            .orderBySortOrder(RepositoryScope.OrderByDirection.ASC)
+            .blockingGet()
+    }
+
 fun D2.optionsByOptionSetAndCode(
     optionSet: String?,
     codes: List<String>,
