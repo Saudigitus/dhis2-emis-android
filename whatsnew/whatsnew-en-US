@@ -1,8 +1,9 @@
-This is a patch version that fixes:
-- ANDROAPP-5749 Incorrect behavior when tapping on Next on sections that are too long
-- ANDROAPP-5885 Data set indicators don't update until the user moves to a different cell
-- ANDROAPP-5741 [Local Analytics] App crashes if charts are empty
-- ANDROAPP-5604	App crashes when one attempts to synchronise TEI and events imported via QR code
-- ANDROAPP-5872 Search in stock management is not updating the list
+# Release notes - Android App for DHIS2 - 3.0.0.1
 
-You can find all the details on Jira and Github.
+### Bug
+
+[ANDROAPP-6194](https://dhis2.atlassian.net/browse/ANDROAPP-6194) Unable to search outside the program
+
+[ANDROAPP-6195](https://dhis2.atlassian.net/browse/ANDROAPP-6195) Missing terms in transifex
+
+[ANDROAPP-6210](https://dhis2.atlassian.net/browse/ANDROAPP-6210) UninitializedPropertyAccessException on breaking the glass

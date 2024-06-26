@@ -96,8 +96,9 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
     private var programStageFromEvent: ProgramStage? = null
     private var eventCatComboOptionSelector: EventCatComboOptionSelector? = null
     private val dashboardViewModel: DashboardViewModel by activityViewModels()
-    private val dashboardActivity: TEIDataActivityContract by lazy { context as TEIDataActivityContract }
+    private val dashboardActivity: TeiDashboardMobileActivity by lazy { context as TeiDashboardMobileActivity }
 
+    private var showAllEnrollment = false
     private var programUid: String? = null
 
     override fun onAttach(context: Context) {
@@ -135,6 +136,7 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
                 eventUid().observe(viewLifecycleOwner, ::displayGenerateEvent)
                 noEnrollmentSelected.observe(viewLifecycleOwner) { noEnrollmentSelected ->
                     if (noEnrollmentSelected) {
+                        showAllEnrollment = true
                         showLegacyCard(dashboardModel.value as DashboardTEIModel)
                     } else {
                         showDetailCard()
@@ -219,8 +221,8 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
                     programsCallback = {
                         startActivity(
                             TeiDashboardMobileActivity.intent(
-                                dashboardActivity.getContext(),
-                                dashboardActivity.activityTeiUid(),
+                                dashboardActivity.context,
+                                dashboardActivity.teiUid,
                                 null,
                                 null,
                             ),
@@ -291,6 +293,9 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
     override fun onResume() {
         super.onResume()
         presenter.init()
+        if (!showAllEnrollment) {
+            dashboardViewModel.updateDashboard()
+        }
     }
 
     override fun onPause() {
@@ -329,7 +334,6 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
                 currentProgram,
                 colorUtils,
                 cardMapper,
-                initialSelectedEventUid = dashboardViewModel.selectedEventUid().value,
             )
             binding.teiRecycler.adapter = eventAdapter
         }
@@ -449,8 +453,15 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
     }
 
     override fun restoreAdapter(programUid: String, teiUid: String, enrollmentUid: String) {
-        dashboardActivity.restoreAdapter(programUid, teiUid, enrollmentUid)
-        dashboardActivity.finishActivity()
+        dashboardActivity.startActivity(
+            TeiDashboardMobileActivity.intent(
+                activity,
+                teiUid,
+                programUid,
+                enrollmentUid,
+            ),
+        )
+        dashboardActivity.finish()
     }
 
     override fun openEventDetails(intent: Intent, options: ActivityOptionsCompat) =
@@ -463,17 +474,10 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
             presenter.fetchEvents()
         }
 
-    override fun openEventCapture(intent: Intent) {
-        if (dashboardActivity is TeiDashboardMobileActivity) {
-            contractHandler.editEvent(intent).observe(viewLifecycleOwner) {
-                presenter.fetchEvents()
-            }
+    override fun openEventCapture(intent: Intent) =
+        contractHandler.editEvent(intent).observe(viewLifecycleOwner) {
+            presenter.fetchEvents()
         }
-        if (dashboardActivity is EventCaptureActivity) {
-            val selectedEventUid = intent.getStringExtra(Constants.EVENT_UID)
-            dashboardViewModel.updateSelectedEventUid(selectedEventUid)
-        }
-    }
 
     override fun goToEventInitial(
         eventCreationType: EventCreationType,
@@ -564,7 +568,9 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
     }
 
     override fun showProgramRuleErrorMessage() {
-        dashboardActivity.executeOnUIThread()
+        dashboardActivity.runOnUiThread {
+            showDescription(getString(R.string.error_applying_rule_effects))
+        }
     }
 
     companion object {
