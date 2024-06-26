@@ -7,6 +7,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import org.dhis2.commons.network.NetworkUtils
+import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.form.ui.provider.HintProvider
 import org.dhis2.form.ui.provider.HintProviderImpl
 import org.hisp.dhis.android.core.D2
@@ -15,6 +16,7 @@ import org.saudigitus.emis.data.local.FormRepository
 import org.saudigitus.emis.data.local.repository.DataManagerImpl
 import org.saudigitus.emis.data.local.repository.FormRepositoryImpl
 import org.saudigitus.emis.service.RuleEngineRepository
+import org.saudigitus.emis.ui.teis.mapper.TEICardMapper
 import javax.inject.Singleton
 
 @Module
@@ -30,6 +32,13 @@ object AppModule {
     @Provides
     @Singleton
     fun providesRuleEngineRepository(d2: D2) = RuleEngineRepository(d2)
+
+    @Provides
+    @Singleton
+    fun providesTEICardMapper(
+        @ApplicationContext context: Context,
+        resourcesManager: ResourceManager
+    ) = TEICardMapper(context, resourcesManager)
 
     @Provides
     @Singleton

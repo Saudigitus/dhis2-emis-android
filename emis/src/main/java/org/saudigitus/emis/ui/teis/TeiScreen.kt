@@ -15,26 +15,29 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.hisp.dhis.mobile.ui.designsystem.component.ListCard
+import org.hisp.dhis.mobile.ui.designsystem.component.ListCardTitleModel
 import org.saudigitus.emis.R
-import org.saudigitus.emis.ui.components.MetadataItem
 import org.saudigitus.emis.ui.components.NoResults
 import org.saudigitus.emis.ui.components.ShowCard
 import org.saudigitus.emis.ui.components.Toolbar
 import org.saudigitus.emis.ui.components.ToolbarActionState
 import org.saudigitus.emis.ui.home.HomeViewModel
+import org.saudigitus.emis.ui.teis.mapper.TEICardMapper
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TeiScreen(
     viewModel: HomeViewModel,
+    teiCardMapper: TEICardMapper,
     onBack: () -> Unit,
 ) {
     val students by viewModel.teis.collectAsStateWithLifecycle()
@@ -92,13 +95,23 @@ fun TeiScreen(
                         modifier = Modifier.fillMaxSize(),
                     ) {
                         items(students) { student ->
-                            MetadataItem(
-                                displayName = "${
-                                    student.attributeValues?.values?.toList()?.getOrNull(2)?.value()
-                                } ${student.attributeValues?.values?.toList()?.getOrNull(1)?.value()}",
-                                attrValue = "${
-                                    student.attributeValues?.values?.toList()?.getOrNull(0)?.value()
-                                }",
+                            val card = teiCardMapper.map(
+                                searchTEIModel = student,
+                                onSyncIconClick = { },
+                                onCardClick = {},
+                                onImageClick = {}
+                            )
+
+                            ListCard(
+                                modifier = Modifier.testTag("TEI_ITEM"),
+                                listAvatar = card.avatar,
+                                title = ListCardTitleModel(text = card.title),
+                                lastUpdated = card.lastUpdated,
+                                additionalInfoList = card.additionalInfo,
+                                actionButton = card.actionButton,
+                                expandLabelText = card.expandLabelText,
+                                shrinkLabelText = card.shrinkLabelText,
+                                onCardClick = card.onCardCLick,
                             )
                         }
                     }

@@ -46,6 +46,9 @@ class DataManagerImpl
     val networkUtils: NetworkUtils,
     val ruleEngineRepository: RuleEngineRepository,
 ) : DataManager {
+
+    private lateinit var currentProgram: String
+
     private fun getAttributeOptionCombo() =
         d2.categoryModule().categoryOptionCombos()
             .byDisplayName().eq(Constants.DEFAULT).one().blockingGet()?.uid()
@@ -398,6 +401,7 @@ class DataManagerImpl
     ): SearchTeiModel {
         val searchTei = SearchTeiModel()
         searchTei.tei = tei
+        currentProgram = program ?: ""
 
         if (tei?.trackedEntityAttributeValues() != null) {
             if (program != null) {
@@ -437,6 +441,8 @@ class DataManagerImpl
                 }
             }
         }
+
+        searchTei.displayOrgUnit = displayOrgUnit()
         return searchTei
     }
 
@@ -454,5 +460,11 @@ class DataManagerImpl
             .trackedEntityAttribute(attrValue.trackedEntityAttribute())
             .trackedEntityInstance(searchTei.tei.uid())
         searchTei.addAttributeValue(attribute?.displayFormName(), attrValueBuilder.build())
+    }
+
+    private fun displayOrgUnit(): Boolean {
+        return d2.organisationUnitModule().organisationUnits()
+            .byProgramUids(listOf(currentProgram))
+            .blockingGet().size > 1
     }
 }
