@@ -89,7 +89,7 @@ class MainActivity : FragmentActivity() {
                             attendanceViewModel.setInfoCard(viewModel.infoCard.collectAsStateWithLifecycle().value)
                             attendanceViewModel.setOU(it.arguments?.getString("ou") ?: "")
 
-                            AttendanceScreen(attendanceViewModel, navController::navigateUp)
+                            AttendanceScreen(attendanceViewModel, teiCardMapper, navController::navigateUp)
                         }
                         composable(
                             route = "${AppRoutes.PERFORMANCE_ROUTE}/{ou}/{stage}/{dataElement}/{subjectName}",
@@ -129,6 +129,7 @@ class MainActivity : FragmentActivity() {
 
                             PerformanceScreen(
                                 state = uiState,
+                                teiCardMapper = teiCardMapper,
                                 onNavBack = navController::navigateUp,
                                 infoCard = infoCard,
                                 defaultSelection = it.arguments?.getString("subjectName") ?: "",

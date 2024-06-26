@@ -25,6 +25,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.hisp.dhis.mobile.ui.designsystem.component.ListCard
 import org.hisp.dhis.mobile.ui.designsystem.component.ListCardTitleModel
 import org.saudigitus.emis.R
+import org.saudigitus.emis.data.model.mapper.map
 import org.saudigitus.emis.ui.components.NoResults
 import org.saudigitus.emis.ui.components.ShowCard
 import org.saudigitus.emis.ui.components.Toolbar
@@ -95,12 +96,7 @@ fun TeiScreen(
                         modifier = Modifier.fillMaxSize(),
                     ) {
                         items(students) { student ->
-                            val card = teiCardMapper.map(
-                                searchTEIModel = student,
-                                onSyncIconClick = { },
-                                onCardClick = {},
-                                onImageClick = {}
-                            )
+                            val card = student.map(teiCardMapper)
 
                             ListCard(
                                 modifier = Modifier.testTag("TEI_ITEM"),

@@ -23,6 +23,7 @@ import org.saudigitus.emis.ui.form.InputField
 @Composable
 fun PerformanceForm(
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     state: List<Field>,
     key: String,
     fields: List<FormField>,
@@ -86,6 +87,7 @@ fun PerformanceForm(
                                 onNext(Triple(formField.uid, fieldValue?.value, formField.type))
                             }
                         },
+                    enabled = enabled,
                 )
             }
         }

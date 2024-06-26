@@ -2,6 +2,7 @@ package org.saudigitus.emis.ui.performance
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -40,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -47,19 +49,23 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import org.hisp.dhis.android.core.common.ValueType
+import org.hisp.dhis.mobile.ui.designsystem.component.ListCard
+import org.hisp.dhis.mobile.ui.designsystem.component.ListCardTitleModel
 import org.saudigitus.emis.R
+import org.saudigitus.emis.data.model.mapper.map
 import org.saudigitus.emis.ui.attendance.ButtonStep
 import org.saudigitus.emis.ui.components.DetailsWithOptions
 import org.saudigitus.emis.ui.components.InfoCard
-import org.saudigitus.emis.ui.components.MetadataItem
 import org.saudigitus.emis.ui.components.Toolbar
 import org.saudigitus.emis.ui.components.ToolbarActionState
+import org.saudigitus.emis.ui.teis.mapper.TEICardMapper
 import org.saudigitus.emis.ui.theme.light_success
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PerformanceScreen(
     state: PerformanceUiState,
+    teiCardMapper: TEICardMapper,
     onNavBack: () -> Unit,
     infoCard: InfoCard,
     defaultSelection: String = "",
@@ -230,20 +236,28 @@ fun PerformanceScreen(
                     contentPadding = PaddingValues(bottom = 108.dp),
                 ) {
                     items(state.students) { student ->
-                        MetadataItem(
-                            displayName = "${
-                                student.attributeValues?.values?.toList()?.getOrNull(2)?.value() ?: "-"
-                            } ${student.attributeValues?.values?.toList()?.getOrNull(1)?.value() ?: ""}",
-                            attrValue = student.attributeValues?.values?.toList()?.getOrNull(0)?.value() ?: "-",
-                            enableClickAction = performanceStep == ButtonStep.HOLD_SAVING,
-                            onClick = {},
+                        val card = student.map(teiCardMapper)
+
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.CenterEnd,
                         ) {
+                            ListCard(
+                                modifier = Modifier.testTag("TEI_ITEM"),
+                                listAvatar = card.avatar,
+                                title = ListCardTitleModel(text = card.title),
+                                additionalInfoList = card.additionalInfo,
+                                actionButton = card.actionButton,
+                                expandLabelText = card.expandLabelText,
+                                shrinkLabelText = card.shrinkLabelText,
+                                onCardClick = card.onCardCLick,
+                            )
                             PerformanceForm(
                                 modifier = Modifier
                                     .width(120.dp)
                                     .height(60.dp)
-                                    .padding(bottom = 2.dp)
-                                    .align(Alignment.End),
+                                    .padding(bottom = 2.dp, end = 16.dp),
+                                enabled = performanceStep == ButtonStep.HOLD_SAVING,
                                 state = state.fieldsState,
                                 key = student.uid(),
                                 fields = state.formFields,
