@@ -175,6 +175,7 @@ class TeiProgramListPresenterTest {
             filtersAreActive = false,
             downloadState = ProgramDownloadState.NONE,
             stockConfig = null,
+            isSEMIS = false,
         )
     }
 

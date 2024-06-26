@@ -187,6 +187,7 @@ class ProgramPresenterTest {
             filtersAreActive = false,
             downloadState = ProgramDownloadState.NONE,
             stockConfig = null,
+            isSEMIS = false,
         )
     }
 
@@ -210,6 +211,7 @@ class ProgramPresenterTest {
             filtersAreActive = false,
             downloadState = ProgramDownloadState.NONE,
             stockConfig = null,
+            isSEMIS = false,
         )
     }
 }
