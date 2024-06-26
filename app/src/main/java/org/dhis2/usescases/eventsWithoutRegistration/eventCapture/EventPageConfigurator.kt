@@ -4,14 +4,13 @@ import org.dhis2.utils.customviews.navigationbar.NavigationPageConfigurator
 
 class EventPageConfigurator(
     private val eventCaptureRepository: EventCaptureContract.EventCaptureRepository,
-    val isPortrait: Boolean,
 ) : NavigationPageConfigurator {
     override fun displayDetails(): Boolean {
         return true
     }
 
     override fun displayDataEntry(): Boolean {
-        return isPortrait
+        return true
     }
 
     override fun displayAnalytics(): Boolean {
