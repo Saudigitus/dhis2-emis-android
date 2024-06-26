@@ -22,6 +22,7 @@ import org.hisp.dhis.rules.api.RuleEngine
 import org.hisp.dhis.rules.api.RuleEngineContext
 import org.hisp.dhis.rules.models.Rule
 import org.hisp.dhis.rules.models.RuleEvent
+import org.hisp.dhis.rules.models.RuleEventStatus
 import org.hisp.dhis.rules.models.RuleVariable
 import javax.inject.Inject
 
@@ -98,9 +99,9 @@ class RuleEngineRepository @Inject constructor(
                         .uid(event.programStage())
                         .blockingGet()!!.name()!!,
                     status = if (event.status() == EventStatus.VISITED) {
-                        RuleEvent.Status.ACTIVE
+                        RuleEventStatus.ACTIVE
                     } else {
-                        RuleEvent.Status.valueOf(event.status()!!.name)
+                        RuleEventStatus.valueOf(event.status()!!.name)
                     },
                     eventDate = Instant.fromEpochMilliseconds(event.eventDate()!!.time),
                     dueDate = event.dueDate()?.let {
@@ -185,7 +186,7 @@ class RuleEngineRepository @Inject constructor(
             event = event.uid(),
             programStage = event.programStage()!!,
             programStageName = d2.programStage(event.programStage()!!)?.name()!!,
-            status = RuleEvent.Status.valueOf(event.status()!!.name),
+            status = RuleEventStatus.valueOf(event.status()!!.name),
             eventDate = event.eventDate()!!.toRuleEngineInstant(),
             dueDate = event.dueDate()?.toRuleEngineLocalDate(),
             completedDate = event.completedDate()?.toRuleEngineLocalDate(),
