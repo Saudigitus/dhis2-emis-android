@@ -24,7 +24,6 @@ import org.hisp.dhis.mobile.ui.designsystem.theme.TextColor
 import org.saudigitus.emis.R
 import java.io.File
 
-
 class TEICardMapper(
     val context: Context,
     val resourceManager: ResourceManager,
@@ -85,12 +84,11 @@ class TEICardMapper(
     private fun getAdditionalInfoList(item: SearchTeiModel): List<AdditionalInfoItem> {
         val attributeList = listOf(
             AdditionalInfoItem(
-                value = item.attributeValues?.values?.toList()?.getOrNull(0)?.value() ?: ""
-            )
+                value = item.attributeValues?.values?.toList()?.getOrNull(0)?.value() ?: "",
+            ),
         )
 
         return attributeList
-
     }
 
     @Composable

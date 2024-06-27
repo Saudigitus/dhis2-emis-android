@@ -37,7 +37,7 @@ object AppModule {
     @Singleton
     fun providesTEICardMapper(
         @ApplicationContext context: Context,
-        resourcesManager: ResourceManager
+        resourcesManager: ResourceManager,
     ) = TEICardMapper(context, resourcesManager)
 
     @Provides
