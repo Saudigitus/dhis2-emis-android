@@ -38,6 +38,7 @@ fun InputField(
     label: String,
     placeholder: String,
     inputType: ValueType?,
+    enabled: Boolean = true,
 ) {
     var action by remember { mutableStateOf("") }
 
@@ -47,6 +48,7 @@ fun InputField(
 
     TextField(
         modifier = modifier,
+        enabled = enabled,
         value = value,
         onValueChange = onValueChange,
         label = { Text(text = label) },

@@ -27,12 +27,17 @@ import org.saudigitus.emis.ui.performance.PerformanceViewModel
 import org.saudigitus.emis.ui.subjects.SubjectScreen
 import org.saudigitus.emis.ui.subjects.SubjectViewModel
 import org.saudigitus.emis.ui.teis.TeiScreen
+import org.saudigitus.emis.ui.teis.mapper.TEICardMapper
 import org.saudigitus.emis.ui.theme.EMISAndroidTheme
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : FragmentActivity() {
 
     private val viewModel: HomeViewModel by viewModels()
+
+    @Inject
+    lateinit var teiCardMapper: TEICardMapper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,6 +70,7 @@ class MainActivity : FragmentActivity() {
                         composable(AppRoutes.TEI_LIST_ROUTE) {
                             TeiScreen(
                                 viewModel = viewModel,
+                                teiCardMapper = teiCardMapper,
                                 onBack = navController::navigateUp,
                             )
                         }
@@ -83,7 +89,7 @@ class MainActivity : FragmentActivity() {
                             attendanceViewModel.setInfoCard(viewModel.infoCard.collectAsStateWithLifecycle().value)
                             attendanceViewModel.setOU(it.arguments?.getString("ou") ?: "")
 
-                            AttendanceScreen(attendanceViewModel, navController::navigateUp)
+                            AttendanceScreen(attendanceViewModel, teiCardMapper, navController::navigateUp)
                         }
                         composable(
                             route = "${AppRoutes.PERFORMANCE_ROUTE}/{ou}/{stage}/{dataElement}/{subjectName}",
@@ -123,6 +129,7 @@ class MainActivity : FragmentActivity() {
 
                             PerformanceScreen(
                                 state = uiState,
+                                teiCardMapper = teiCardMapper,
                                 onNavBack = navController::navigateUp,
                                 infoCard = infoCard,
                                 defaultSelection = it.arguments?.getString("subjectName") ?: "",

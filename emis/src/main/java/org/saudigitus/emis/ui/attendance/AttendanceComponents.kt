@@ -2,6 +2,7 @@ package org.saudigitus.emis.ui.attendance
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Help
@@ -30,6 +31,7 @@ fun AttendanceItemState(
     attendanceState: List<AttendanceEntity>,
 ) {
     Row(
+        modifier = Modifier.padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -80,7 +82,8 @@ fun AttendanceButtons(
     var selectedIndex by remember { mutableStateOf(-1) }
 
     Row(
-        modifier = Modifier.layoutId(layoutId = tei),
+        modifier = Modifier.layoutId(layoutId = tei)
+            .padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
     ) {

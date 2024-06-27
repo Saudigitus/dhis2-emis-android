@@ -2,6 +2,7 @@ package org.saudigitus.emis.ui.attendance
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -35,17 +36,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.hisp.dhis.mobile.ui.designsystem.component.ListCard
+import org.hisp.dhis.mobile.ui.designsystem.component.ListCardTitleModel
 import org.saudigitus.emis.R
-import org.saudigitus.emis.ui.components.MetadataItem
+import org.saudigitus.emis.data.model.mapper.map
 import org.saudigitus.emis.ui.components.ShowCard
 import org.saudigitus.emis.ui.components.Toolbar
 import org.saudigitus.emis.ui.components.ToolbarActionState
+import org.saudigitus.emis.ui.teis.mapper.TEICardMapper
 import org.saudigitus.emis.ui.theme.light_success
 import org.saudigitus.emis.utils.Constants.ABSENT
 import org.saudigitus.emis.utils.DateHelper
@@ -54,6 +59,7 @@ import org.saudigitus.emis.utils.DateHelper
 @Composable
 fun AttendanceScreen(
     viewModel: AttendanceViewModel,
+    teiCardMapper: TEICardMapper,
     onBack: () -> Unit,
 ) {
     val students by viewModel.teis.collectAsStateWithLifecycle()
@@ -275,16 +281,23 @@ fun AttendanceScreen(
                     modifier = Modifier.fillMaxSize(),
                 ) {
                     items(students) { student ->
-                        MetadataItem(
-                            displayName = "${
-                                student.attributeValues?.values?.toList()?.getOrNull(2)?.value()
-                            } ${student.attributeValues?.values?.toList()?.getOrNull(1)?.value()}",
-                            attrValue = "${
-                                student.attributeValues?.values?.toList()?.getOrNull(0)?.value()
-                            }",
-                            enableClickAction = false,
-                            onClick = {},
+                        val card = student.map(teiCardMapper)
+
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.CenterEnd,
                         ) {
+                            ListCard(
+                                modifier = Modifier.testTag("TEI_ITEM"),
+                                listAvatar = card.avatar,
+                                title = ListCardTitleModel(text = card.title),
+                                additionalInfoList = card.additionalInfo,
+                                actionButton = card.actionButton,
+                                expandLabelText = card.expandLabelText,
+                                shrinkLabelText = card.shrinkLabelText,
+                                onCardClick = card.onCardCLick,
+                            )
+
                             if (attendanceStep == ButtonStep.EDITING) {
                                 AttendanceItemState(
                                     tei = student.tei.uid(),

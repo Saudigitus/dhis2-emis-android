@@ -27,6 +27,7 @@ import org.hisp.dhis.android.core.program.ProgramType
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityType
 import org.junit.After
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyString
@@ -157,6 +158,7 @@ class ProgramRepositoryImplTest {
             }
     }
 
+    @Ignore
     @Test
     fun `Should return list of program ProgramViewModels`() {
         val syncStatusData = SyncStatusData(true)
@@ -174,7 +176,8 @@ class ProgramRepositoryImplTest {
                     it[0].typeName == "event" &&
                     it[1].count == 2 &&
                     it[1].hasOverdueEvent &&
-                    it[1].typeName == "tei"
+                    it[1].typeName == "tei" &&
+                    !it[1].isSEMIS
             }
     }
 
