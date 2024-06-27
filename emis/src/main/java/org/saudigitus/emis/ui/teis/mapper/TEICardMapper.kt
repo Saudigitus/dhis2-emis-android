@@ -34,13 +34,18 @@ class TEICardMapper(
         onSyncIconClick: () -> Unit,
         onCardClick: () -> Unit,
         onImageClick: (String) -> Unit,
+        showSync: Boolean = true
     ): ListCardUiModel {
         return ListCardUiModel(
             avatar = { ProvideAvatar(searchTEIModel, onImageClick) },
             title = getTitle(searchTEIModel),
             lastUpdated = searchTEIModel.tei.lastUpdated().toDateSpan(context),
             additionalInfo = getAdditionalInfoList(searchTEIModel),
-            actionButton = { ProvideSyncButton(searchTEIModel, onSyncIconClick) },
+            actionButton = {
+                if (showSync) {
+                    ProvideSyncButton(searchTEIModel, onSyncIconClick)
+                }
+            },
             expandLabelText = resourceManager.getString(R.string.show_more),
             shrinkLabelText = resourceManager.getString(R.string.show_less),
             onCardCLick = onCardClick,
