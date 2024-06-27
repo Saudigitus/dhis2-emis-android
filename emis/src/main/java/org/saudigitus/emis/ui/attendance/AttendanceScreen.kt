@@ -77,7 +77,7 @@ fun AttendanceScreen(
         value: String,
         reasonOfAbsence: String?,
         color: Color?,
-        hasPersisted: Boolean
+        hasPersisted: Boolean,
     ) -> Unit,
     onSetAbsence: (
         index: Int,
@@ -94,9 +94,8 @@ fun AttendanceScreen(
     onSave: () -> Unit,
     bulkSave: () -> Unit,
     clearCache: () -> Unit,
-    refreshOnSave: () -> Unit
+    refreshOnSave: () -> Unit,
 ) {
-
     var isAbsent by remember { mutableStateOf(false) }
     var isAttendanceCompleted by remember { mutableStateOf(false) }
     var launchBulkAssign by remember { mutableStateOf(false) }
@@ -165,7 +164,7 @@ fun AttendanceScreen(
                 bulkAttendance(
                     status.first,
                     status.second.lowercase(),
-                    null
+                    null,
                 )
             },
             onClear = clearCache::invoke,
@@ -195,8 +194,10 @@ fun AttendanceScreen(
                     val date = DateHelper.stringToLocalDate(DateHelper.formatDate(it)!!)
 
                     if (uiState.schoolCalendar != null) {
-                        (!DateHelper.isWeekend(date) && !uiState.schoolCalendar.weekDays.saturday &&
-                            !uiState.schoolCalendar.weekDays.sunday) &&
+                        (
+                            !DateHelper.isWeekend(date) && !uiState.schoolCalendar.weekDays.saturday &&
+                                !uiState.schoolCalendar.weekDays.sunday
+                            ) &&
                             DateHelper.isHoliday(uiState.schoolCalendar.holidays, it)
                     } else {
                         true
@@ -308,9 +309,9 @@ fun AttendanceScreen(
                             modifier = Modifier
                                 .shadow(
                                     elevation = 3.dp,
-                                    spotColor = SurfaceColor.Container
+                                    spotColor = SurfaceColor.Container,
                                 )
-                                .padding(bottom = 2.dp)
+                                .padding(bottom = 2.dp),
                         ) {
                             Box(
                                 modifier = Modifier.fillMaxWidth(),
@@ -325,7 +326,7 @@ fun AttendanceScreen(
                                     expandLabelText = card.expandLabelText,
                                     shrinkLabelText = card.shrinkLabelText,
                                     onCardClick = card.onCardCLick,
-                                    shadow = false
+                                    shadow = false,
                                 )
 
                                 if (uiState.attendanceStep == ButtonStep.EDITING) {
@@ -347,7 +348,7 @@ fun AttendanceScreen(
                                                 attendance,
                                                 null,
                                                 color,
-                                                true
+                                                true,
                                             )
                                         } else {
                                             cachedTEIId = tei ?: student.tei.uid()

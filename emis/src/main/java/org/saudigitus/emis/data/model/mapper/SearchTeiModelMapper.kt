@@ -6,7 +6,7 @@ import org.saudigitus.emis.ui.teis.mapper.TEICardMapper
 fun SearchTeiModel.map(
     teiCardMapper: TEICardMapper,
     onSyncIconClick: ((uid: String) -> Unit)? = null,
-    showSync: Boolean = true
+    showSync: Boolean = true,
 ) = teiCardMapper.map(
     searchTEIModel = this,
     onSyncIconClick = {
@@ -16,5 +16,5 @@ fun SearchTeiModel.map(
     },
     onCardClick = {},
     onImageClick = {},
-    showSync = showSync
+    showSync = showSync,
 )

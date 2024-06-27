@@ -39,7 +39,7 @@ fun InputField(
     placeholder: String,
     inputType: ValueType?,
     enabled: Boolean = true,
-    colors: TextFieldColors = TextFieldDefaults.textFieldColors()
+    colors: TextFieldColors = TextFieldDefaults.textFieldColors(),
 ) {
     var action by remember { mutableStateOf("") }
 

@@ -134,7 +134,7 @@ class AttendanceViewModel
                             reasonDataElement = datastoreAttendance.value?.absenceReason ?: "",
                             teis = teiUIds.value,
                             date = date.toString(),
-                        )
+                        ),
                     )
                 }
 

@@ -34,7 +34,7 @@ class TEICardMapper(
         onSyncIconClick: () -> Unit,
         onCardClick: () -> Unit,
         onImageClick: (String) -> Unit,
-        showSync: Boolean = true
+        showSync: Boolean = true,
     ): ListCardUiModel {
         return ListCardUiModel(
             avatar = { ProvideAvatar(searchTEIModel, onImageClick) },

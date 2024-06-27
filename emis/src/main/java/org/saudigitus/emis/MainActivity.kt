@@ -75,7 +75,7 @@ class MainActivity : FragmentActivity() {
                                 viewModel = viewModel,
                                 teiCardMapper = teiCardMapper,
                                 onBack = navController::navigateUp,
-                                onSyncTei = ::syncTei
+                                onSyncTei = ::syncTei,
                             )
                         }
                         composable(
@@ -113,7 +113,7 @@ class MainActivity : FragmentActivity() {
                                 onSave = attendanceViewModel::save,
                                 bulkSave = attendanceViewModel::bulkSave,
                                 clearCache = attendanceViewModel::clearCache,
-                                refreshOnSave = attendanceViewModel::refreshOnSave
+                                refreshOnSave = attendanceViewModel::refreshOnSave,
                             )
                         }
                         composable(
@@ -207,10 +207,10 @@ class MainActivity : FragmentActivity() {
             onNoConnectionListener = {
                 Snackbar.make(
                     this.window.decorView.rootView,
-                    getString( R.string.sync_offline_check_connection),
-                    Snackbar.LENGTH_SHORT
+                    getString(R.string.sync_offline_check_connection),
+                    Snackbar.LENGTH_SHORT,
                 ).show()
-            }
+            },
         ).show()
     }
 }

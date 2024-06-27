@@ -101,7 +101,7 @@ fun TeiScreen(
                                 teiCardMapper = teiCardMapper,
                                 onSyncIconClick = {
                                     onSyncTei.invoke(it)
-                                }
+                                },
                             )
 
                             ListCard(

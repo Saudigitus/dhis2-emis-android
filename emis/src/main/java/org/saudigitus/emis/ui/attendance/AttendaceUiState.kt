@@ -18,10 +18,9 @@ data class AttendanceUiState(
     val attendanceStep: ButtonStep = ButtonStep.EDITING,
     val attendanceStatus: List<AttendanceEntity> = emptyList(),
     val reasonOfAbsence: List<DropdownItem> = emptyList(),
-    val absence: List<Absence>  = emptyList(),
-    val schoolCalendar: CalendarConfig? = null
+    val absence: List<Absence> = emptyList(),
+    val schoolCalendar: CalendarConfig? = null,
 )
-
 
 data class AttendanceActionButtonState(
     val btnIndex: Int = -1,
