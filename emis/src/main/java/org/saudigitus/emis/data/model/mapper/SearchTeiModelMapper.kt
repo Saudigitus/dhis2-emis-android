@@ -5,9 +5,16 @@ import org.saudigitus.emis.ui.teis.mapper.TEICardMapper
 
 fun SearchTeiModel.map(
     teiCardMapper: TEICardMapper,
+    onSyncIconClick: ((uid: String) -> Unit)? = null,
+    showSync: Boolean = true,
 ) = teiCardMapper.map(
     searchTEIModel = this,
-    onSyncIconClick = { },
+    onSyncIconClick = {
+        if (onSyncIconClick != null) {
+            onSyncIconClick(this.uid())
+        }
+    },
     onCardClick = {},
     onImageClick = {},
+    showSync = showSync,
 )

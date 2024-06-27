@@ -40,6 +40,7 @@ fun TeiScreen(
     viewModel: HomeViewModel,
     teiCardMapper: TEICardMapper,
     onBack: () -> Unit,
+    onSyncTei: (tei: String) -> Unit,
 ) {
     val students by viewModel.teis.collectAsStateWithLifecycle()
     val toolbarHeaders by viewModel.toolbarHeader.collectAsStateWithLifecycle()
@@ -96,7 +97,12 @@ fun TeiScreen(
                         modifier = Modifier.fillMaxSize(),
                     ) {
                         items(students) { student ->
-                            val card = student.map(teiCardMapper)
+                            val card = student.map(
+                                teiCardMapper = teiCardMapper,
+                                onSyncIconClick = {
+                                    onSyncTei.invoke(it)
+                                },
+                            )
 
                             ListCard(
                                 modifier = Modifier.testTag("TEI_ITEM"),

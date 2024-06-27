@@ -58,6 +58,7 @@ import org.saudigitus.emis.ui.components.DetailsWithOptions
 import org.saudigitus.emis.ui.components.InfoCard
 import org.saudigitus.emis.ui.components.Toolbar
 import org.saudigitus.emis.ui.components.ToolbarActionState
+import org.saudigitus.emis.ui.form.FormBuilder
 import org.saudigitus.emis.ui.teis.mapper.TEICardMapper
 import org.saudigitus.emis.ui.theme.light_success
 
@@ -252,7 +253,7 @@ fun PerformanceScreen(
                                 shrinkLabelText = card.shrinkLabelText,
                                 onCardClick = card.onCardCLick,
                             )
-                            PerformanceForm(
+                            FormBuilder(
                                 modifier = Modifier
                                     .width(120.dp)
                                     .height(60.dp)

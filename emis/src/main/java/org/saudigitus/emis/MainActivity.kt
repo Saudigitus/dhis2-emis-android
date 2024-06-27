@@ -16,8 +16,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import org.dhis2.commons.Constants
+import org.dhis2.commons.sync.SyncContext
+import org.dhis2.commons.sync.SyncDialog
 import org.saudigitus.emis.ui.attendance.AttendanceScreen
 import org.saudigitus.emis.ui.attendance.AttendanceViewModel
 import org.saudigitus.emis.ui.home.HomeScreen
@@ -72,6 +75,7 @@ class MainActivity : FragmentActivity() {
                                 viewModel = viewModel,
                                 teiCardMapper = teiCardMapper,
                                 onBack = navController::navigateUp,
+                                onSyncTei = ::syncTei,
                             )
                         }
                         composable(
@@ -83,13 +87,34 @@ class MainActivity : FragmentActivity() {
                             ),
                         ) {
                             val attendanceViewModel: AttendanceViewModel = hiltViewModel()
+                            val uiState by attendanceViewModel.uiState.collectAsStateWithLifecycle()
+                            val infoCard by attendanceViewModel.infoCard.collectAsStateWithLifecycle()
+                            val teis by viewModel.teis.collectAsStateWithLifecycle()
 
                             attendanceViewModel.setProgram(intent?.extras?.getString(Constants.PROGRAM_UID) ?: "")
-                            attendanceViewModel.setTeis(viewModel.teis.collectAsStateWithLifecycle().value)
+                            attendanceViewModel.setTeis(teis, attendanceViewModel::updateTEISList)
                             attendanceViewModel.setInfoCard(viewModel.infoCard.collectAsStateWithLifecycle().value)
                             attendanceViewModel.setOU(it.arguments?.getString("ou") ?: "")
 
-                            AttendanceScreen(attendanceViewModel, teiCardMapper, navController::navigateUp)
+                            AttendanceScreen(
+                                uiState = uiState,
+                                infoCard = infoCard,
+                                setDate = attendanceViewModel::setDate,
+                                teiCardMapper = teiCardMapper,
+                                onBack = navController::navigateUp,
+                                setAbsence = { code ->
+                                    attendanceViewModel.setAbsence(reasonOfAbsence = code)
+                                },
+                                summary = attendanceViewModel::getSummary,
+                                setAttendanceStep = attendanceViewModel::setAttendanceStep,
+                                setAttendance = attendanceViewModel::setAttendance,
+                                onSetAbsence = attendanceViewModel::setAbsence,
+                                bulkAttendance = attendanceViewModel::bulkAttendance,
+                                onSave = attendanceViewModel::save,
+                                bulkSave = attendanceViewModel::bulkSave,
+                                clearCache = attendanceViewModel::clearCache,
+                                refreshOnSave = attendanceViewModel::refreshOnSave,
+                            )
                         }
                         composable(
                             route = "${AppRoutes.PERFORMANCE_ROUTE}/{ou}/{stage}/{dataElement}/{subjectName}",
@@ -172,5 +197,20 @@ class MainActivity : FragmentActivity() {
                 }
             }
         }
+    }
+
+    private fun syncTei(teiUid: String) {
+        SyncDialog(
+            activity = this@MainActivity,
+            recordUid = viewModel.program.value,
+            syncContext = SyncContext.TrackerProgramTei(teiUid),
+            onNoConnectionListener = {
+                Snackbar.make(
+                    this.window.decorView.rootView,
+                    getString(R.string.sync_offline_check_connection),
+                    Snackbar.LENGTH_SHORT,
+                ).show()
+            },
+        ).show()
     }
 }

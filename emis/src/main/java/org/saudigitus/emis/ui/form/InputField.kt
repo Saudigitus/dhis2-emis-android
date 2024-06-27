@@ -5,6 +5,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldColors
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -13,7 +14,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -39,6 +39,7 @@ fun InputField(
     placeholder: String,
     inputType: ValueType?,
     enabled: Boolean = true,
+    colors: TextFieldColors = TextFieldDefaults.textFieldColors(),
 ) {
     var action by remember { mutableStateOf("") }
 
@@ -81,9 +82,7 @@ fun InputField(
             capitalization = inputType?.toKeyBoardInputType()?.keyboardCapitalization() ?: KeyboardCapitalization.None,
             imeAction = ImeAction.Done,
         ),
-        colors = TextFieldDefaults.textFieldColors(
-            backgroundColor = Color.Transparent,
-        ),
+        colors = colors,
         visualTransformation = if (inputType?.toKeyBoardInputType()?.toKeyboardType() == KeyboardType.Password) {
             PasswordVisualTransformation()
         } else {
