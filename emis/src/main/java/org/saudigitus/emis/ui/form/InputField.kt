@@ -26,6 +26,8 @@ import androidx.compose.ui.unit.sp
 import org.dhis2.composetable.model.extensions.keyboardCapitalization
 import org.dhis2.composetable.model.extensions.toKeyboardType
 import org.hisp.dhis.android.core.common.ValueType
+import org.hisp.dhis.mobile.ui.designsystem.component.InputShellState
+import org.hisp.dhis.mobile.ui.designsystem.theme.SurfaceColor
 import org.saudigitus.emis.R
 import org.saudigitus.emis.ui.form.fields.IntentAction
 import org.saudigitus.emis.utils.toKeyBoardInputType
@@ -39,7 +41,12 @@ fun InputField(
     placeholder: String,
     inputType: ValueType?,
     enabled: Boolean = true,
-    colors: TextFieldColors = TextFieldDefaults.textFieldColors(),
+    colors: TextFieldColors = TextFieldDefaults.textFieldColors(
+        backgroundColor = SurfaceColor.Container,
+        focusedIndicatorColor = InputShellState.FOCUSED.color,
+        unfocusedIndicatorColor = InputShellState.UNFOCUSED.color,
+        disabledIndicatorColor = InputShellState.DISABLED.color,
+    ),
 ) {
     var action by remember { mutableStateOf("") }
 
@@ -52,7 +59,7 @@ fun InputField(
         enabled = enabled,
         value = value,
         onValueChange = onValueChange,
-        label = { Text(text = label) },
+        label = { Text(text = "label") },
         placeholder = { Text(text = placeholder) },
         leadingIcon = {
             when (inputType?.toKeyBoardInputType()?.toKeyboardType()) {

@@ -90,6 +90,7 @@ class MainActivity : FragmentActivity() {
                             val uiState by attendanceViewModel.uiState.collectAsStateWithLifecycle()
                             val infoCard by attendanceViewModel.infoCard.collectAsStateWithLifecycle()
                             val teis by viewModel.teis.collectAsStateWithLifecycle()
+                            val teiPositions by attendanceViewModel.selectedAbsence.collectAsStateWithLifecycle()
 
                             attendanceViewModel.setProgram(intent?.extras?.getString(Constants.PROGRAM_UID) ?: "")
                             attendanceViewModel.setTeis(teis, attendanceViewModel::updateTEISList)
@@ -101,10 +102,12 @@ class MainActivity : FragmentActivity() {
                                 infoCard = infoCard,
                                 setDate = attendanceViewModel::setDate,
                                 teiCardMapper = teiCardMapper,
+                                teiPositions = teiPositions,
                                 onBack = navController::navigateUp,
                                 setAbsence = { code ->
                                     attendanceViewModel.setAbsence(reasonOfAbsence = code)
                                 },
+                                setTEIPos = attendanceViewModel::setTeiPos,
                                 summary = attendanceViewModel::getSummary,
                                 setAttendanceStep = attendanceViewModel::setAttendanceStep,
                                 setAttendance = attendanceViewModel::setAttendance,
@@ -114,6 +117,8 @@ class MainActivity : FragmentActivity() {
                                 bulkSave = attendanceViewModel::bulkSave,
                                 clearCache = attendanceViewModel::clearCache,
                                 refreshOnSave = attendanceViewModel::refreshOnSave,
+                                setAbsenceState = attendanceViewModel::fieldState,
+                                onNext = attendanceViewModel::onClickNext,
                             )
                         }
                         composable(

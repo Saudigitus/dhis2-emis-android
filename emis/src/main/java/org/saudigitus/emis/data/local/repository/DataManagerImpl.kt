@@ -209,7 +209,7 @@ class DataManagerImpl
                     dataElement = "${config.status}",
                     icon = Utils.dynamicIcons("${status.icon}"),
                     iconName = "${status.icon}",
-                    color = Color(colorUtils.parseColor("${status.color}")),
+                    color = Color(colorUtils.parseColor(status.color ?: "#AB22E2")),
                     actionOrder = it.sortOrder,
                 )
             } else {

@@ -19,6 +19,7 @@ import org.hisp.dhis.android.core.common.ValueType
 fun FormBuilder(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    label: String? = null,
     state: List<Field>,
     key: String,
     fields: List<FormField>,
@@ -50,7 +51,7 @@ fun FormBuilder(
 
             if (formField.hasOptions() || data?.hasOptions == true) {
                 DropdownField(
-                    label = formField.label,
+                    label = if (fields.size == 1) label ?: "-" else formField.label,
                     placeholder = formField.placeholder,
                     data = formField.options ?: emptyList(),
                     selectedItem = data?.itemOptions,
@@ -70,7 +71,7 @@ fun FormBuilder(
                         )
                     },
                     placeholder = formField.placeholder,
-                    label = formField.label,
+                    label = if (fields.size == 1) label ?: "-" else formField.label,
                     inputType = formField.type,
                     modifier = Modifier
                         .fillMaxWidth()
