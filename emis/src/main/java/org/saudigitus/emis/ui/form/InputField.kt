@@ -14,6 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -26,8 +27,6 @@ import androidx.compose.ui.unit.sp
 import org.dhis2.composetable.model.extensions.keyboardCapitalization
 import org.dhis2.composetable.model.extensions.toKeyboardType
 import org.hisp.dhis.android.core.common.ValueType
-import org.hisp.dhis.mobile.ui.designsystem.component.InputShellState
-import org.hisp.dhis.mobile.ui.designsystem.theme.SurfaceColor
 import org.saudigitus.emis.R
 import org.saudigitus.emis.ui.form.fields.IntentAction
 import org.saudigitus.emis.utils.toKeyBoardInputType
@@ -37,15 +36,13 @@ fun InputField(
     modifier: Modifier = Modifier,
     value: String,
     onValueChange: (String) -> Unit,
-    label: String,
+    label: String? = null,
     placeholder: String,
     inputType: ValueType?,
     enabled: Boolean = true,
     colors: TextFieldColors = TextFieldDefaults.textFieldColors(
-        backgroundColor = SurfaceColor.Container,
-        focusedIndicatorColor = InputShellState.FOCUSED.color,
-        unfocusedIndicatorColor = InputShellState.UNFOCUSED.color,
-        disabledIndicatorColor = InputShellState.DISABLED.color,
+        backgroundColor = Color.Transparent,
+
     ),
 ) {
     var action by remember { mutableStateOf("") }
@@ -59,7 +56,7 @@ fun InputField(
         enabled = enabled,
         value = value,
         onValueChange = onValueChange,
-        label = { Text(text = "label") },
+        label = if (label != null) { { Text(text = label) } } else null,
         placeholder = { Text(text = placeholder) },
         leadingIcon = {
             when (inputType?.toKeyBoardInputType()?.toKeyboardType()) {

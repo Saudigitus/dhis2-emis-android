@@ -97,12 +97,7 @@ fun TeiScreen(
                         modifier = Modifier.fillMaxSize(),
                     ) {
                         items(students) { student ->
-                            val card = student.map(
-                                teiCardMapper = teiCardMapper,
-                                onSyncIconClick = {
-                                    onSyncTei.invoke(it)
-                                },
-                            )
+                            val card = student.map(teiCardMapper, showSync = false)
 
                             ListCard(
                                 modifier = Modifier.testTag("TEI_ITEM"),

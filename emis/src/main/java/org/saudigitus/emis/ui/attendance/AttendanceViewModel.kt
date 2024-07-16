@@ -55,8 +55,8 @@ class AttendanceViewModel
     private val _absenceState = MutableStateFlow(Absence())
     private val absenceState: StateFlow<Absence> = _absenceState
 
-    private val _selectedAbsence = MutableStateFlow<Set<Int>>(emptySet())
-    val selectedAbsence: StateFlow<Set<Int>> = _selectedAbsence
+    private val _selectedAbsence = MutableStateFlow<Set<Pair<String, String>>>(emptySet())
+    val selectedAbsence: StateFlow<Set<Pair<String, String>>> = _selectedAbsence
 
     init {
         _toolbarHeaders.update {
@@ -233,11 +233,11 @@ class AttendanceViewModel
         }
     }
 
-    fun setTeiPos(pos: Int) {
-        val cachedPos = mutableSetOf<Int>()
+    fun setTeiAbsence(tei: String, value: String) {
+        val cachedPos = mutableSetOf<Pair<String, String>>()
         cachedPos.addAll(selectedAbsence.value)
 
-        cachedPos.add(pos)
+        cachedPos.add(Pair(tei, value))
 
         _selectedAbsence.value = cachedPos
     }
@@ -261,15 +261,15 @@ class AttendanceViewModel
         }
     }
 
-    private fun removeTeiPos(pos: Int) {
-        val cachedPos = mutableSetOf<Int>()
+    private fun removeTeiAbsence(tei: String) {
+        val cachedPos = mutableSetOf<Pair<String, String>>()
         cachedPos.addAll(selectedAbsence.value)
-        cachedPos.remove(pos)
+        val data = cachedPos.find { it.first == tei }
+        cachedPos.remove(data)
         _selectedAbsence.value = cachedPos
     }
 
     fun setAttendance(
-        teiPos: Int? = null,
         index: Int,
         ou: String,
         tei: String,
@@ -278,7 +278,7 @@ class AttendanceViewModel
         color: Color? = null,
         hasPersisted: Boolean = true,
     ) {
-        teiPos?.let { removeTeiPos(it) }
+        removeTeiAbsence(tei)
 
         viewModelState.update {
             it.copy(attendanceBtnState = getAttendanceUiState(index, tei, value, color))
@@ -444,8 +444,26 @@ class AttendanceViewModel
         ou: String,
         fieldData: Triple<String, String?, ValueType?>,
     ) {
-        setAbsence(reasonOfAbsence = fieldData.second)
-        save()
+        viewModelScope.launch {
+            val data = selectedAbsence.value.find { it.first == tei }
+            if (data != null) {
+                val attendance = AttendanceEntity(
+                    tei = tei,
+                    dataElement = datastoreAttendance.value?.status ?: "",
+                    value = data.second,
+                    reasonDataElement = datastoreAttendance.value?.absenceReason,
+                    reasonOfAbsence = fieldData.second,
+                    date = eventDate.value,
+                )
+
+                repository.save(
+                    ou = ou,
+                    program = program.value,
+                    programStage = datastoreAttendance.value?.programStage ?: "",
+                    attendance = attendance,
+                )
+            }
+        }
     }
 
     fun clearCache() {
