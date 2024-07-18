@@ -12,4 +12,7 @@ object Constants {
 
     // attendance status
     const val ABSENT = "absent"
+
+    //
+    const val DEFAULT_COLOR = "F81C784"
 }
