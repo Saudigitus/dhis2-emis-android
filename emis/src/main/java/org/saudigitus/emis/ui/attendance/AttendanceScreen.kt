@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.icons.Icons
@@ -34,7 +34,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -45,9 +44,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import org.hisp.dhis.mobile.ui.designsystem.component.ListCard
-import org.hisp.dhis.mobile.ui.designsystem.component.ListCardColumn
 import org.hisp.dhis.mobile.ui.designsystem.component.ListCardTitleModel
-import org.hisp.dhis.mobile.ui.designsystem.theme.SurfaceColor
 import org.saudigitus.emis.R
 import org.saudigitus.emis.data.model.mapper.map
 import org.saudigitus.emis.ui.components.InfoCard
@@ -67,7 +64,6 @@ fun AttendanceScreen(
     teiCardMapper: TEICardMapper,
     onBack: () -> Unit,
     setDate: (String) -> Unit,
-    setAbsence: (reasonOfAbsence: String?) -> Unit,
     summary: () -> List<Triple<Int, ImageVector?, Color?>>,
     setAttendanceStep: (buttonStep: ButtonStep) -> Unit,
     setAttendance: (
@@ -91,15 +87,16 @@ fun AttendanceScreen(
         value: String,
         reasonOfAbsence: String?,
     ) -> Unit,
-    onSave: () -> Unit,
+    setAbsenceReason: (reasonOfAbsence: String?) -> Unit,
     bulkSave: () -> Unit,
     clearCache: () -> Unit,
+    onSave: () -> Unit,
     refreshOnSave: () -> Unit,
 ) {
-    var isAbsent by remember { mutableStateOf(false) }
     var isAttendanceCompleted by remember { mutableStateOf(false) }
     var launchBulkAssign by remember { mutableStateOf(false) }
     var isBulk by remember { mutableStateOf(false) }
+    var isAbsent by remember { mutableStateOf(false) }
 
     var cachedTEIId by remember { mutableStateOf("") }
 
@@ -117,7 +114,7 @@ fun AttendanceScreen(
                 null
             },
             onItemClick = {
-                setAbsence(it.code)
+                setAbsenceReason(it.code)
             },
             onCancel = {
                 isAbsent = false
@@ -295,72 +292,64 @@ fun AttendanceScreen(
             ) {
                 ShowCard(
                     infoCard,
-                    true,
+                    false,
                     enabledIconButton = uiState.attendanceStep == ButtonStep.HOLD_SAVING,
                     onIconClick = { launchBulkAssign = true },
                 )
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                 ) {
-                    items(uiState.students) { student ->
+                    itemsIndexed(uiState.students) { _, student ->
                         val card = student.map(teiCardMapper, showSync = false)
 
-                        ListCardColumn(
+                        Box(
                             modifier = Modifier
-                                .shadow(
-                                    elevation = 3.dp,
-                                    spotColor = SurfaceColor.Container,
-                                )
-                                .padding(bottom = 2.dp),
+                                .fillMaxWidth()
+                                .background(color = Color.White),
+                            contentAlignment = Alignment.CenterEnd,
                         ) {
-                            Box(
-                                modifier = Modifier.fillMaxWidth(),
-                                contentAlignment = Alignment.CenterEnd,
-                            ) {
-                                ListCard(
-                                    modifier = Modifier.testTag("TEI_ITEM"),
-                                    listAvatar = card.avatar,
-                                    title = ListCardTitleModel(text = card.title),
-                                    additionalInfoList = card.additionalInfo,
-                                    actionButton = card.actionButton,
-                                    expandLabelText = card.expandLabelText,
-                                    shrinkLabelText = card.shrinkLabelText,
-                                    onCardClick = card.onCardCLick,
-                                    shadow = false,
-                                )
+                            ListCard(
+                                modifier = Modifier.testTag("TEI_ITEM"),
+                                listAvatar = card.avatar,
+                                title = ListCardTitleModel(text = card.title),
+                                additionalInfoList = card.additionalInfo,
+                                actionButton = card.actionButton,
+                                expandLabelText = card.expandLabelText,
+                                shrinkLabelText = card.shrinkLabelText,
+                                onCardClick = card.onCardCLick,
+                                shadow = false,
+                            )
 
-                                if (uiState.attendanceStep == ButtonStep.EDITING) {
-                                    AttendanceItemState(
-                                        tei = student.tei.uid(),
-                                        attendanceState = uiState.attendanceStatus,
+                            if (uiState.attendanceStep == ButtonStep.EDITING) {
+                                AttendanceItemState(
+                                    tei = student.tei.uid(),
+                                    attendanceState = uiState.attendanceStatus,
+                                )
+                            } else {
+                                AttendanceButtons(
+                                    tei = student.tei.uid(),
+                                    btnState = uiState.attendanceBtnState,
+                                    actions = uiState.attendanceOptions,
+                                ) { index, tei, attendance, color ->
+                                    setAttendance(
+                                        index,
+                                        student.tei.organisationUnit() ?: "",
+                                        tei ?: student.tei.uid(),
+                                        attendance,
+                                        null,
+                                        color,
+                                        true,
                                     )
-                                } else {
-                                    AttendanceButtons(
-                                        tei = student.tei.uid(),
-                                        btnState = uiState.attendanceBtnState,
-                                        actions = uiState.attendanceOptions,
-                                    ) { index, tei, attendance, color ->
-                                        if (attendance.lowercase() != ABSENT) {
-                                            setAttendance(
-                                                index,
-                                                student.tei.organisationUnit() ?: "",
-                                                tei ?: student.tei.uid(),
-                                                attendance,
-                                                null,
-                                                color,
-                                                true,
-                                            )
-                                        } else {
-                                            cachedTEIId = tei ?: student.tei.uid()
-                                            isAbsent = true
-                                            onSetAbsence(
-                                                index,
-                                                student.tei.organisationUnit() ?: "",
-                                                tei ?: student.tei.uid(),
-                                                attendance,
-                                                null,
-                                            )
-                                        }
+                                    if (attendance.lowercase() == ABSENT) {
+                                        cachedTEIId = tei ?: student.tei.uid()
+                                        isAbsent = true
+                                        onSetAbsence(
+                                            index,
+                                            student.tei.organisationUnit() ?: "",
+                                            tei ?: student.tei.uid(),
+                                            attendance,
+                                            null,
+                                        )
                                     }
                                 }
                             }

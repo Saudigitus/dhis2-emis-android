@@ -13,11 +13,14 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.dhis2.commons.date.DateUtils
+import org.hisp.dhis.android.core.common.ValueType
 import org.saudigitus.emis.data.local.DataManager
+import org.saudigitus.emis.data.local.FormRepository
 import org.saudigitus.emis.data.model.Attendance
 import org.saudigitus.emis.data.model.dto.Absence
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
 import org.saudigitus.emis.ui.base.BaseViewModel
+import org.saudigitus.emis.ui.form.Field
 import org.saudigitus.emis.utils.Constants.KEY
 import org.saudigitus.emis.utils.DateHelper
 import org.saudigitus.emis.utils.Utils.WHITE
@@ -28,6 +31,7 @@ import javax.inject.Inject
 class AttendanceViewModel
 @Inject constructor(
     private val repository: DataManager,
+    private val formRepository: FormRepository,
 ) : BaseViewModel(repository) {
 
     private val _datastoreAttendance = MutableStateFlow<Attendance?>(null)
@@ -51,6 +55,9 @@ class AttendanceViewModel
     private val _absenceState = MutableStateFlow(Absence())
     private val absenceState: StateFlow<Absence> = _absenceState
 
+    private val _selectedAbsence = MutableStateFlow<Set<Pair<String, String>>>(emptySet())
+    val selectedAbsence: StateFlow<Set<Pair<String, String>>> = _selectedAbsence
+
     init {
         _toolbarHeaders.update {
             it.copy(
@@ -72,6 +79,10 @@ class AttendanceViewModel
             }
             getAttendanceOptions(program)
             getReasonForAbsence(datastoreAttendance.value?.absenceReason ?: "")
+            getFields(
+                datastoreAttendance.value?.programStage ?: "",
+                datastoreAttendance.value?.absenceReason ?: "",
+            )
         }
     }
 
@@ -148,6 +159,14 @@ class AttendanceViewModel
         }
     }
 
+    private fun getFields(stage: String, dl: String) {
+        viewModelScope.launch {
+            viewModelState.update {
+                it.copy(formFields = formRepository.keyboardInputTypeByStage(stage, dl))
+            }
+        }
+    }
+
     private fun setInitialAttendanceStatus() {
         attendanceBtnStateCache = uiState.value.attendanceStatus.map { attendance ->
             attendanceActionButtonMapper(
@@ -214,6 +233,15 @@ class AttendanceViewModel
         }
     }
 
+    fun setTeiAbsence(tei: String, value: String) {
+        val cachedPos = mutableSetOf<Pair<String, String>>()
+        cachedPos.addAll(selectedAbsence.value)
+
+        cachedPos.add(Pair(tei, value))
+
+        _selectedAbsence.value = cachedPos
+    }
+
     fun bulkAttendance(
         index: Int,
         value: String,
@@ -233,6 +261,14 @@ class AttendanceViewModel
         }
     }
 
+    private fun removeTeiAbsence(tei: String) {
+        val cachedPos = mutableSetOf<Pair<String, String>>()
+        cachedPos.addAll(selectedAbsence.value)
+        val data = cachedPos.find { it.first == tei }
+        cachedPos.remove(data)
+        _selectedAbsence.value = cachedPos
+    }
+
     fun setAttendance(
         index: Int,
         ou: String,
@@ -242,6 +278,8 @@ class AttendanceViewModel
         color: Color? = null,
         hasPersisted: Boolean = true,
     ) {
+        removeTeiAbsence(tei)
+
         viewModelState.update {
             it.copy(attendanceBtnState = getAttendanceUiState(index, tei, value, color))
         }
@@ -356,6 +394,76 @@ class AttendanceViewModel
             }
 
         return summaries
+    }
+
+    fun fieldState(
+        key: String,
+        dataElement: String,
+        value: String,
+        valueType: ValueType?,
+    ) {
+        val junkData = mutableListOf<Field>()
+
+        val formState = viewModelState.value.fieldsState
+
+        if (formState.isNotEmpty()) {
+            junkData.addAll(formState)
+        }
+
+        val index = junkData.indexOfFirst { it.key == key && it.dataElement == dataElement }
+
+        if (index >= 0) {
+            junkData.removeAt(index)
+            junkData.add(
+                index,
+                Field(
+                    key = key,
+                    dataElement = dataElement,
+                    value = value,
+                    valueType = valueType,
+                ),
+            )
+        } else {
+            junkData.add(
+                Field(
+                    key = key,
+                    dataElement = dataElement,
+                    value = value,
+                    valueType = valueType,
+                ),
+            )
+        }
+
+        viewModelState.update {
+            it.copy(fieldsState = junkData)
+        }
+    }
+
+    fun onClickNext(
+        tei: String,
+        ou: String,
+        fieldData: Triple<String, String?, ValueType?>,
+    ) {
+        viewModelScope.launch {
+            val data = selectedAbsence.value.find { it.first == tei }
+            if (data != null) {
+                val attendance = AttendanceEntity(
+                    tei = tei,
+                    dataElement = datastoreAttendance.value?.status ?: "",
+                    value = data.second,
+                    reasonDataElement = datastoreAttendance.value?.absenceReason,
+                    reasonOfAbsence = fieldData.second,
+                    date = eventDate.value,
+                )
+
+                repository.save(
+                    ou = ou,
+                    program = program.value,
+                    programStage = datastoreAttendance.value?.programStage ?: "",
+                    attendance = attendance,
+                )
+            }
+        }
     }
 
     fun clearCache() {

@@ -42,7 +42,7 @@ fun SubjectScreen(
     onClick: (String, String) -> Unit,
 ) {
     var displayFilters by remember { mutableStateOf(true) }
-    var selected by remember { mutableStateOf("") }
+    var displayName by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = {
@@ -95,9 +95,11 @@ fun SubjectScreen(
                     placeholder = stringResource(R.string.select_term),
                     leadingIcon = Icons.Default.Event,
                     data = state.filters,
-                    defaultSelection = state.filters.getOrNull(0)?.itemName ?: "",
+                    defaultSelection = displayName.ifEmpty {
+                        state.filters.getOrNull(0)?.itemName ?: ""
+                    },
                     onItemClick = {
-                        selected = it.itemName
+                        displayName = it.itemName
                         onFilterClick.invoke(it.id)
                     },
                 )
@@ -108,7 +110,7 @@ fun SubjectScreen(
                     items(state.subjects) { subject ->
                         SubjectItem(
                             displayName = subject.displayName ?: "-",
-                            attrValue = selected,
+                            attrValue = displayName,
                             color = if (subject.color != null) {
                                 Color(ColorUtils().parseColor(subject.color))
                             } else {

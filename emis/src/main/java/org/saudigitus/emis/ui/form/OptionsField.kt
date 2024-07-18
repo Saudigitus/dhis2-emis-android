@@ -19,6 +19,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -34,6 +35,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
+import org.hisp.dhis.mobile.ui.designsystem.theme.SurfaceColor
 
 @Composable
 fun <T> DropdownField(
@@ -41,6 +43,11 @@ fun <T> DropdownField(
     placeholder: String,
     data: List<T>,
     selectedItem: T? = null,
+    colors: TextFieldColors = TextFieldDefaults.colors(
+        focusedContainerColor = SurfaceColor.Surface,
+        unfocusedContainerColor = SurfaceColor.SurfaceDim,
+        disabledContainerColor = SurfaceColor.DisabledSurface,
+    ),
     onClick: (T) -> Unit,
 ) {
     var isExpanded by rememberSaveable { mutableStateOf(false) }
@@ -91,10 +98,7 @@ fun <T> DropdownField(
                 }
             },
             interactionSource = interactionSource,
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent,
-            ),
+            colors = colors,
             modifier = Modifier
                 .fillMaxWidth()
                 .onGloballyPositioned { coordinates ->

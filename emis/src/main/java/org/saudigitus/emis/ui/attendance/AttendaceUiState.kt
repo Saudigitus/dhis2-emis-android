@@ -8,6 +8,9 @@ import org.saudigitus.emis.data.model.dto.AttendanceEntity
 import org.saudigitus.emis.ui.components.DropdownItem
 import org.saudigitus.emis.ui.components.InfoCard
 import org.saudigitus.emis.ui.components.ToolbarHeaders
+import org.saudigitus.emis.ui.form.Field
+import org.saudigitus.emis.ui.form.FormData
+import org.saudigitus.emis.ui.form.FormField
 
 data class AttendanceUiState(
     val toolbarHeaders: ToolbarHeaders = ToolbarHeaders(""),
@@ -19,6 +22,9 @@ data class AttendanceUiState(
     val attendanceStatus: List<AttendanceEntity> = emptyList(),
     val reasonOfAbsence: List<DropdownItem> = emptyList(),
     val absence: List<Absence> = emptyList(),
+    val fieldsState: List<Field> = emptyList(),
+    val formFields: List<FormField> = emptyList(),
+    val formData: List<FormData>? = emptyList(),
     val schoolCalendar: CalendarConfig? = null,
 )
 

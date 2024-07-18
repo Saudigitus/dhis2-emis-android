@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.LocalTextStyle
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Save
@@ -49,6 +50,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import org.hisp.dhis.android.core.common.ValueType
+import org.hisp.dhis.mobile.ui.designsystem.component.InputShellState
 import org.hisp.dhis.mobile.ui.designsystem.component.ListCard
 import org.hisp.dhis.mobile.ui.designsystem.component.ListCardTitleModel
 import org.saudigitus.emis.R
@@ -237,7 +239,7 @@ fun PerformanceScreen(
                     contentPadding = PaddingValues(bottom = 108.dp),
                 ) {
                     items(state.students) { student ->
-                        val card = student.map(teiCardMapper)
+                        val card = student.map(teiCardMapper, showSync = false)
 
                         Box(
                             modifier = Modifier.fillMaxWidth(),
@@ -258,6 +260,12 @@ fun PerformanceScreen(
                                     .width(120.dp)
                                     .height(60.dp)
                                     .padding(bottom = 2.dp, end = 16.dp),
+                                colors = TextFieldDefaults.textFieldColors(
+                                    backgroundColor = Color.Transparent,
+                                    focusedIndicatorColor = InputShellState.FOCUSED.color,
+                                    unfocusedIndicatorColor = InputShellState.UNFOCUSED.color,
+                                    disabledIndicatorColor = InputShellState.DISABLED.color,
+                                ),
                                 enabled = performanceStep == ButtonStep.HOLD_SAVING,
                                 state = state.fieldsState,
                                 key = student.uid(),

@@ -3,6 +3,8 @@ package org.saudigitus.emis.ui.form
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.TextFieldColors
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
@@ -14,11 +16,20 @@ import androidx.compose.ui.platform.LocalFocusManager
 import org.dhis2.composetable.ui.Keyboard
 import org.dhis2.composetable.ui.keyboardAsState
 import org.hisp.dhis.android.core.common.ValueType
+import org.hisp.dhis.mobile.ui.designsystem.component.InputShellState
+import org.hisp.dhis.mobile.ui.designsystem.theme.SurfaceColor
 
 @Composable
 fun FormBuilder(
     modifier: Modifier = Modifier,
+    colors: TextFieldColors = TextFieldDefaults.textFieldColors(
+        backgroundColor = SurfaceColor.Container,
+        focusedIndicatorColor = InputShellState.FOCUSED.color,
+        unfocusedIndicatorColor = InputShellState.UNFOCUSED.color,
+        disabledIndicatorColor = InputShellState.DISABLED.color,
+    ),
     enabled: Boolean = true,
+    label: String? = null,
     state: List<Field>,
     key: String,
     fields: List<FormField>,
@@ -50,7 +61,7 @@ fun FormBuilder(
 
             if (formField.hasOptions() || data?.hasOptions == true) {
                 DropdownField(
-                    label = formField.label,
+                    label = if (fields.size == 1) label ?: "-" else formField.label,
                     placeholder = formField.placeholder,
                     data = formField.options ?: emptyList(),
                     selectedItem = data?.itemOptions,
@@ -70,7 +81,7 @@ fun FormBuilder(
                         )
                     },
                     placeholder = formField.placeholder,
-                    label = formField.label,
+                    label = if (fields.size == 1) label else formField.label,
                     inputType = formField.type,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -83,6 +94,7 @@ fun FormBuilder(
                             }
                         },
                     enabled = enabled,
+                    colors = colors,
                 )
             }
         }

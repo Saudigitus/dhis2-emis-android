@@ -101,19 +101,20 @@ class MainActivity : FragmentActivity() {
                                 infoCard = infoCard,
                                 setDate = attendanceViewModel::setDate,
                                 teiCardMapper = teiCardMapper,
+
                                 onBack = navController::navigateUp,
-                                setAbsence = { code ->
-                                    attendanceViewModel.setAbsence(reasonOfAbsence = code)
-                                },
                                 summary = attendanceViewModel::getSummary,
                                 setAttendanceStep = attendanceViewModel::setAttendanceStep,
                                 setAttendance = attendanceViewModel::setAttendance,
                                 onSetAbsence = attendanceViewModel::setAbsence,
                                 bulkAttendance = attendanceViewModel::bulkAttendance,
-                                onSave = attendanceViewModel::save,
                                 bulkSave = attendanceViewModel::bulkSave,
                                 clearCache = attendanceViewModel::clearCache,
                                 refreshOnSave = attendanceViewModel::refreshOnSave,
+                                setAbsenceReason = { reason ->
+                                    attendanceViewModel.setAbsence(reasonOfAbsence = reason)
+                                },
+                                onSave = attendanceViewModel::save,
                             )
                         }
                         composable(
