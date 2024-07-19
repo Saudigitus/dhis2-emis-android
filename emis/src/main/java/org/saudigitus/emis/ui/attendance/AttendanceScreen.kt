@@ -35,7 +35,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -43,11 +42,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.hisp.dhis.mobile.ui.designsystem.component.ListCard
 import org.hisp.dhis.mobile.ui.designsystem.component.ListCardTitleModel
 import org.saudigitus.emis.R
 import org.saudigitus.emis.data.model.mapper.map
-import org.saudigitus.emis.ui.components.InfoCard
 import org.saudigitus.emis.ui.components.ShowCard
 import org.saudigitus.emis.ui.components.Toolbar
 import org.saudigitus.emis.ui.components.ToolbarActionState
@@ -59,44 +58,25 @@ import org.saudigitus.emis.utils.DateHelper
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AttendanceScreen(
-    uiState: AttendanceUiState,
-    infoCard: InfoCard,
+    viewModel: AttendanceViewModel,
     teiCardMapper: TEICardMapper,
     onBack: () -> Unit,
-    setDate: (String) -> Unit,
-    summary: () -> List<Triple<Int, ImageVector?, Color?>>,
-    setAttendanceStep: (buttonStep: ButtonStep) -> Unit,
-    setAttendance: (
-        index: Int,
-        ou: String,
-        tei: String,
-        value: String,
-        reasonOfAbsence: String?,
-        color: Color?,
-        hasPersisted: Boolean,
-    ) -> Unit,
-    onSetAbsence: (
-        index: Int,
-        ou: String,
-        tei: String,
-        value: String,
-        reasonOfAbsence: String?,
-    ) -> Unit,
-    bulkAttendance: (
-        index: Int,
-        value: String,
-        reasonOfAbsence: String?,
-    ) -> Unit,
-    setAbsenceReason: (reasonOfAbsence: String?) -> Unit,
-    bulkSave: () -> Unit,
-    clearCache: () -> Unit,
-    onSave: () -> Unit,
-    refreshOnSave: () -> Unit,
 ) {
+    val students by viewModel.teis.collectAsStateWithLifecycle()
+    val attendanceOptions by viewModel.attendanceOptions.collectAsStateWithLifecycle()
+    val attendanceBtnState by viewModel.attendanceBtnState.collectAsStateWithLifecycle()
+    val attendanceStep by viewModel.attendanceStep.collectAsStateWithLifecycle()
+    val attendanceStatus by viewModel.attendanceStatus.collectAsStateWithLifecycle()
+    val toolbarHeaders by viewModel.toolbarHeaders.collectAsStateWithLifecycle()
+    val infoCard by viewModel.infoCard.collectAsStateWithLifecycle()
+    val reasonOfAbsence by viewModel.reasonOfAbsence.collectAsStateWithLifecycle()
+    val absence by viewModel.absenceStateCache.collectAsStateWithLifecycle()
+    val schoolCalendar by viewModel.schoolCalendar.collectAsStateWithLifecycle()
+
+    var isAbsent by remember { mutableStateOf(false) }
     var isAttendanceCompleted by remember { mutableStateOf(false) }
     var launchBulkAssign by remember { mutableStateOf(false) }
     var isBulk by remember { mutableStateOf(false) }
-    var isAbsent by remember { mutableStateOf(false) }
 
     var cachedTEIId by remember { mutableStateOf("") }
 
@@ -105,39 +85,39 @@ fun AttendanceScreen(
 
     if (isAbsent) {
         ReasonForAbsenceDialog(
-            reasons = uiState.reasonOfAbsence,
+            reasons = reasonOfAbsence,
             title = stringResource(R.string.reason_absence),
             themeColor = Color(0xFF2C98F0),
-            selectedItemCode = if (uiState.absence.find { it.tei == cachedTEIId } != null) {
-                uiState.absence.find { it.tei == cachedTEIId }!!.reasonOfAbsence
+            selectedItemCode = if (absence.find { it.tei == cachedTEIId } != null) {
+                absence.find { it.tei == cachedTEIId }!!.reasonOfAbsence
             } else {
                 null
             },
             onItemClick = {
-                setAbsenceReason(it.code)
+                viewModel.setAbsence(reasonOfAbsence = it.code)
             },
             onCancel = {
                 isAbsent = false
             },
             onDone = {
                 isAbsent = false
-                onSave()
+                viewModel.save()
             },
         )
     }
 
-    if (uiState.attendanceStep == ButtonStep.SAVING) {
+    if (attendanceStep == ButtonStep.SAVING) {
         AttendanceSummaryDialog(
             title = stringResource(R.string.attendance_summary),
-            data = summary(),
+            data = viewModel.getSummary(),
             themeColor = Color(0xFF2C98F0),
-            onCancel = { setAttendanceStep(ButtonStep.HOLD_SAVING) },
+            onCancel = { viewModel.setAttendanceStep(ButtonStep.HOLD_SAVING) },
         ) {
             if (isBulk) {
-                bulkSave()
+                viewModel.bulkSave()
             } else {
-                clearCache()
-                refreshOnSave()
+                viewModel.clearCache()
+                viewModel.refreshOnSave()
             }
             isAttendanceCompleted = true
         }
@@ -155,16 +135,17 @@ fun AttendanceScreen(
     if (launchBulkAssign) {
         BulkAssignComponent(
             onDismissRequest = { launchBulkAssign = false },
-            attendanceOptions = uiState.attendanceOptions,
+            attendanceOptions = attendanceOptions,
             onAttendanceStatus = { status ->
                 isBulk = true
-                bulkAttendance(
-                    status.first,
-                    status.second.lowercase(),
-                    null,
+                viewModel.bulkAttendance(
+                    index = status.first,
+                    value = status.second,
+                    color = status.third,
                 )
+                launchBulkAssign = false
             },
-            onClear = clearCache::invoke,
+            onClear = viewModel::clearCache,
             onCancel = { launchBulkAssign = false },
         )
     }
@@ -172,7 +153,7 @@ fun AttendanceScreen(
     Scaffold(
         topBar = {
             Toolbar(
-                headers = uiState.toolbarHeaders,
+                headers = toolbarHeaders,
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color(0xFF2C98F0),
                     navigationIconContentColor = Color.White,
@@ -186,16 +167,18 @@ fun AttendanceScreen(
                     filterVisibility = false,
                     showCalendar = true,
                 ),
-                calendarAction = setDate::invoke,
+                calendarAction = viewModel::setDate,
                 dateValidator = {
                     val date = DateHelper.stringToLocalDate(DateHelper.formatDate(it)!!)
 
-                    if (uiState.schoolCalendar != null) {
+                    if (schoolCalendar != null) {
                         (
-                            !DateHelper.isWeekend(date) && !uiState.schoolCalendar.weekDays.saturday &&
-                                !uiState.schoolCalendar.weekDays.sunday
+                            !DateHelper.isWeekend(date) && schoolCalendar?.weekDays?.saturday == false &&
+                                schoolCalendar?.weekDays?.sunday == false
                             ) &&
-                            DateHelper.isHoliday(uiState.schoolCalendar.holidays, it)
+                            schoolCalendar?.holidays?.let { holiday ->
+                                DateHelper.isHoliday(holiday, it)
+                            } == true
                     } else {
                         true
                     }
@@ -206,7 +189,7 @@ fun AttendanceScreen(
             ExtendedFloatingActionButton(
                 text = {
                     Text(
-                        text = if (uiState.attendanceStep == ButtonStep.EDITING) {
+                        text = if (attendanceStep == ButtonStep.EDITING) {
                             stringResource(R.string.update)
                         } else {
                             stringResource(R.string.save)
@@ -219,7 +202,7 @@ fun AttendanceScreen(
                 },
                 icon = {
                     Icon(
-                        imageVector = if (uiState.attendanceStep == ButtonStep.EDITING) {
+                        imageVector = if (attendanceStep == ButtonStep.EDITING) {
                             Icons.Default.Edit
                         } else {
                             Icons.Default.Save
@@ -229,10 +212,10 @@ fun AttendanceScreen(
                     )
                 },
                 onClick = {
-                    if (uiState.attendanceStep == ButtonStep.HOLD_SAVING) {
-                        setAttendanceStep(ButtonStep.SAVING)
+                    if (attendanceStep == ButtonStep.HOLD_SAVING) {
+                        viewModel.setAttendanceStep(ButtonStep.SAVING)
                     } else {
-                        setAttendanceStep(ButtonStep.HOLD_SAVING)
+                        viewModel.setAttendanceStep(ButtonStep.HOLD_SAVING)
                     }
                 },
             )
@@ -293,13 +276,13 @@ fun AttendanceScreen(
                 ShowCard(
                     infoCard,
                     false,
-                    enabledIconButton = uiState.attendanceStep == ButtonStep.HOLD_SAVING,
+                    enabledIconButton = attendanceStep == ButtonStep.HOLD_SAVING,
                     onIconClick = { launchBulkAssign = true },
                 )
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                 ) {
-                    itemsIndexed(uiState.students) { _, student ->
+                    itemsIndexed(students) { _, student ->
                         val card = student.map(teiCardMapper, showSync = false)
 
                         Box(
@@ -320,18 +303,18 @@ fun AttendanceScreen(
                                 shadow = false,
                             )
 
-                            if (uiState.attendanceStep == ButtonStep.EDITING) {
+                            if (attendanceStep == ButtonStep.EDITING) {
                                 AttendanceItemState(
                                     tei = student.tei.uid(),
-                                    attendanceState = uiState.attendanceStatus,
+                                    attendanceState = attendanceStatus,
                                 )
                             } else {
                                 AttendanceButtons(
                                     tei = student.tei.uid(),
-                                    btnState = uiState.attendanceBtnState,
-                                    actions = uiState.attendanceOptions,
-                                ) { index, tei, attendance, color ->
-                                    setAttendance(
+                                    btnState = attendanceBtnState,
+                                    actions = attendanceOptions,
+                                ) { index, key, tei, attendance, color ->
+                                    viewModel.setAttendance(
                                         index,
                                         student.tei.organisationUnit() ?: "",
                                         tei ?: student.tei.uid(),
@@ -340,10 +323,10 @@ fun AttendanceScreen(
                                         color,
                                         true,
                                     )
-                                    if (attendance.lowercase() == ABSENT) {
+                                    if (key.lowercase() == ABSENT) {
                                         cachedTEIId = tei ?: student.tei.uid()
                                         isAbsent = true
-                                        onSetAbsence(
+                                        viewModel.setAbsence(
                                             index,
                                             student.tei.organisationUnit() ?: "",
                                             tei ?: student.tei.uid(),

@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 
 data class AttendanceOption(
     val code: String? = null,
+    val key: String? = null,
     val name: String? = null,
     val dataElement: String? = null,
     val icon: ImageVector? = null,
