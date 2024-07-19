@@ -87,35 +87,16 @@ class MainActivity : FragmentActivity() {
                             ),
                         ) {
                             val attendanceViewModel: AttendanceViewModel = hiltViewModel()
-                            val uiState by attendanceViewModel.uiState.collectAsStateWithLifecycle()
+                            //val uiState by attendanceViewModel.uiState.collectAsStateWithLifecycle()
                             val infoCard by attendanceViewModel.infoCard.collectAsStateWithLifecycle()
                             val teis by viewModel.teis.collectAsStateWithLifecycle()
 
                             attendanceViewModel.setProgram(intent?.extras?.getString(Constants.PROGRAM_UID) ?: "")
-                            attendanceViewModel.setTeis(teis, attendanceViewModel::updateTEISList)
+                            attendanceViewModel.setTeis(teis)
                             attendanceViewModel.setInfoCard(viewModel.infoCard.collectAsStateWithLifecycle().value)
                             attendanceViewModel.setOU(it.arguments?.getString("ou") ?: "")
 
-                            AttendanceScreen(
-                                uiState = uiState,
-                                infoCard = infoCard,
-                                setDate = attendanceViewModel::setDate,
-                                teiCardMapper = teiCardMapper,
-
-                                onBack = navController::navigateUp,
-                                summary = attendanceViewModel::getSummary,
-                                setAttendanceStep = attendanceViewModel::setAttendanceStep,
-                                setAttendance = attendanceViewModel::setAttendance,
-                                onSetAbsence = attendanceViewModel::setAbsence,
-                                bulkAttendance = attendanceViewModel::bulkAttendance,
-                                bulkSave = attendanceViewModel::bulkSave,
-                                clearCache = attendanceViewModel::clearCache,
-                                refreshOnSave = attendanceViewModel::refreshOnSave,
-                                setAbsenceReason = { reason ->
-                                    attendanceViewModel.setAbsence(reasonOfAbsence = reason)
-                                },
-                                onSave = attendanceViewModel::save,
-                            )
+                            AttendanceScreen(attendanceViewModel, teiCardMapper, navController::navigateUp)
                         }
                         composable(
                             route = "${AppRoutes.PERFORMANCE_ROUTE}/{ou}/{stage}/{dataElement}/{subjectName}",

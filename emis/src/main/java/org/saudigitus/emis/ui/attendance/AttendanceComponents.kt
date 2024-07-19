@@ -74,6 +74,7 @@ fun AttendanceButtons(
     actions: List<AttendanceOption>,
     onClick: (
         index: Int,
+        key: String,
         tei: String?,
         attendanceState: String,
         color: Color,
@@ -96,6 +97,7 @@ fun AttendanceButtons(
 
                     onClick.invoke(
                         index,
+                        action.key ?: "",
                         tei,
                         action.code ?: "",
                         action.color ?: Color.LightGray,

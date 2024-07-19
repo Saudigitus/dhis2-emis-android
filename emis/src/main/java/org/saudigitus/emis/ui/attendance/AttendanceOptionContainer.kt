@@ -117,7 +117,7 @@ fun AttendanceOptionContainer(
                         tei = student.tei.uid(),
                         btnState = uiState.attendanceBtnState,
                         actions = uiState.attendanceOptions,
-                    ) { index, tei, attendance, color ->
+                    ) { index, key, tei, attendance, color ->
                         setAttendance(
                             index,
                             student.tei.organisationUnit() ?: "",
@@ -127,7 +127,7 @@ fun AttendanceOptionContainer(
                             color,
                             true,
                         )
-                        if (attendance.lowercase() == ABSENT) {
+                        if (key.lowercase() == ABSENT) {
                             setTEIAbsence(tei ?: student.tei.uid(), attendance)
                         }
                     }

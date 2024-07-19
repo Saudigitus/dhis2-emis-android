@@ -205,6 +205,7 @@ class DataManagerImpl
             if (status != null) {
                 AttendanceOption(
                     code = it.code,
+                    key = status.key,
                     name = it.itemName,
                     dataElement = "${config.status}",
                     icon = Utils.dynamicIcons("${status.icon}"),
