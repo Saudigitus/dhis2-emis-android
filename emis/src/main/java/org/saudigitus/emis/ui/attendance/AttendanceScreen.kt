@@ -331,6 +331,7 @@ fun AttendanceScreen(
                                             student.tei.organisationUnit() ?: "",
                                             tei ?: student.tei.uid(),
                                             attendance,
+                                            color,
                                             null,
                                         )
                                     }

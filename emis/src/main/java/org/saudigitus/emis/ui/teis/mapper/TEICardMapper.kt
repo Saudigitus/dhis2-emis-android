@@ -22,6 +22,7 @@ import org.hisp.dhis.mobile.ui.designsystem.component.Button
 import org.hisp.dhis.mobile.ui.designsystem.component.ButtonStyle
 import org.hisp.dhis.mobile.ui.designsystem.theme.TextColor
 import org.saudigitus.emis.R
+import org.saudigitus.emis.utils.Utils.isStringCastableToInt
 import java.io.File
 
 class TEICardMapper(
@@ -73,17 +74,21 @@ class TEICardMapper(
     }
 
     private fun getTitleFirstLetter(item: SearchTeiModel): String {
-        val firstLetter = item.attributeValues?.values
-            ?.toList()?.getOrNull(1)
-            ?.value()
-            ?.getOrNull(0) ?: '?'
-
+        val firstLetter = getTitle(item).getOrNull(0) ?: '?'
         return "${firstLetter.uppercaseChar()}"
     }
 
     private fun getTitle(item: SearchTeiModel): String {
-        return "${item.attributeValues?.values?.toList()?.getOrNull(1)?.value()} " +
-            "${item.attributeValues?.values?.toList()?.getOrNull(2)?.value()}"
+        val attr1 = item.attributeValues?.values?.toList()?.getOrNull(1)?.value()?.trim()
+        val attr2 = item.attributeValues?.values?.toList()?.getOrNull(2)?.value()?.trim()
+
+        return if (attr1 != null && isStringCastableToInt(attr1)) {
+            "$attr2"
+        } else if (attr2 != null && isStringCastableToInt(attr2)) {
+            "$attr1"
+        } else {
+            "$attr1 $attr2"
+        }
     }
 
     private fun getAdditionalInfoList(item: SearchTeiModel): List<AdditionalInfoItem> {

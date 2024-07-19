@@ -87,7 +87,10 @@ fun ReasonForAbsenceDialog(
             color = Color.LightGray.copy(.75f),
             thickness = .5.dp,
         )
-        LazyColumn(modifier = Modifier.fillMaxWidth()) {
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth()
+                .height(300.dp),
+        ) {
             itemsIndexed(reasons) { index, option ->
                 Row(
                     modifier = Modifier
