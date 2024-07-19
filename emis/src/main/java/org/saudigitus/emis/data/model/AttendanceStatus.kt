@@ -12,5 +12,5 @@ data class AttendanceStatus(
     @JsonProperty("color")
     val color: String?,
     @JsonProperty("key")
-    val key: String?
+    val key: String?,
 )

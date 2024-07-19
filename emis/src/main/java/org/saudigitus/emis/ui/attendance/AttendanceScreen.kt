@@ -141,7 +141,7 @@ fun AttendanceScreen(
                 viewModel.bulkAttendance(
                     index = status.first,
                     value = status.second,
-                    color = status.third
+                    color = status.third,
                 )
                 launchBulkAssign = false
             },

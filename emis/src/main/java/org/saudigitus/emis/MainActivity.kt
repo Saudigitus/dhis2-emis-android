@@ -87,7 +87,7 @@ class MainActivity : FragmentActivity() {
                             ),
                         ) {
                             val attendanceViewModel: AttendanceViewModel = hiltViewModel()
-                            //val uiState by attendanceViewModel.uiState.collectAsStateWithLifecycle()
+                            // val uiState by attendanceViewModel.uiState.collectAsStateWithLifecycle()
                             val infoCard by attendanceViewModel.infoCard.collectAsStateWithLifecycle()
                             val teis by viewModel.teis.collectAsStateWithLifecycle()
 
