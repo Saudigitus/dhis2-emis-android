@@ -264,6 +264,7 @@ class AttendanceViewModel
         ou: String? = null,
         tei: String? = null,
         value: String? = null,
+        color: Color? = null,
         reasonOfAbsence: String? = null,
     ) {
         if (index != null) {
@@ -286,6 +287,11 @@ class AttendanceViewModel
                 it.copy(value = value)
             }
         }
+        if (color != null) {
+            _absenceState.update {
+                it.copy(color = color)
+            }
+        }
         if (reasonOfAbsence != null) {
             _absenceState.update {
                 it.copy(reasonOfAbsence = reasonOfAbsence)
@@ -298,6 +304,7 @@ class AttendanceViewModel
             ou = absenceState.value.ou,
             tei = absenceState.value.tei,
             value = absenceState.value.value,
+            color = absenceState.value.color,
             reasonOfAbsence = absenceState.value.reasonOfAbsence,
         )
 

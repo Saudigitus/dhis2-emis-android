@@ -24,4 +24,13 @@ object Utils {
     } catch (_: Throwable) {
         null
     }
+
+    fun isStringCastableToInt(str: String): Boolean {
+        return try {
+            str.toInt()
+            true
+        } catch (e: NumberFormatException) {
+            false
+        }
+    }
 }
