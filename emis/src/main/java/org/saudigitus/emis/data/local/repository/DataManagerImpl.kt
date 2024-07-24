@@ -2,7 +2,6 @@ package org.saudigitus.emis.data.local.repository
 
 import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.withContext
 import org.dhis2.bindings.userFriendlyValue
 import org.dhis2.commons.bindings.dataElement
@@ -276,9 +275,6 @@ class DataManagerImpl
                 .flatMap { tei -> listOf(tei) }
                 .map { tei -> transform(tei, program) }
         }
-    }
-
-    fun f() = callbackFlow<String> {
     }
 
     @Throws(IllegalArgumentException::class)
