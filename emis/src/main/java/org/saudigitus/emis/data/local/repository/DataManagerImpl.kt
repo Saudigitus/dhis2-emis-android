@@ -279,7 +279,6 @@ class DataManagerImpl
     }
 
     fun f() = callbackFlow<String> {
-        
     }
 
     @Throws(IllegalArgumentException::class)
