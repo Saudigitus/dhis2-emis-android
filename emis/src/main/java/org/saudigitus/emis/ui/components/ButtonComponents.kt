@@ -20,12 +20,14 @@ import org.saudigitus.emis.R
 fun TextButton(
     title: String,
     containerColor: Color,
+    enabled: Boolean = true,
     contentColor: Color,
     onClick: () -> Unit,
 ) {
     Button(
         onClick = { onClick.invoke() },
         border = BorderStroke(width = 0.dp, color = Color.White),
+        enabled = enabled,
         shape = ShapeDefaults.Small,
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.White,
@@ -40,6 +42,7 @@ fun TextButton(
 fun ActionButtons(
     modifier: Modifier = Modifier,
     contentColor: Color,
+    disableActions: Boolean = false,
     onCancel: () -> Unit,
     onDone: () -> Unit,
 ) {
@@ -51,12 +54,14 @@ fun ActionButtons(
         TextButton(
             title = stringResource(R.string.cancel),
             containerColor = Color.White,
+            enabled = !disableActions,
             contentColor = contentColor,
         ) { onCancel.invoke() }
 
         TextButton(
             title = stringResource(R.string.done),
             containerColor = Color.White,
+            enabled = !disableActions,
             contentColor = contentColor,
         ) { onDone.invoke() }
     }

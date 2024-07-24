@@ -111,6 +111,7 @@ fun AttendanceScreen(
             title = stringResource(R.string.attendance_summary),
             data = viewModel.getSummary(),
             themeColor = Color(0xFF2C98F0),
+            disableActions = isAttendanceCompleted,
             onCancel = { viewModel.setAttendanceStep(ButtonStep.HOLD_SAVING) },
         ) {
             if (isBulk) {

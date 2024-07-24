@@ -33,7 +33,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -64,7 +64,7 @@ fun ReasonForAbsenceDialog(
     onDone: () -> Unit,
 ) {
     var selectedIndex by remember {
-        mutableStateOf(reasons.indexOfFirst { it.code == selectedItemCode })
+        mutableIntStateOf(reasons.indexOfFirst { it.code == selectedItemCode })
     }
 
     AlertDialogTemplate {
@@ -136,6 +136,7 @@ fun AttendanceSummaryDialog(
     title: String,
     data: List<Triple<Int, ImageVector?, Color?>>,
     themeColor: Color,
+    disableActions: Boolean = false,
     onCancel: () -> Unit,
     onDone: () -> Unit,
 ) {
@@ -185,6 +186,7 @@ fun AttendanceSummaryDialog(
         ActionButtons(
             modifier = Modifier.align(Alignment.End),
             contentColor = themeColor,
+            disableActions = disableActions,
             onCancel = onCancel,
             onDone = onDone,
         )
@@ -267,7 +269,7 @@ private fun DialogTemplate(
     title: String,
     themeColor: Color,
     content:
-    @Composable()
+    @Composable
     (ColumnScope.() -> Unit),
 ) {
     Dialog(
@@ -307,7 +309,7 @@ private fun DialogTemplate(
 @Composable
 fun AlertDialogTemplate(
     content:
-    @Composable()
+    @Composable
     (ColumnScope.() -> Unit),
 ) {
     AlertDialog(
