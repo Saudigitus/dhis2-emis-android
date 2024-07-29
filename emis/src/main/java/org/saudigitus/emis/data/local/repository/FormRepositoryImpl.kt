@@ -138,15 +138,17 @@ class FormRepositoryImpl
         dataElement: String,
         teis: List<String>,
     ): Flow<List<FormData>> = flow {
-        emit(d2.eventModule().events()
-            .byTrackedEntityInstanceUids(teis)
-            .byProgramUid().eq(program)
-            .byProgramStageUid().eq(programStage)
-            .withTrackedEntityDataValues()
-            .blockingGet()
-            .mapNotNull {
-                eventsTransform(it, dataElement)
-            })
+        emit(
+            d2.eventModule().events()
+                .byTrackedEntityInstanceUids(teis)
+                .byProgramUid().eq(program)
+                .byProgramStageUid().eq(programStage)
+                .withTrackedEntityDataValues()
+                .blockingGet()
+                .mapNotNull {
+                    eventsTransform(it, dataElement)
+                },
+        )
     }.flowOn(Dispatchers.IO)
 
     private suspend fun eventsTransform(

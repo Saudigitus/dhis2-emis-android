@@ -1,7 +1,6 @@
 package org.saudigitus.emis.ui.home
 
 import android.os.Bundle
-import android.util.Log
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -59,7 +58,6 @@ class HomeViewModel
             val config = repository.getConfig(Constants.KEY)?.find { it.program == program }
 
             if (config != null) {
-                Log.e("CONFIG", "$config")
                 _defaultConfig.value = config.default
                 _registration.value = config.registration
                 _filterState.update {
@@ -152,7 +150,7 @@ class HomeViewModel
         _toolbarHeader.update {
             it.copy(subtitle = subtitle)
         }
-        //getTeis()
+        getTeis()
     }
 
     fun setSchool(ou: OU?) {
