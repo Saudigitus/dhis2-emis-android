@@ -1,6 +1,9 @@
 package org.saudigitus.emis.data.local.repository
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import org.dhis2.commons.bindings.dataElement
 import org.dhis2.commons.bindings.enrollment
@@ -128,14 +131,14 @@ class FormRepositoryImpl
     }
 
     @Throws(IllegalArgumentException::class)
-    override suspend fun getEvents(
+    override fun getEvents(
         ou: String,
         program: String,
         programStage: String,
         dataElement: String,
         teis: List<String>,
-    ): List<FormData> = withContext(Dispatchers.IO) {
-        return@withContext d2.eventModule().events()
+    ): Flow<List<FormData>> = flow {
+        emit(d2.eventModule().events()
             .byTrackedEntityInstanceUids(teis)
             .byProgramUid().eq(program)
             .byProgramStageUid().eq(programStage)
@@ -143,8 +146,8 @@ class FormRepositoryImpl
             .blockingGet()
             .mapNotNull {
                 eventsTransform(it, dataElement)
-            }
-    }
+            })
+    }.flowOn(Dispatchers.IO)
 
     private suspend fun eventsTransform(
         event: Event,

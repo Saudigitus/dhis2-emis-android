@@ -82,7 +82,7 @@ fun InputField(
         singleLine = inputType?.toKeyBoardInputType()?.multiline == true,
         maxLines = if (inputType?.toKeyBoardInputType()?.multiline == false) 1 else Int.MAX_VALUE,
         keyboardOptions = KeyboardOptions(
-            keyboardType = inputType?.toKeyBoardInputType()?.toKeyboardType() ?: KeyboardType.Text,
+            keyboardType = inputType?.toKeyBoardInputType()?.toKeyboardType() ?: KeyboardType.Number,
             capitalization = inputType?.toKeyBoardInputType()?.keyboardCapitalization() ?: KeyboardCapitalization.None,
             imeAction = ImeAction.Done,
         ),

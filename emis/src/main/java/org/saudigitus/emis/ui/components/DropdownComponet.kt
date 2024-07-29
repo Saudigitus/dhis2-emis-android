@@ -22,6 +22,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,6 +50,7 @@ import org.saudigitus.emis.R
 import org.saudigitus.emis.data.model.OU
 import org.saudigitus.emis.ui.teis.FilterType
 
+@Stable
 data class DropdownItem(
     val id: String,
     val itemName: String,
@@ -58,6 +60,7 @@ data class DropdownItem(
     override fun toString() = itemName
 }
 
+@Stable
 data class DropdownState(
     val filterType: FilterType,
     val displayName: String,

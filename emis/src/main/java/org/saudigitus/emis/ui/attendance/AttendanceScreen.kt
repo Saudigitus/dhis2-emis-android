@@ -114,13 +114,16 @@ fun AttendanceScreen(
             disableActions = isAttendanceCompleted,
             onCancel = { viewModel.setAttendanceStep(ButtonStep.HOLD_SAVING) },
         ) {
+            isAttendanceCompleted = true
             if (isBulk) {
-                viewModel.bulkSave()
+                viewModel.bulkSave {
+                    isAttendanceCompleted = false
+                    isBulk = false
+                }
             } else {
                 viewModel.clearCache()
                 viewModel.refreshOnSave()
             }
-            isAttendanceCompleted = true
         }
     }
 
@@ -284,7 +287,7 @@ fun AttendanceScreen(
                     modifier = Modifier.fillMaxSize(),
                 ) {
                     itemsIndexed(students) { _, student ->
-                        val card = student.map(teiCardMapper, showSync = false)
+                        val card = student.map(teiCardMapper = teiCardMapper, showSync = false)
 
                         Box(
                             modifier = Modifier
