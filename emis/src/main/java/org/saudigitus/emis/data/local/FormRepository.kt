@@ -1,5 +1,6 @@
 package org.saudigitus.emis.data.local
 
+import kotlinx.coroutines.flow.Flow
 import org.hisp.dhis.android.core.option.Option
 import org.saudigitus.emis.data.model.EventTuple
 import org.saudigitus.emis.ui.form.FormData
@@ -9,11 +10,11 @@ interface FormRepository {
     suspend fun save(eventTuple: EventTuple)
     suspend fun keyboardInputTypeByStage(stage: String, dl: String): List<FormField>
     suspend fun getOptions(dataElement: String): List<Option>
-    suspend fun getEvents(
+    fun getEvents(
         ou: String,
         program: String,
         programStage: String,
         dataElement: String,
         teis: List<String>,
-    ): List<FormData>
+    ): Flow<List<FormData>>
 }

@@ -316,7 +316,9 @@ class AttendanceViewModel
         _absenceStateCache.value = cache
     }
 
-    fun bulkSave() {
+    fun bulkSave(
+        onSuccess: () -> Unit = {},
+    ) {
         viewModelScope.launch {
             async {
                 attendanceCache.forEach { attendance ->
@@ -332,6 +334,7 @@ class AttendanceViewModel
             clearCache()
             setAttendanceStep(ButtonStep.EDITING)
             attendanceEvents(eventDate.value)
+            onSuccess()
         }
     }
 

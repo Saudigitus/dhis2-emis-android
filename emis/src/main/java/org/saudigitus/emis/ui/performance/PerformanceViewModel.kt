@@ -2,9 +2,13 @@ package org.saudigitus.emis.ui.performance
 
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -93,7 +97,10 @@ class PerformanceViewModel
             if (buttonStep.value == ButtonStep.HOLD_SAVING) {
                 setButtonStep(ButtonStep.SAVING)
             } else {
-                cache.value.forEach { formRepository.save(it) }
+                async {
+                    cache.value.forEach { formRepository.save(it) }
+                }.await()
+                _cache.value = emptyList()
                 setButtonStep(ButtonStep.HOLD_SAVING)
             }
         }
@@ -126,7 +133,7 @@ class PerformanceViewModel
         _cache.value = data
     }
 
-    fun getFields(stage: String, dl: String) {
+    private fun getFields(stage: String, dl: String) {
         viewModelScope.launch {
             _programStage.value = stage
             viewModelState.update {
@@ -141,39 +148,45 @@ class PerformanceViewModel
     ) {
         if (saveOnce.value == 0) {
             _saveOnce.value = 1
+            getFields(stage, dl)
             viewModelScope.launch {
                 _programStage.value = stage
-                viewModelState.update {
-                    it.copy(
-                        formData = formRepository
-                            .getEvents(
-                                ou = ou.value,
-                                program = program.value,
-                                programStage = stage,
-                                dataElement = dl,
-                                teis = teiUIds.value,
-                            ),
-                    )
-                }
+                formRepository
+                    .getEvents(
+                        ou = ou.value,
+                        program = program.value,
+                        programStage = programStage.value,
+                        dataElement = dl,
+                        teis = teiUIds.value,
+                    ).conflate()
+                    .distinctUntilChanged()
+                    .collectLatest { events ->
+                        viewModelState.update {
+                            it.copy(formData = events)
+                        }
+                    }
             }
         }
     }
 
     fun updateDataFields(dl: String) {
+        getFields(programStage.value, dl)
         viewModelScope.launch {
             _dataElement.value = dl
-            viewModelState.update {
-                it.copy(
-                    formData = formRepository
-                        .getEvents(
-                            ou = ou.value,
-                            program = program.value,
-                            programStage = programStage.value,
-                            dataElement = dl,
-                            teis = teiUIds.value,
-                        ),
-                )
-            }
+            formRepository
+                .getEvents(
+                    ou = ou.value,
+                    program = program.value,
+                    programStage = programStage.value,
+                    dataElement = dl,
+                    teis = teiUIds.value,
+                ).conflate()
+                .distinctUntilChanged()
+                .collectLatest { events ->
+                    viewModelState.update {
+                        it.copy(formData = events)
+                    }
+                }
         }
     }
 

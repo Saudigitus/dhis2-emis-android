@@ -129,7 +129,6 @@ class MainActivity : FragmentActivity() {
                             performanceViewModel.loadSubjects(stage)
                             performanceViewModel.setTeis(teis, performanceViewModel::updateTEISList)
                             performanceViewModel.setInfoCard(viewModel.infoCard.collectAsStateWithLifecycle().value)
-                            performanceViewModel.getFields(stage, dl)
                             performanceViewModel.setDefault(stage, dl)
 
                             PerformanceScreen(
