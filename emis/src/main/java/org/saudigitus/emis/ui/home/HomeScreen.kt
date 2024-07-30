@@ -47,7 +47,7 @@ fun HomeScreen(
     navTo: (route: String) -> Unit,
     onFilterClick: () -> Unit,
     onFilterItemClick: (FilterType, DropdownItem) -> Unit,
-    onOUClick: (OU) -> Unit
+    onOUClick: (OU) -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -119,9 +119,9 @@ fun HomeScreen(
                     }
                 }
             }
-            if(uiState.isLoading) {
+            if (uiState.isLoading) {
                 LinearProgressIndicator(
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
             Column(

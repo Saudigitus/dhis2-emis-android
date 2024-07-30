@@ -527,7 +527,7 @@ fun DropDownWithSelectionByCode(
     }
 
     selectedItemIndex = dropdownState.data.indexOfFirst { it.code == dropdownState.defaultSelection }
-    selectedItem =dropdownState.data.find { it.code == dropdownState.defaultSelection }?.itemName ?: ""
+    selectedItem = dropdownState.data.find { it.code == dropdownState.defaultSelection }?.itemName ?: ""
 
     if (selectedItemIndex != -1) {
         onItemClick.invoke(dropdownState.data.find { it.code == dropdownState.defaultSelection }!!)

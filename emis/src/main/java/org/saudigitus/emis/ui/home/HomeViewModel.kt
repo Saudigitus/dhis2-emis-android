@@ -37,11 +37,10 @@ class HomeViewModel
     private val _registration = MutableStateFlow<Registration?>(null)
     private val registration: StateFlow<Registration?> = _registration
 
-
     private val viewModelState = MutableStateFlow(
         HomeUiState(
             toolbarHeaders = this.toolbarHeaders.value,
-            filterState = filterState.value
+            filterState = filterState.value,
         ),
     )
 
@@ -137,9 +136,9 @@ class HomeViewModel
                                 orgUnitName = filterState.value.school?.displayName ?: "",
                                 teiCount = teis.value.size,
                                 isStaff = filterState.value.isStaff(),
-                            )
+                            ),
                         )
-                    }.infoCard
+                    }.infoCard,
                 )
             }
         }
@@ -154,7 +153,7 @@ class HomeViewModel
         viewModelState.update {
             it.copy(
                 toolbarHeaders = toolbarHeaders.value,
-                programSettings = bundle
+                programSettings = bundle,
             )
         }
     }
@@ -176,7 +175,7 @@ class HomeViewModel
         viewModelState.update {
             it.copy(
                 toolbarHeaders = toolbarHeaders.value,
-                filterState = filterState.value
+                filterState = filterState.value,
             )
         }
         getTeis()
@@ -217,7 +216,7 @@ class HomeViewModel
                 it.copy(
                     toolbarHeaders = toolbarHeaders.value,
                     dataElementFilters = filters,
-                    filterState = filterState.value
+                    filterState = filterState.value,
                 )
             }
         }

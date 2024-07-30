@@ -60,7 +60,6 @@ fun D2.optionsByOptionSetAndCode(
 fun List<DropdownState>.getByType(type: FilterType): DropdownState? =
     find { it.filterType == type }
 
-
 fun DropdownState.icon() = when (this.filterType) {
     FilterType.ACADEMIC_YEAR -> R.drawable.ic_book
     FilterType.GRADE -> R.drawable.ic_school
@@ -68,7 +67,7 @@ fun DropdownState.icon() = when (this.filterType) {
     FilterType.SCHOOL -> R.drawable.ic_location_on
 }
 
-fun DropdownState.placeholder() = when(this.filterType) {
+fun DropdownState.placeholder() = when (this.filterType) {
     FilterType.ACADEMIC_YEAR -> R.string.academic_year
     FilterType.GRADE -> R.string.grade
     FilterType.SECTION -> R.string.cls

@@ -72,7 +72,7 @@ class MainActivity : FragmentActivity() {
                                 navTo = navController::navigate,
                                 onFilterClick = viewModel::onFilterClick,
                                 onFilterItemClick = viewModel::onFilterItemClick,
-                                onOUClick = viewModel::setSchool
+                                onOUClick = viewModel::setSchool,
                             )
                         }
                         composable(AppRoutes.TEI_LIST_ROUTE) {
