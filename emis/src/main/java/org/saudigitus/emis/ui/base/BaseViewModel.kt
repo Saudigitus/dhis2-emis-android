@@ -2,6 +2,7 @@ package org.saudigitus.emis.ui.base
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -66,16 +67,17 @@ abstract class BaseViewModel(
     }
 
     fun setTeis(teis: List<SearchTeiModel>) {
-        _teis.value = teis
-        _teiUIds.value = teis.mapNotNull { it.tei.uid() }
+        viewModelScope.launch {
+            _teis.value = teis
+            _teiUIds.value = async { teis.mapNotNull { it.tei.uid() } }.await()
+        }
     }
 
     fun setTeis(
         teis: List<SearchTeiModel>,
         run: () -> Unit,
     ) {
-        _teis.value = teis
-        _teiUIds.value = teis.mapNotNull { it.tei.uid() }
+        setTeis(teis)
         run()
     }
 

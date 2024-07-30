@@ -64,10 +64,15 @@ class MainActivity : FragmentActivity() {
                         composable(AppRoutes.HOME_ROUTE) {
                             viewModel.setProgram(intent?.extras?.getString(Constants.PROGRAM_UID) ?: "")
 
+                            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
                             HomeScreen(
-                                viewModel = viewModel,
+                                uiState = uiState,
                                 onBack = { finish() },
                                 navTo = navController::navigate,
+                                onFilterClick = viewModel::onFilterClick,
+                                onFilterItemClick = viewModel::onFilterItemClick,
+                                onOUClick = viewModel::setSchool
                             )
                         }
                         composable(AppRoutes.TEI_LIST_ROUTE) {

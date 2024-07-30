@@ -4,6 +4,7 @@ import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.arch.repositories.scope.RepositoryScope
 import org.hisp.dhis.android.core.event.Event
 import org.hisp.dhis.android.core.option.Option
+import org.saudigitus.emis.R
 import org.saudigitus.emis.ui.components.DropdownState
 import org.saudigitus.emis.ui.teis.FilterType
 
@@ -58,3 +59,18 @@ fun D2.optionsByOptionSetAndCode(
 
 fun List<DropdownState>.getByType(type: FilterType): DropdownState? =
     find { it.filterType == type }
+
+
+fun DropdownState.icon() = when (this.filterType) {
+    FilterType.ACADEMIC_YEAR -> R.drawable.ic_book
+    FilterType.GRADE -> R.drawable.ic_school
+    FilterType.SECTION -> R.drawable.ic_category
+    FilterType.SCHOOL -> R.drawable.ic_location_on
+}
+
+fun DropdownState.placeholder() = when(this.filterType) {
+    FilterType.ACADEMIC_YEAR -> R.string.academic_year
+    FilterType.GRADE -> R.string.grade
+    FilterType.SECTION -> R.string.cls
+    FilterType.SCHOOL -> R.string.school
+}
