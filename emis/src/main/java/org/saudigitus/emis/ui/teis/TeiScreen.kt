@@ -43,7 +43,7 @@ fun TeiScreen(
     onSyncTei: (tei: String) -> Unit,
 ) {
     val students by viewModel.teis.collectAsStateWithLifecycle()
-    val toolbarHeaders by viewModel.toolbarHeader.collectAsStateWithLifecycle()
+    val toolbarHeaders by viewModel.toolbarHeaders.collectAsStateWithLifecycle()
     val infoCard by viewModel.infoCard.collectAsStateWithLifecycle()
 
     Scaffold(

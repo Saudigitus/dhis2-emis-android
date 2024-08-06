@@ -11,15 +11,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,7 +25,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.dhis2.commons.Constants
 import org.saudigitus.emis.AppRoutes
 import org.saudigitus.emis.R
@@ -36,6 +32,7 @@ import org.saudigitus.emis.data.model.OU
 import org.saudigitus.emis.ui.components.DropDown
 import org.saudigitus.emis.ui.components.DropDownOu
 import org.saudigitus.emis.ui.components.DropDownWithSelectionByCode
+import org.saudigitus.emis.ui.components.DropdownItem
 import org.saudigitus.emis.ui.components.ShowCard
 import org.saudigitus.emis.ui.components.Toolbar
 import org.saudigitus.emis.ui.components.ToolbarActionState
@@ -45,25 +42,17 @@ import org.saudigitus.emis.utils.getByType
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel,
+    uiState: HomeUiState,
     onBack: () -> Unit,
     navTo: (route: String) -> Unit,
+    onFilterClick: () -> Unit,
+    onFilterItemClick: (FilterType, DropdownItem) -> Unit,
+    onOUClick: (OU) -> Unit,
 ) {
-    var displayFilters by remember { mutableStateOf(true) }
-    val dataElementFilters by viewModel.dataElementFilters.collectAsStateWithLifecycle()
-    val filterState by viewModel.filterState.collectAsStateWithLifecycle()
-    val toolbarHeaders by viewModel.toolbarHeader.collectAsStateWithLifecycle()
-    val programSettings by viewModel.programSettings.collectAsStateWithLifecycle()
-    val infoCard by viewModel.infoCard.collectAsStateWithLifecycle()
-    val defaultConfig by viewModel.defaultConfig.collectAsStateWithLifecycle()
-
-    val schoolOptions by viewModel.schoolOptions.collectAsStateWithLifecycle()
-    val gradeOptions by viewModel.gradeOptions.collectAsStateWithLifecycle()
-
     Scaffold(
         topBar = {
             Toolbar(
-                headers = toolbarHeaders,
+                headers = uiState.toolbarHeaders,
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color(0xFF2C98F0),
                     navigationIconContentColor = Color.White,
@@ -76,7 +65,7 @@ fun HomeScreen(
                     syncVisibility = false,
                     showFavorite = true,
                 ),
-                filterAction = { displayFilters = !displayFilters },
+                filterAction = onFilterClick::invoke,
             )
         },
     ) { paddingValues ->
@@ -88,59 +77,52 @@ fun HomeScreen(
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start,
         ) {
-            AnimatedVisibility(visible = displayFilters) {
+            AnimatedVisibility(visible = uiState.displayFilters) {
                 Column(
                     modifier = Modifier.padding(bottom = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top),
                     horizontalAlignment = Alignment.Start,
                 ) {
-                    DropDownWithSelectionByCode(
-                        placeholder = dataElementFilters.getByType(FilterType.ACADEMIC_YEAR)?.displayName
-                            ?: stringResource(R.string.academic_year),
-                        leadingIcon = ImageVector.vectorResource(R.drawable.ic_book),
-                        data = dataElementFilters.getByType(FilterType.ACADEMIC_YEAR)?.data,
-                        selectedCodeItem = filterState.academicYear?.code ?: defaultConfig?.currentAcademicYear ?: "",
-                        onItemClick = viewModel::setAcademicYear,
-                    )
-
-                    if (schoolOptions.isNotEmpty()) {
-                        DropDown(
-                            placeholder = stringResource(R.string.school),
-                            leadingIcon = ImageVector.vectorResource(R.drawable.ic_location_on),
-                            data = schoolOptions,
-                            selectedItemName = schoolOptions[0].itemName,
-                            onItemClick = {
-                                viewModel.setSchool(OU(uid = it.id, displayName = it.itemName))
+                    uiState.dataElementFilters.getByType(FilterType.ACADEMIC_YEAR)?.let {
+                        DropDownWithSelectionByCode(
+                            dropdownState = it,
+                            onItemClick = { item ->
+                                onFilterItemClick(FilterType.ACADEMIC_YEAR, item)
                             },
-                        )
-                    } else {
-                        DropDownOu(
-                            placeholder = stringResource(R.string.school),
-                            leadingIcon = ImageVector.vectorResource(R.drawable.ic_location_on),
-                            selectedSchool = filterState.school,
-                            program = programSettings?.getString(Constants.PROGRAM_UID) ?: "",
-                            onItemClick = viewModel::setSchool,
                         )
                     }
 
-                    DropDown(
-                        placeholder = dataElementFilters.getByType(FilterType.GRADE)?.displayName
-                            ?: stringResource(R.string.grade),
-                        leadingIcon = ImageVector.vectorResource(R.drawable.ic_school),
-                        data = gradeOptions.ifEmpty { dataElementFilters.getByType(FilterType.GRADE)?.data },
-                        selectedItemName = filterState.grade?.itemName ?: "",
-                        onItemClick = viewModel::setGrade,
+                    DropDownOu(
+                        placeholder = stringResource(R.string.school),
+                        leadingIcon = ImageVector.vectorResource(R.drawable.ic_location_on),
+                        selectedSchool = uiState.filterState.school,
+                        program = uiState.programSettings?.getString(Constants.PROGRAM_UID) ?: "",
+                        onItemClick = onOUClick::invoke,
                     )
 
-                    DropDown(
-                        placeholder = dataElementFilters.getByType(FilterType.SECTION)?.displayName
-                            ?: stringResource(R.string.cls),
-                        leadingIcon = ImageVector.vectorResource(R.drawable.ic_category),
-                        data = dataElementFilters.getByType(FilterType.SECTION)?.data,
-                        selectedItemName = filterState.section?.itemName ?: "",
-                        onItemClick = viewModel::setSection,
-                    )
+                    uiState.dataElementFilters.getByType(FilterType.GRADE)?.let {
+                        DropDown(
+                            dropdownState = it,
+                            onItemClick = { item ->
+                                onFilterItemClick(FilterType.GRADE, item)
+                            },
+                        )
+                    }
+
+                    uiState.dataElementFilters.getByType(FilterType.SECTION)?.let {
+                        DropDown(
+                            dropdownState = it,
+                            onItemClick = { item ->
+                                onFilterItemClick(FilterType.SECTION, item)
+                            },
+                        )
+                    }
                 }
+            }
+            if (uiState.isLoading) {
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth(),
+                )
             }
             Column(
                 modifier = Modifier
@@ -159,7 +141,7 @@ fun HomeScreen(
                 horizontalAlignment = Alignment.Start,
             ) {
                 ShowCard(
-                    infoCard = infoCard,
+                    infoCard = uiState.infoCard,
                     onClick = { navTo.invoke(AppRoutes.TEI_LIST_ROUTE) },
                 )
 
@@ -178,18 +160,18 @@ fun HomeScreen(
                             modifier = Modifier.fillMaxWidth(),
                             icon = painterResource(R.drawable.s_calendar),
                             label = stringResource(R.string.attendance),
-                            enabled = infoCard.hasData(),
-                            onClick = { navTo.invoke("${AppRoutes.ATTENDANCE_ROUTE}/${filterState.school?.uid}") },
+                            enabled = uiState.infoCard.hasData(),
+                            onClick = { navTo.invoke("${AppRoutes.ATTENDANCE_ROUTE}/${uiState.filterState.school?.uid}") },
                         )
                     }
-                    if (!infoCard.isStaff) {
+                    if (!uiState.infoCard.isStaff) {
                         item {
                             HomeItem(
                                 modifier = Modifier.fillMaxWidth(),
                                 icon = painterResource(R.drawable.performance),
                                 label = stringResource(R.string.performance),
-                                enabled = infoCard.hasData(),
-                                onClick = { navTo.invoke("${AppRoutes.SUBJECT_ROUTE}/${filterState.school?.uid}") },
+                                enabled = uiState.infoCard.hasData(),
+                                onClick = { navTo.invoke("${AppRoutes.SUBJECT_ROUTE}/${uiState.filterState.school?.uid}") },
                             )
                         }
                     }

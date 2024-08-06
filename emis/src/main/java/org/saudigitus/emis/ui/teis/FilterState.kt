@@ -1,9 +1,11 @@
 package org.saudigitus.emis.ui.teis
 
+import androidx.compose.runtime.Stable
 import org.saudigitus.emis.data.model.OU
 import org.saudigitus.emis.ui.components.DropdownItem
 import org.saudigitus.emis.utils.Constants
 
+@Stable
 data class FilterState(
     val academicYear: DropdownItem? = null,
     val school: OU? = null,

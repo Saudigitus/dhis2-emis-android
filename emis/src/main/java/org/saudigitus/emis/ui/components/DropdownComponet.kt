@@ -24,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -35,6 +36,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
@@ -49,8 +52,9 @@ import org.dhis2.commons.orgunitselector.OrgUnitSelectorScope
 import org.saudigitus.emis.R
 import org.saudigitus.emis.data.model.OU
 import org.saudigitus.emis.ui.teis.FilterType
+import org.saudigitus.emis.utils.icon
+import org.saudigitus.emis.utils.placeholder
 
-@Stable
 data class DropdownItem(
     val id: String,
     val itemName: String,
@@ -63,8 +67,11 @@ data class DropdownItem(
 @Stable
 data class DropdownState(
     val filterType: FilterType,
+    val leadingIcon: ImageVector? = null,
+    val trailingIcon: ImageVector? = null,
     val displayName: String,
-    val data: List<DropdownItem>,
+    val data: List<DropdownItem> = emptyList(),
+    val defaultSelection: String = "",
 )
 
 @Composable
@@ -181,7 +188,7 @@ fun <T>DropDown(
     elevation: Dp = 2.dp,
     onItemClick: (T) -> Unit,
 ) {
-    var selectedItemIndex by remember { mutableStateOf(-1) }
+    var selectedItemIndex by remember { mutableIntStateOf(-1) }
     var selectedItem by remember { mutableStateOf(selectedItemName) }
     var expand by remember { mutableStateOf(false) }
 
@@ -332,16 +339,14 @@ fun <T>DropDown(
 }
 
 @Composable
-fun DropDownWithSelectionByCode(
+fun DropDown(
     modifier: Modifier = Modifier,
-    placeholder: String,
-    leadingIcon: ImageVector,
-    data: List<DropdownItem>?,
-    selectedCodeItem: String = "",
+    dropdownState: DropdownState,
+    elevation: Dp = 2.dp,
     onItemClick: (DropdownItem) -> Unit,
 ) {
-    var selectedItemIndex by remember { mutableStateOf(-1) }
-    var selectedItem by remember { mutableStateOf("") }
+    var selectedItemIndex by remember { mutableIntStateOf(-1) }
+    var selectedItem by remember { mutableStateOf(dropdownState.defaultSelection) }
     var expand by remember { mutableStateOf(false) }
 
     var textFieldSize by remember { mutableStateOf(Size.Zero) }
@@ -351,7 +356,17 @@ fun DropDownWithSelectionByCode(
     if (selectedItemIndex > 0 && onClearSelection) {
         selectedItemIndex = 0
         onClearSelection = false
-        selectedItem = data?.get(selectedItemIndex)!!.itemName
+        selectedItem = "${dropdownState.data[selectedItemIndex]}"
+    }
+
+    if (dropdownState.defaultSelection.isNotEmpty()) {
+        val item = dropdownState.data.find { "$it" == dropdownState.defaultSelection }
+        selectedItemIndex = dropdownState.data.indexOf(item)
+        selectedItem = item.toString().ifEmpty { "" }
+
+        if (item != null) {
+            onItemClick.invoke(item)
+        }
     }
 
     val paddingValue = if (selectedItemIndex >= 0) {
@@ -365,11 +380,157 @@ fun DropDownWithSelectionByCode(
         expand = !expand
     }
 
-    selectedItemIndex = data?.indexOfFirst { it.code == selectedCodeItem } ?: -1
-    selectedItem = data?.find { it.code == selectedCodeItem }?.itemName ?: ""
+    Column(
+        modifier = modifier
+            .padding(horizontal = 16.dp),
+    ) {
+        OutlinedTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .onGloballyPositioned { coordinates ->
+                    textFieldSize = coordinates.size.toSize()
+                }
+                .shadow(
+                    elevation = elevation,
+                    ambientColor = Color.Black.copy(alpha = 0.1f),
+                    shape = RoundedCornerShape(30.dp),
+                    clip = false,
+                )
+                .background(color = Color.White, shape = RoundedCornerShape(30.dp)),
+            shape = RoundedCornerShape(30.dp),
+            value = selectedItem,
+            onValueChange = {
+                selectedItem = it
+            },
+            singleLine = true,
+            readOnly = true,
+            placeholder = { Text(text = dropdownState.displayName.ifEmpty { stringResource(dropdownState.placeholder()) }) },
+            leadingIcon = {
+                Icon(
+                    imageVector = dropdownState.leadingIcon ?: ImageVector.vectorResource(dropdownState.icon()),
+                    contentDescription = null,
+                    tint = Color(0xFF2C98F0),
+                )
+            },
+            trailingIcon = {
+                IconButton(onClick = { expand = !expand }) {
+                    if (dropdownState.trailingIcon != null) {
+                        Icon(
+                            imageVector = dropdownState.trailingIcon,
+                            contentDescription = null,
+                            tint = Color(0xFF2C98F0),
+                        )
+                    } else {
+                        Icon(
+                            imageVector = if (!expand) {
+                                Icons.Default.ArrowDropDown
+                            } else {
+                                Icons.Default.ArrowDropUp
+                            },
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                }
+            },
+            interactionSource = interactionSource,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color.White,
+                unfocusedBorderColor = Color.White,
+            ),
+        )
+
+        DropdownMenu(
+            modifier = Modifier
+                .width(with(LocalDensity.current) { textFieldSize.width.toDp() })
+                .background(color = Color.White),
+            offset = DpOffset(0.dp, 2.dp),
+            expanded = expand,
+            onDismissRequest = {
+                expand = !expand
+            },
+        ) {
+            dropdownState.data.forEachIndexed { index, item ->
+                Row(Modifier.padding(horizontal = 10.dp)) {
+                    DropdownMenuItem(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                color = if (selectedItemIndex == index) {
+                                    Color.LightGray.copy(.5f)
+                                } else {
+                                    Color.Transparent
+                                },
+                                shape = RoundedCornerShape(16.dp),
+                            )
+                            .padding(paddingValue),
+                        text = {
+                            Text(
+                                text = "$item",
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                softWrap = true,
+                                style = LocalTextStyle.current.copy(
+                                    fontFamily = FontFamily(Font(R.font.rubik_regular)),
+                                ),
+                            )
+                        },
+                        onClick = {
+                            onItemClick(item)
+                            expand = !expand
+                            selectedItem = "$item"
+                            selectedItemIndex = index
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = dropdownState.leadingIcon ?: ImageVector.vectorResource(dropdownState.icon()),
+                                contentDescription = "$item",
+                                tint = Color(0xFF2C98F0),
+                            )
+                        },
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun DropDownWithSelectionByCode(
+    modifier: Modifier = Modifier,
+    dropdownState: DropdownState,
+    onItemClick: (DropdownItem) -> Unit,
+) {
+    var selectedItemIndex by remember { mutableIntStateOf(-1) }
+    var selectedItem by remember { mutableStateOf("") }
+    var expand by remember { mutableStateOf(false) }
+
+    var textFieldSize by remember { mutableStateOf(Size.Zero) }
+
+    var onClearSelection by remember { mutableStateOf(false) }
+
+    if (selectedItemIndex > 0 && onClearSelection) {
+        selectedItemIndex = 0
+        onClearSelection = false
+        selectedItem = dropdownState.data[selectedItemIndex].itemName
+    }
+
+    val paddingValue = if (selectedItemIndex >= 0) {
+        4.dp
+    } else {
+        0.dp
+    }
+
+    val interactionSource = remember { MutableInteractionSource() }
+    if (interactionSource.collectIsPressedAsState().value) {
+        expand = !expand
+    }
+
+    selectedItemIndex = dropdownState.data.indexOfFirst { it.code == dropdownState.defaultSelection }
+    selectedItem = dropdownState.data.find { it.code == dropdownState.defaultSelection }?.itemName ?: ""
 
     if (selectedItemIndex != -1) {
-        onItemClick.invoke(data?.find { it.code == selectedCodeItem }!!)
+        onItemClick.invoke(dropdownState.data.find { it.code == dropdownState.defaultSelection }!!)
     }
 
     Column(
@@ -396,10 +557,10 @@ fun DropDownWithSelectionByCode(
             },
             singleLine = true,
             readOnly = true,
-            placeholder = { Text(text = placeholder) },
+            placeholder = { Text(text = dropdownState.displayName.ifEmpty { stringResource(dropdownState.placeholder()) }) },
             leadingIcon = {
                 Icon(
-                    imageVector = leadingIcon,
+                    imageVector = dropdownState.leadingIcon ?: ImageVector.vectorResource(dropdownState.icon()),
                     contentDescription = null,
                     tint = Color(0xFF2C98F0),
                 )
@@ -434,7 +595,7 @@ fun DropDownWithSelectionByCode(
                 expand = !expand
             },
         ) {
-            data?.forEachIndexed { index, item ->
+            dropdownState.data.forEachIndexed { index, item ->
                 Row(Modifier.padding(horizontal = 10.dp)) {
                     DropdownMenuItem(
                         modifier = Modifier
@@ -467,7 +628,7 @@ fun DropDownWithSelectionByCode(
                         },
                         leadingIcon = {
                             Icon(
-                                imageVector = leadingIcon,
+                                imageVector = dropdownState.leadingIcon ?: ImageVector.vectorResource(dropdownState.icon()),
                                 contentDescription = item.itemName,
                                 tint = Color(0xFF2C98F0),
                             )
