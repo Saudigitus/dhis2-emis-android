@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.dhis2.commons.data.SearchTeiModel
+import org.hisp.dhis.android.core.enrollment.EnrollmentStatus
 import org.saudigitus.emis.data.local.DataManager
 import org.saudigitus.emis.data.model.CalendarConfig
 import org.saudigitus.emis.ui.attendance.ButtonStep
@@ -69,7 +70,12 @@ abstract class BaseViewModel(
     fun setTeis(teis: List<SearchTeiModel>) {
         viewModelScope.launch {
             _teis.value = teis
-            _teiUIds.value = async { teis.mapNotNull { it.tei.uid() } }.await()
+            _teiUIds.value = async {
+                teis.filter {
+                    it.enrollments.getOrNull(0)?.status() != EnrollmentStatus.CANCELLED
+                }
+                    .mapNotNull { it.tei.uid() }
+            }.await()
         }
     }
 

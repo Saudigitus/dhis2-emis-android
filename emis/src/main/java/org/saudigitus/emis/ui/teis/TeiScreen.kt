@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.hisp.dhis.android.core.enrollment.EnrollmentStatus
 import org.hisp.dhis.mobile.ui.designsystem.component.ListCard
 import org.hisp.dhis.mobile.ui.designsystem.component.ListCardTitleModel
 import org.saudigitus.emis.R
@@ -98,9 +99,13 @@ fun TeiScreen(
                     ) {
                         items(students) { student ->
                             val card = student.map(teiCardMapper, showSync = false)
+                            val isInactive = student.enrollments.getOrNull(0)?.status() == EnrollmentStatus.CANCELLED
 
                             ListCard(
-                                modifier = Modifier.testTag("TEI_ITEM"),
+                                modifier = Modifier.testTag("TEI_ITEM")
+                                    .background(
+                                        color = if (isInactive) Color.LightGray.copy(.25f) else Color.White
+                                    ),
                                 listAvatar = card.avatar,
                                 title = ListCardTitleModel(text = card.title),
                                 lastUpdated = card.lastUpdated,

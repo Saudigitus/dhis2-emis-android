@@ -13,6 +13,7 @@ import org.dhis2.commons.resources.ColorUtils
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.arch.repositories.scope.RepositoryScope
 import org.hisp.dhis.android.core.dataelement.DataElement
+import org.hisp.dhis.android.core.enrollment.Enrollment
 import org.hisp.dhis.android.core.event.Event
 import org.hisp.dhis.android.core.event.EventCreateProjection
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttribute
@@ -241,16 +242,16 @@ class DataManagerImpl
             }
             dataElements?.keys?.containsAll(dataElementIds) == true &&
                 dataElements.values.containsAll(options)
-        }.map {
+        }.mapNotNull {
             d2.enrollment("${it.enrollment()}")
         }.map {
             val tei = d2.trackedEntityModule()
                 .trackedEntityInstances()
-                .byUid().eq(it?.trackedEntityInstance())
+                .byUid().eq(it.trackedEntityInstance())
                 .withTrackedEntityAttributeValues()
                 .one().blockingGet()
 
-            transform(tei, program)
+            transform(tei, program, it)
         }
     }
 
@@ -399,6 +400,7 @@ class DataManagerImpl
     private fun transform(
         tei: TrackedEntityInstance?,
         program: String?,
+        enrollment: Enrollment? = null,
     ): SearchTeiModel {
         val searchTei = SearchTeiModel()
         searchTei.tei = tei
@@ -441,6 +443,10 @@ class DataManagerImpl
                     }
                 }
             }
+        }
+
+        if (enrollment != null) {
+            searchTei.addEnrollment(enrollment)
         }
 
         searchTei.displayOrgUnit = displayOrgUnit()

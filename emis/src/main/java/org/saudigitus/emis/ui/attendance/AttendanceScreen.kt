@@ -43,6 +43,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.hisp.dhis.android.core.enrollment.EnrollmentStatus
 import org.hisp.dhis.mobile.ui.designsystem.component.ListCard
 import org.hisp.dhis.mobile.ui.designsystem.component.ListCardTitleModel
 import org.saudigitus.emis.R
@@ -288,15 +289,18 @@ fun AttendanceScreen(
                 ) {
                     itemsIndexed(students) { _, student ->
                         val card = student.map(teiCardMapper = teiCardMapper, showSync = false)
+                        val isInactive = student.enrollments.getOrNull(0)?.status() == EnrollmentStatus.CANCELLED
 
                         Box(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .background(color = Color.White),
+                                .fillMaxWidth(),
                             contentAlignment = Alignment.CenterEnd,
                         ) {
                             ListCard(
-                                modifier = Modifier.testTag("TEI_ITEM"),
+                                modifier = Modifier.testTag("TEI_ITEM")
+                                    .background(
+                                        color = if (isInactive) Color.LightGray.copy(.25f) else Color.White
+                                    ),
                                 listAvatar = card.avatar,
                                 title = ListCardTitleModel(text = card.title),
                                 additionalInfoList = card.additionalInfo,
@@ -315,6 +319,7 @@ fun AttendanceScreen(
                             } else {
                                 AttendanceButtons(
                                     tei = student.tei.uid(),
+                                    isEnabled = !isInactive,
                                     btnState = attendanceBtnState,
                                     actions = attendanceOptions,
                                 ) { index, key, tei, attendance, color ->
