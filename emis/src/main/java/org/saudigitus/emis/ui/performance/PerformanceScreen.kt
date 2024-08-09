@@ -250,13 +250,13 @@ fun PerformanceScreen(
                         ) {
                             ListCardColumn(
                                 modifier = Modifier.background(
-                                        color = if (isInactive) Color.LightGray.copy(.65f) else Color.White
-                                    )
+                                    color = if (isInactive) Color.LightGray.copy(.65f) else Color.White,
+                                ),
                             ) {
                                 ListCard(
                                     modifier = Modifier.testTag("TEI_ITEM")
                                         .background(
-                                            color = if (isInactive) Color.LightGray.copy(.25f) else Color.White
+                                            color = if (isInactive) Color.LightGray.copy(.25f) else Color.White,
                                         ),
                                     listAvatar = card.avatar,
                                     title = ListCardTitleModel(text = card.title),
