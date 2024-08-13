@@ -70,6 +70,7 @@ fun AttendanceItemState(
 @Composable
 fun AttendanceButtons(
     tei: String,
+    isEnabled: Boolean = true,
     btnState: List<AttendanceActionButtonState>,
     actions: List<AttendanceOption>,
     onClick: (
@@ -103,6 +104,7 @@ fun AttendanceButtons(
                         action.color ?: Color.LightGray,
                     )
                 },
+                enabled = isEnabled,
                 modifier = Modifier.size(40.dp),
                 colors = IconButtonDefaults.iconButtonColors(
                     containerColor =

@@ -50,8 +50,10 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import org.hisp.dhis.android.core.common.ValueType
+import org.hisp.dhis.android.core.enrollment.EnrollmentStatus
 import org.hisp.dhis.mobile.ui.designsystem.component.InputShellState
 import org.hisp.dhis.mobile.ui.designsystem.component.ListCard
+import org.hisp.dhis.mobile.ui.designsystem.component.ListCardColumn
 import org.hisp.dhis.mobile.ui.designsystem.component.ListCardTitleModel
 import org.saudigitus.emis.R
 import org.saudigitus.emis.data.model.mapper.map
@@ -240,21 +242,31 @@ fun PerformanceScreen(
                 ) {
                     items(state.students) { student ->
                         val card = student.map(teiCardMapper, showSync = false)
+                        val isInactive = student.enrollments.getOrNull(0)?.status() == EnrollmentStatus.CANCELLED
 
                         Box(
                             modifier = Modifier.fillMaxWidth(),
                             contentAlignment = Alignment.CenterEnd,
                         ) {
-                            ListCard(
-                                modifier = Modifier.testTag("TEI_ITEM"),
-                                listAvatar = card.avatar,
-                                title = ListCardTitleModel(text = card.title),
-                                additionalInfoList = card.additionalInfo,
-                                actionButton = card.actionButton,
-                                expandLabelText = card.expandLabelText,
-                                shrinkLabelText = card.shrinkLabelText,
-                                onCardClick = card.onCardCLick,
-                            )
+                            ListCardColumn(
+                                modifier = Modifier.background(
+                                    color = if (isInactive) Color.LightGray.copy(.65f) else Color.White,
+                                ),
+                            ) {
+                                ListCard(
+                                    modifier = Modifier.testTag("TEI_ITEM")
+                                        .background(
+                                            color = if (isInactive) Color.LightGray.copy(.25f) else Color.White,
+                                        ),
+                                    listAvatar = card.avatar,
+                                    title = ListCardTitleModel(text = card.title),
+                                    additionalInfoList = card.additionalInfo,
+                                    actionButton = card.actionButton,
+                                    expandLabelText = card.expandLabelText,
+                                    shrinkLabelText = card.shrinkLabelText,
+                                    onCardClick = card.onCardCLick,
+                                )
+                            }
                             FormBuilder(
                                 modifier = Modifier
                                     .width(120.dp)
@@ -266,7 +278,7 @@ fun PerformanceScreen(
                                     unfocusedIndicatorColor = InputShellState.UNFOCUSED.color,
                                     disabledIndicatorColor = InputShellState.DISABLED.color,
                                 ),
-                                enabled = performanceStep == ButtonStep.HOLD_SAVING,
+                                enabled = performanceStep == ButtonStep.HOLD_SAVING && !isInactive,
                                 state = state.fieldsState,
                                 key = student.uid(),
                                 fields = state.formFields,
