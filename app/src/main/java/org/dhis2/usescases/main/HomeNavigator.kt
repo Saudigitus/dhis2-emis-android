@@ -24,6 +24,7 @@ sealed class HomeItemData(
         override val accessDataWrite: Boolean,
         val trackedEntityType: String,
         val stockConfig: AppConfig?,
+        val isSEMIS: Boolean,
     ) : HomeItemData(uid, label, accessDataWrite)
 
     data class EventProgram(
@@ -55,6 +56,7 @@ fun ProgramViewModel.toHomeItemData(): HomeItemData {
                 accessDataWrite,
                 type!!,
                 stockConfig,
+                isSEMIS,
             )
 
         else -> HomeItemData.DataSet(
@@ -87,14 +89,20 @@ fun ActivityResultLauncher<Intent>.navigateTo(context: Context, homeItemData: Ho
                 launch(this)
             }
 
-        is HomeItemData.EventProgram ->
+        is HomeItemData.EventProgram -> {
             Intent(context, ProgramEventDetailActivity::class.java).apply {
                 putExtras(ProgramEventDetailActivity.getBundle(homeItemData.uid))
                 launch(this)
             }
+        }
 
         is HomeItemData.TrackerProgram -> {
-            if (homeItemData.stockConfig != null) {
+            if (homeItemData.isSEMIS) {
+                Intent(context, org.saudigitus.emis.MainActivity::class.java).apply {
+                    putExtras(bundle)
+                    launch(this)
+                }
+            } else if (homeItemData.stockConfig != null) {
                 Intent(context, HomeActivity::class.java).apply {
                     putExtra(
                         org.dhis2.android.rtsm.commons.Constants.INTENT_EXTRA_APP_CONFIG,

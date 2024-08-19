@@ -39,12 +39,9 @@ public class EventCaptureModule {
     private final String eventUid;
     private final EventCaptureContract.View view;
 
-    private final boolean isPortrait;
-
-    public EventCaptureModule(EventCaptureContract.View view, String eventUid, boolean isPortrait) {
+    public EventCaptureModule(EventCaptureContract.View view, String eventUid) {
         this.view = view;
         this.eventUid = eventUid;
-        this.isPortrait = isPortrait;
     }
 
     @Provides
@@ -125,7 +122,7 @@ public class EventCaptureModule {
     NavigationPageConfigurator pageConfigurator(
             EventCaptureContract.EventCaptureRepository repository
     ) {
-        return new EventPageConfigurator(repository, isPortrait);
+        return new EventPageConfigurator(repository);
     }
 
     @Provides

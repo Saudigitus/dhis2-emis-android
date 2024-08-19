@@ -18,6 +18,8 @@ import org.hisp.dhis.android.core.program.Program
 import org.hisp.dhis.android.core.program.ProgramType.WITHOUT_REGISTRATION
 import org.hisp.dhis.android.core.program.ProgramType.WITH_REGISTRATION
 import org.hisp.dhis.mobile.ui.designsystem.theme.SurfaceColor
+import org.saudigitus.emis.data.model.EMISConfig
+import org.saudigitus.emis.utils.Constants
 
 internal class ProgramRepositoryImpl(
     private val d2: D2,
@@ -57,6 +59,17 @@ internal class ProgramRepositoryImpl(
 
     override fun clearCache() {
         baseProgramCache = emptyList()
+    }
+
+    private fun isSEMIS(program: String): Boolean {
+        val dataStore = d2.dataStoreModule()
+            .dataStore()
+            .byNamespace().eq("semis")
+            .byKey().eq(Constants.KEY)
+            .one().blockingGet()
+
+        val config = EMISConfig.fromJson(dataStore?.value()) ?: emptyList()
+        return config.find { it.program == program } != null
     }
 
     private fun aggregatesModels(): Flowable<List<ProgramViewModel>> {
@@ -124,6 +137,7 @@ internal class ProgramRepositoryImpl(
                     } else {
                         null
                     },
+                    isSEMIS = isSEMIS(program.uid()),
                 )
             }.toList().toFlowable().blockingFirst()
     }
