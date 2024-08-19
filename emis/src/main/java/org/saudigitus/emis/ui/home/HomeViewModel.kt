@@ -178,6 +178,7 @@ class HomeViewModel
                 filterState = filterState.value,
             )
         }
+        closeFilterSection()
         getTeis()
     }
 
@@ -220,6 +221,7 @@ class HomeViewModel
                 )
             }
         }
+        closeFilterSection()
         getTeis()
     }
 
@@ -230,6 +232,7 @@ class HomeViewModel
         viewModelState.update {
             it.copy(filterState = filterState.value)
         }
+        closeFilterSection()
         getTeis()
     }
 
@@ -240,6 +243,7 @@ class HomeViewModel
         viewModelState.update {
             it.copy(filterState = filterState.value)
         }
+        closeFilterSection()
         getTeis()
     }
 
@@ -248,6 +252,12 @@ class HomeViewModel
         program = program.value,
         dataElement = uid,
     )
+
+    private fun closeFilterSection() {
+        viewModelState.update {
+            it.copy(displayFilters = !infoCard.value.hasData())
+        }
+    }
 
     fun onFilterClick() {
         if (viewModelState.value.displayFilters) {
