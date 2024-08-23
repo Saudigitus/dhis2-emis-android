@@ -7,8 +7,8 @@ import org.saudigitus.emis.utils.DateHelper
 
 @OptIn(ExperimentalMaterial3Api::class)
 class SchoolDates(
-    private val schoolCalendar: CalendarConfig?
-): SelectableDates {
+    private val schoolCalendar: CalendarConfig?,
+) : SelectableDates {
 
     override fun isSelectableDate(utcTimeMillis: Long): Boolean {
         val date = DateHelper.stringToLocalDate(DateHelper.formatDate(utcTimeMillis)!!)

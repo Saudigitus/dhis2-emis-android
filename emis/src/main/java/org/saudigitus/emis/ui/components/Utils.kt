@@ -123,7 +123,6 @@ fun CustomDatePicker(
                 selectedYearContainerColor = Color(0xFF2C98F0),
             ),
         ) {
-
             DatePicker(
                 state = datePickerState,
                 title = {},
