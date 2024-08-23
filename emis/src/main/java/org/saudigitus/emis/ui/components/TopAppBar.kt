@@ -34,6 +34,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.saudigitus.emis.R
+import org.saudigitus.emis.data.model.CalendarConfig
 
 data class ToolbarHeaders(
     val title: String,
@@ -110,7 +111,7 @@ fun Toolbar(
     disableNavigation: Boolean = true,
     actionState: ToolbarActionState = ToolbarActionState(),
     calendarAction: (date: String) -> Unit = {},
-    dateValidator: (Long) -> Boolean = { true },
+    schoolCalendar: CalendarConfig? = null,
     favoriteAction: () -> Unit = {},
     syncAction: () -> Unit = {},
     filterAction: () -> Unit = {},
@@ -121,7 +122,7 @@ fun Toolbar(
         show = isCalendarShown,
         dismiss = { isCalendarShown = !isCalendarShown },
         onDatePick = { calendarAction.invoke(it) },
-        dateValidator = dateValidator,
+        schoolCalendar = schoolCalendar,
     )
 
     TopAppBar(

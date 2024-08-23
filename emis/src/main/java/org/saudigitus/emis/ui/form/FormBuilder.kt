@@ -3,8 +3,8 @@ package org.saudigitus.emis.ui.form
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.TextFieldColors
-import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
@@ -22,8 +22,10 @@ import org.hisp.dhis.mobile.ui.designsystem.theme.SurfaceColor
 @Composable
 fun FormBuilder(
     modifier: Modifier = Modifier,
-    colors: TextFieldColors = TextFieldDefaults.textFieldColors(
-        backgroundColor = SurfaceColor.Container,
+    colors: TextFieldColors = TextFieldDefaults.colors(
+        focusedContainerColor = SurfaceColor.Container,
+        unfocusedContainerColor = SurfaceColor.Container,
+        disabledContainerColor = SurfaceColor.Container,
         focusedIndicatorColor = InputShellState.FOCUSED.color,
         unfocusedIndicatorColor = InputShellState.UNFOCUSED.color,
         disabledIndicatorColor = InputShellState.DISABLED.color,

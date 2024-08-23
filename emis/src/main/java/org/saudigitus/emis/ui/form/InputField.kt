@@ -2,12 +2,15 @@ package org.saudigitus.emis.ui.form
 
 import android.content.Intent
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldColors
-import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -15,7 +18,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -27,7 +29,6 @@ import androidx.compose.ui.unit.sp
 import org.dhis2.composetable.model.extensions.keyboardCapitalization
 import org.dhis2.composetable.model.extensions.toKeyboardType
 import org.hisp.dhis.android.core.common.ValueType
-import org.saudigitus.emis.R
 import org.saudigitus.emis.ui.form.fields.IntentAction
 import org.saudigitus.emis.utils.toKeyBoardInputType
 
@@ -40,9 +41,10 @@ fun InputField(
     placeholder: String,
     inputType: ValueType?,
     enabled: Boolean = true,
-    colors: TextFieldColors = TextFieldDefaults.textFieldColors(
-        backgroundColor = Color.Transparent,
-
+    colors: TextFieldColors = TextFieldDefaults.colors(
+        focusedContainerColor = Color.Transparent,
+        unfocusedContainerColor = Color.Transparent,
+        disabledContainerColor = Color.Transparent,
     ),
 ) {
     var action by remember { mutableStateOf("") }
@@ -63,7 +65,7 @@ fun InputField(
                 KeyboardType.Email -> {
                     IconButton(onClick = { action = Intent.ACTION_SENDTO }) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_form_email),
+                            imageVector = Icons.Default.Email,
                             contentDescription = label,
                         )
                     }
@@ -72,7 +74,7 @@ fun InputField(
                 KeyboardType.Phone -> {
                     IconButton(onClick = { action = Intent.ACTION_DIAL }) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_form_phone),
+                            imageVector = Icons.Default.Phone,
                             contentDescription = label,
                         )
                     }

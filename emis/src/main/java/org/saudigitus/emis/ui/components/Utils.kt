@@ -8,17 +8,15 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.LocalTextStyle
-import androidx.compose.material.Text
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import org.dhis2.commons.date.DateUtils
 import org.saudigitus.emis.R
+import org.saudigitus.emis.data.model.CalendarConfig
 import org.saudigitus.emis.ui.theme.light_error
 import org.saudigitus.emis.ui.theme.light_info
 import org.saudigitus.emis.utils.DateHelper
@@ -75,11 +74,12 @@ fun CustomDatePicker(
     show: Boolean = false,
     dismiss: () -> Unit,
     onDatePick: (date: String) -> Unit,
-    dateValidator: (Long) -> Boolean = { true },
+    schoolCalendar: CalendarConfig?,
 ) {
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = null,
         initialDisplayMode = DisplayMode.Picker,
+        selectableDates = SchoolDates(schoolCalendar),
     )
 
     var selectedDate by remember {
@@ -123,59 +123,12 @@ fun CustomDatePicker(
                 selectedYearContainerColor = Color(0xFF2C98F0),
             ),
         ) {
+
             DatePicker(
                 state = datePickerState,
                 title = {},
                 showModeToggle = false,
-                dateValidator = dateValidator,
             )
         }
-    }
-}
-
-@Composable
-fun FavoriteAlertDialog(
-    onYes: () -> Unit,
-    onDismiss: () -> Unit,
-    title: String = "",
-    message: String = "",
-    openDialog: MutableState<Boolean>,
-) {
-    if (openDialog.value) {
-        AlertDialog(
-            onDismissRequest = {
-                openDialog.value = false
-            },
-            title = {
-                Text(text = "$title")
-            },
-            text = {
-                // Text(text = "Would you like to clear the saved favorites?")
-                Text(text = "$message")
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        onYes.invoke()
-                        openDialog.value = false
-                    },
-                    contentColor = Color(0xFF2C98F0),
-                    containerColor = Color.White,
-                    title = "Yes",
-                    /**  TODO("SET String resource") */
-                )
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        openDialog.value = false
-                    },
-                    contentColor = Color(0xFF2C98F0),
-                    containerColor = Color.White,
-                    title = "Cancel",
-                    /**  TODO("SET String resource") */
-                )
-            },
-        )
     }
 }

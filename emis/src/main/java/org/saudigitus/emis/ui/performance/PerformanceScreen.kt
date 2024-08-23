@@ -14,8 +14,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.material.LocalTextStyle
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Save
@@ -23,6 +21,7 @@ import androidx.compose.material.icons.twotone.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
@@ -30,6 +29,7 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -91,7 +91,6 @@ fun PerformanceScreen(
     step: (ButtonStep) -> Unit,
     onFilterClick: (dataElement: String) -> Unit,
     onSave: () -> Unit,
-    dateValidator: (Long) -> Boolean = { true },
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     var isCompleted by remember { mutableStateOf(false) }
@@ -138,7 +137,6 @@ fun PerformanceScreen(
                     showCalendar = false,
                 ),
                 calendarAction = setDate,
-                dateValidator = dateValidator,
             )
         },
         floatingActionButton = {
@@ -254,7 +252,8 @@ fun PerformanceScreen(
                                 ),
                             ) {
                                 ListCard(
-                                    modifier = Modifier.testTag("TEI_ITEM")
+                                    modifier = Modifier
+                                        .testTag("TEI_ITEM")
                                         .background(
                                             color = if (isInactive) Color.LightGray.copy(.25f) else Color.White,
                                         ),
@@ -272,8 +271,10 @@ fun PerformanceScreen(
                                     .width(120.dp)
                                     .height(60.dp)
                                     .padding(bottom = 2.dp, end = 16.dp),
-                                colors = TextFieldDefaults.textFieldColors(
-                                    backgroundColor = Color.Transparent,
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    disabledContainerColor = Color.Transparent,
                                     focusedIndicatorColor = InputShellState.FOCUSED.color,
                                     unfocusedIndicatorColor = InputShellState.UNFOCUSED.color,
                                     disabledIndicatorColor = InputShellState.DISABLED.color,

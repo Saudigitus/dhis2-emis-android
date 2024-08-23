@@ -11,13 +11,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
@@ -54,7 +54,6 @@ import org.saudigitus.emis.ui.components.ToolbarActionState
 import org.saudigitus.emis.ui.teis.mapper.TEICardMapper
 import org.saudigitus.emis.ui.theme.light_success
 import org.saudigitus.emis.utils.Constants.ABSENT
-import org.saudigitus.emis.utils.DateHelper
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -173,21 +172,7 @@ fun AttendanceScreen(
                     showCalendar = true,
                 ),
                 calendarAction = viewModel::setDate,
-                dateValidator = {
-                    val date = DateHelper.stringToLocalDate(DateHelper.formatDate(it)!!)
-
-                    if (schoolCalendar != null) {
-                        (
-                            !DateHelper.isWeekend(date) && schoolCalendar?.weekDays?.saturday == false &&
-                                schoolCalendar?.weekDays?.sunday == false
-                            ) &&
-                            schoolCalendar?.holidays?.let { holiday ->
-                                DateHelper.isHoliday(holiday, it)
-                            } == true
-                    } else {
-                        true
-                    }
-                },
+                schoolCalendar = schoolCalendar,
             )
         },
         floatingActionButton = {
@@ -297,7 +282,8 @@ fun AttendanceScreen(
                             contentAlignment = Alignment.CenterEnd,
                         ) {
                             ListCard(
-                                modifier = Modifier.testTag("TEI_ITEM")
+                                modifier = Modifier
+                                    .testTag("TEI_ITEM")
                                     .background(
                                         color = if (isInactive) Color.LightGray.copy(.25f) else Color.White,
                                     ),

@@ -6,6 +6,7 @@ plugins {
     id("kotlin-parcelize")
     id("dagger.hilt.android.plugin")
     id("kotlinx-serialization")
+    alias(libs.plugins.kotlin.compose.compiler)
 }
 
 apply(from = "${project.rootDir}/jacoco/jacoco.gradle.kts")
@@ -78,10 +79,6 @@ android {
         }
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.kotlinCompilerExtensionVersion.get()
-    }
-
     kotlinOptions {
         jvmTarget = "17"
     }
@@ -92,6 +89,7 @@ dependencies {
     implementation(project(":commons"))
     implementation(project(":compose-table"))
     implementation(project(":form"))
+    implementation(project(":dhis2-mobile-program-rules"))
 
     implementation(libs.androidx.coreKtx)
     implementation(platform(libs.kotlin.bom))
@@ -118,7 +116,6 @@ dependencies {
     debugImplementation(libs.bundles.stock.debugImplementation)
     releaseImplementation(libs.bundles.stock.releaseImplementation)
     testImplementation(libs.bundles.stock.test)
-    androidTestImplementation(libs.bundles.stock.androidTest)
 
     debugImplementation(libs.analytics.flipper.network) {
         exclude("com.squareup.okhttp3")
