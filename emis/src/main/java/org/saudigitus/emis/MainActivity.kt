@@ -23,7 +23,7 @@ import org.dhis2.commons.sync.SyncContext
 import org.dhis2.commons.sync.SyncDialog
 import org.saudigitus.emis.ui.attendance.AttendanceScreen
 import org.saudigitus.emis.ui.attendance.AttendanceViewModel
-import org.saudigitus.emis.ui.home.HomeScreen
+import org.saudigitus.emis.ui.home.HomeRoute
 import org.saudigitus.emis.ui.home.HomeViewModel
 import org.saudigitus.emis.ui.performance.PerformanceScreen
 import org.saudigitus.emis.ui.performance.PerformanceViewModel
@@ -50,6 +50,7 @@ class MainActivity : FragmentActivity() {
                 dynamicColor = false,
             ) {
                 viewModel.setBundle(intent?.extras)
+                viewModel.setProgram(intent?.extras?.getString(Constants.PROGRAM_UID) ?: "")
 
                 val navController = rememberNavController()
 
@@ -62,17 +63,10 @@ class MainActivity : FragmentActivity() {
                         startDestination = AppRoutes.HOME_ROUTE,
                     ) {
                         composable(AppRoutes.HOME_ROUTE) {
-                            viewModel.setProgram(intent?.extras?.getString(Constants.PROGRAM_UID) ?: "")
-
-                            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-                            HomeScreen(
-                                uiState = uiState,
-                                onBack = { finish() },
-                                navTo = navController::navigate,
-                                onFilterClick = viewModel::onFilterClick,
-                                onFilterItemClick = viewModel::onFilterItemClick,
-                                onOUClick = viewModel::setSchool,
+                            HomeRoute(
+                                viewModel = viewModel,
+                                navController = navController,
+                                navBack = { finish() },
                             )
                         }
                         composable(AppRoutes.TEI_LIST_ROUTE) {

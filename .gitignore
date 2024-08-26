@@ -11,3 +11,9 @@
 /venv
 /*.secrets.yml
 /gradle.deps
+/app/dhis/release/*.apk
+/.kotlin/errors/*.log
+/app/dhis/release/output-metadata.json
+*.json
+*apk
+*.log

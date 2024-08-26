@@ -20,7 +20,7 @@ import org.saudigitus.emis.ui.base.BaseViewModel
 import org.saudigitus.emis.ui.components.DropdownItem
 import org.saudigitus.emis.ui.components.DropdownState
 import org.saudigitus.emis.ui.components.InfoCard
-import org.saudigitus.emis.ui.teis.FilterState
+import org.saudigitus.emis.ui.components.ToolbarHeaders
 import org.saudigitus.emis.ui.teis.FilterType
 import org.saudigitus.emis.utils.Constants
 import javax.inject.Inject
@@ -31,16 +31,12 @@ class HomeViewModel
     private val repository: DataManager,
 ) : BaseViewModel(repository) {
 
-    private val _filterState = MutableStateFlow(FilterState())
-    val filterState: StateFlow<FilterState> = _filterState
-
     private val _registration = MutableStateFlow<Registration?>(null)
     private val registration: StateFlow<Registration?> = _registration
 
     private val viewModelState = MutableStateFlow(
         HomeUiState(
             toolbarHeaders = this.toolbarHeaders.value,
-            filterState = filterState.value,
         ),
     )
 
@@ -52,13 +48,18 @@ class HomeViewModel
         )
 
     override fun setConfig(program: String) {
+    }
+
+    override fun setProgram(program: String) {
+        _program.value = program
+
         viewModelScope.launch {
             val config = repository.getConfig(Constants.KEY)?.find { it.program == program }
 
             if (config != null) {
                 val defaultConfig = config.default
                 _registration.value = config.registration
-                _filterState.update {
+                viewModelState.update {
                     it.copy(key = config.key)
                 }
 
@@ -69,7 +70,6 @@ class HomeViewModel
                         null,
                         getDataElementName("${registration.value?.academicYear}"),
                         options("${registration.value?.academicYear}"),
-                        filterState.value.academicYear?.code ?: defaultConfig?.currentAcademicYear ?: "",
                     ),
                     DropdownState(
                         FilterType.GRADE,
@@ -77,7 +77,6 @@ class HomeViewModel
                         null,
                         getDataElementName("${registration.value?.grade}"),
                         options("${registration.value?.grade}"),
-                        filterState.value.grade?.itemName ?: "",
                     ),
                     DropdownState(
                         FilterType.SECTION,
@@ -85,19 +84,18 @@ class HomeViewModel
                         null,
                         getDataElementName("${registration.value?.section}"),
                         options("${registration.value?.section}"),
-                        filterState.value.section?.itemName ?: "",
                     ),
                 )
 
                 viewModelState.update {
                     it.copy(dataElementFilters = filterData)
                 }
+                setAcademicYear(
+                    filterData.find { it.filterType == FilterType.ACADEMIC_YEAR }
+                        ?.data?.find { it.code == defaultConfig?.currentAcademicYear },
+                )
             }
         }
-    }
-
-    override fun setProgram(program: String) {
-        _program.value = program
     }
 
     override fun setDate(date: String) {}
@@ -108,10 +106,10 @@ class HomeViewModel
 
     private fun getTeis() {
         viewModelScope.launch {
-            if (!filterState.value.isNull()) {
+            if (!viewModelState.value.isNull) {
                 val teiList = async {
                     repository.getTeisBy(
-                        ou = "${filterState.value.school?.uid}",
+                        ou = "${viewModelState.value.school?.uid}",
                         program = "${uiState.value.programSettings?.getString(PROGRAM_UID)}",
                         stage = "${registration.value?.programStage}",
                         dataElementIds = listOf(
@@ -119,7 +117,7 @@ class HomeViewModel
                             "${registration.value?.grade}",
                             "${registration.value?.section}",
                         ),
-                        options = filterState.value.options(),
+                        options = viewModelState.value.options,
                     )
                 }.await()
 
@@ -130,12 +128,12 @@ class HomeViewModel
                         it.copy(
                             isLoading = false,
                             infoCard = InfoCard(
-                                grade = filterState.value.grade?.itemName ?: "",
-                                section = filterState.value.section?.itemName ?: "",
-                                academicYear = filterState.value.academicYear?.itemName ?: "",
-                                orgUnitName = filterState.value.school?.displayName ?: "",
+                                grade = viewModelState.value.grade?.itemName ?: "",
+                                section = viewModelState.value.section?.itemName ?: "",
+                                academicYear = viewModelState.value.academicYear?.itemName ?: "",
+                                orgUnitName = viewModelState.value.school?.displayName ?: "",
                                 teiCount = teis.value.size,
-                                isStaff = filterState.value.isStaff(),
+                                isStaff = viewModelState.value.isStaff,
                             ),
                         )
                     }.infoCard,
@@ -158,98 +156,110 @@ class HomeViewModel
         }
     }
 
-    private fun setAcademicYear(academicYear: DropdownItem?) {
-        _filterState.update {
-            it.copy(academicYear = academicYear)
-        }
+    private fun <T>updateToolbar(obj: T?): ToolbarHeaders {
+        return when (obj) {
+            is DropdownItem -> {
+                val subtitle = if (viewModelState.value.school?.displayName != null) {
+                    "${obj.itemName} | ${viewModelState.value.school?.displayName}"
+                } else {
+                    obj.itemName
+                }
 
-        val subtitle = if (filterState.value.school?.displayName != null) {
-            "${academicYear?.itemName} | ${filterState.value.school?.displayName}"
-        } else {
-            academicYear?.itemName
-        }
+                _toolbarHeaders.update {
+                    it.copy(subtitle = subtitle)
+                }
 
-        _toolbarHeaders.update {
-            it.copy(subtitle = subtitle)
+                toolbarHeaders.value
+            }
+            is OU -> {
+                val subtitle = if (viewModelState.value.academicYear?.itemName != null) {
+                    "${viewModelState.value.academicYear?.itemName} | ${obj.displayName}"
+                } else {
+                    obj.displayName
+                }
+
+                _toolbarHeaders.update {
+                    it.copy(subtitle = subtitle)
+                }
+
+                toolbarHeaders.value
+            }
+            else -> {
+                toolbarHeaders.value
+            }
         }
-        viewModelState.update {
-            it.copy(
-                toolbarHeaders = toolbarHeaders.value,
-                filterState = filterState.value,
-            )
-        }
-        getTeis()
     }
 
-    fun setSchool(ou: OU?) {
-        viewModelScope.launch {
-            _filterState.update {
-                it.copy(school = ou)
-            }
-            setOU("${ou?.uid}")
-
-            val subtitle = if (filterState.value.academicYear?.itemName != null) {
-                "${filterState.value.academicYear?.itemName} | ${ou?.displayName}"
-            } else {
-                ou?.displayName
-            }
-
-            _toolbarHeaders.update {
-                it.copy(subtitle = subtitle)
-            }
-
-            val filters = uiState.value.dataElementFilters.toMutableList()
-            filters.removeAt(1)
-            filters.add(
-                index = 1,
-                DropdownState(
-                    FilterType.GRADE,
-                    null,
-                    null,
-                    getDataElementName("${registration.value?.grade}"),
-                    options("${registration.value?.grade}"),
-                    filterState.value.grade?.itemName ?: "",
-                ),
+    private fun setAcademicYear(academicYear: DropdownItem?) {
+        viewModelState.update {
+            it.copy(
+                toolbarHeaders = updateToolbar(academicYear),
+                academicYear = academicYear,
             )
+        }
+        invokeInFilters()
+    }
+
+    private suspend fun reloadFilters(): MutableList<DropdownState> {
+        val filters = uiState.value.dataElementFilters.toMutableList()
+        filters.removeAt(1)
+        filters.add(
+            index = 1,
+            DropdownState(
+                FilterType.GRADE,
+                null,
+                null,
+                getDataElementName("${registration.value?.grade}"),
+                options("${registration.value?.grade}"),
+            ),
+        )
+
+        return filters
+    }
+
+    private fun setSchool(ou: OU?) {
+        viewModelScope.launch {
+            setOU("${ou?.uid}")
 
             viewModelState.update {
                 it.copy(
-                    toolbarHeaders = toolbarHeaders.value,
-                    dataElementFilters = filters,
-                    filterState = filterState.value,
+                    toolbarHeaders = updateToolbar(ou),
+                    school = ou,
                 )
             }
+            val updatedFilters = async { reloadFilters() }.await()
+            viewModelState.update { it.copy(dataElementFilters = updatedFilters) }
         }
-        getTeis()
+        invokeInFilters()
     }
 
     private fun setGrade(grade: DropdownItem?) {
-        _filterState.update {
+        viewModelState.update {
             it.copy(grade = grade)
         }
-        viewModelState.update {
-            it.copy(filterState = filterState.value)
-        }
-        getTeis()
+        invokeInFilters()
     }
 
     private fun setSection(section: DropdownItem?) {
-        _filterState.update {
+        viewModelState.update {
             it.copy(section = section)
         }
-        viewModelState.update {
-            it.copy(filterState = filterState.value)
-        }
-        getTeis()
+        invokeInFilters()
     }
 
     private suspend fun options(uid: String) = repository.getOptions(
-        ou = filterState.value.school?.uid,
+        ou = viewModelState.value.school?.uid,
         program = program.value,
         dataElement = uid,
     )
 
-    fun onFilterClick() {
+    private fun closeFilterSection() {
+        viewModelState.update {
+            it.copy(displayFilters = !infoCard.value.hasData())
+        }
+    }
+
+    private fun onFilterClick() {
         if (viewModelState.value.displayFilters) {
             viewModelState.update {
                 it.copy(displayFilters = false)
@@ -261,18 +271,38 @@ class HomeViewModel
         }
     }
 
-    fun onFilterItemClick(filterType: FilterType, filterItem: DropdownItem) {
+    private fun <T>onFilterItemClick(filterType: FilterType, filterItem: T) {
         when (filterType) {
             FilterType.ACADEMIC_YEAR -> {
-                setAcademicYear(filterItem)
+                setAcademicYear(filterItem as DropdownItem)
             }
             FilterType.GRADE -> {
-                setGrade(filterItem)
+                setGrade(filterItem as DropdownItem)
             }
             FilterType.SECTION -> {
-                setSection(filterItem)
+                setSection(filterItem as DropdownItem)
+            }
+            FilterType.SCHOOL -> {
+                setSchool(filterItem as OU)
+            }
+            FilterType.NONE -> {}
+        }
+    }
+
+    fun onUiEvent(homeUiEvent: HomeUiEvent) {
+        when (homeUiEvent) {
+            is HomeUiEvent.HideShowFilter -> {
+                onFilterClick()
+            }
+            is HomeUiEvent.OnFilterChange<*> -> {
+                onFilterItemClick(homeUiEvent.filterType, homeUiEvent.obj)
             }
             else -> {}
         }
+    }
+
+    private fun invokeInFilters() {
+        closeFilterSection()
+        getTeis()
     }
 }
