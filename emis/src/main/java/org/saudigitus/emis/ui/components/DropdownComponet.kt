@@ -66,12 +66,11 @@ data class DropdownItem(
 
 @Stable
 data class DropdownState(
-    val filterType: FilterType,
+    val filterType: FilterType = FilterType.NONE,
     val leadingIcon: ImageVector? = null,
     val trailingIcon: ImageVector? = null,
-    val displayName: String,
+    val displayName: String = "",
     val data: List<DropdownItem> = emptyList(),
-    val defaultSelection: String = "",
 )
 
 @Composable
@@ -342,11 +341,14 @@ fun <T>DropDown(
 fun DropDown(
     modifier: Modifier = Modifier,
     dropdownState: DropdownState,
+    defaultSelection: DropdownItem? = null,
     elevation: Dp = 2.dp,
     onItemClick: (DropdownItem) -> Unit,
 ) {
     var selectedItemIndex by remember { mutableIntStateOf(-1) }
-    var selectedItem by remember { mutableStateOf(dropdownState.defaultSelection) }
+    var selectedItem by remember {
+        mutableStateOf(defaultSelection?.itemName ?: defaultSelection?.code ?: "")
+    }
     var expand by remember { mutableStateOf(false) }
 
     var textFieldSize by remember { mutableStateOf(Size.Zero) }
@@ -359,8 +361,10 @@ fun DropDown(
         selectedItem = "${dropdownState.data[selectedItemIndex]}"
     }
 
-    if (dropdownState.defaultSelection.isNotEmpty()) {
-        val item = dropdownState.data.find { "$it" == dropdownState.defaultSelection }
+    if (defaultSelection != null) {
+        val item = dropdownState.data.find {
+            it.itemName == defaultSelection.itemName || "${it.code}" == defaultSelection.code
+        }
         selectedItemIndex = dropdownState.data.indexOf(item)
         selectedItem = item.toString().ifEmpty { "" }
 
@@ -499,6 +503,7 @@ fun DropDown(
 fun DropDownWithSelectionByCode(
     modifier: Modifier = Modifier,
     dropdownState: DropdownState,
+    defaultSelection: DropdownItem? = null,
     onItemClick: (DropdownItem) -> Unit,
 ) {
     var selectedItemIndex by remember { mutableIntStateOf(-1) }
@@ -526,11 +531,11 @@ fun DropDownWithSelectionByCode(
         expand = !expand
     }
 
-    selectedItemIndex = dropdownState.data.indexOfFirst { it.code == dropdownState.defaultSelection }
-    selectedItem = dropdownState.data.find { it.code == dropdownState.defaultSelection }?.itemName ?: ""
+    selectedItemIndex = dropdownState.data.indexOfFirst { it.code == defaultSelection?.code }
+    selectedItem = dropdownState.data.find { it.code == defaultSelection?.code }?.itemName ?: ""
 
     if (selectedItemIndex != -1) {
-        onItemClick.invoke(dropdownState.data.find { it.code == dropdownState.defaultSelection }!!)
+        onItemClick.invoke(dropdownState.data.find { it.code == defaultSelection?.code }!!)
     }
 
     Column(

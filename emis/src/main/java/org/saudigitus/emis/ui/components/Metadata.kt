@@ -249,7 +249,7 @@ fun ShowCard(
     onIconClick: () -> Unit = {},
 ) {
     Card(
-        shape = RoundedCornerShape(0.dp),
+        shape = RoundedCornerShape(16.dp),
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 16.dp),
@@ -266,14 +266,19 @@ fun ShowCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Row {
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                        .weight(1f),
+                ) {
                     Icon(
                         Icons.Rounded.School,
                         tint = Color(0xFF2C98F0),
                         contentDescription = "Icon",
                     )
                     Spacer(modifier = Modifier.size(10.dp))
-                    Column {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
                         Text(
                             text = String.format("%s, %s", infoCard.grade, infoCard.section),
                             fontWeight = FontWeight.Bold,
@@ -282,6 +287,10 @@ fun ShowCard(
                         Text(
                             text = String.format("%s | %s", infoCard.academicYear, infoCard.orgUnitName),
                             fontSize = 14.sp,
+                            overflow = TextOverflow.Ellipsis,
+                            softWrap = true,
+                            maxLines = 1,
+                            modifier = Modifier.fillMaxWidth(),
                         )
                     }
                 }
