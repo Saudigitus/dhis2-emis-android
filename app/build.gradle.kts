@@ -1,5 +1,5 @@
+
 import com.android.build.api.variant.impl.VariantOutputImpl
-import com.android.build.gradle.internal.scope.ProjectInfo.Companion.getBaseName
 import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -89,6 +89,7 @@ android {
         val bitriseSentryDSN = System.getenv("SENTRY_DSN") ?: ""
 
         buildConfigField("String", "SDK_VERSION", "\"" + libs.versions.dhis2sdk.get() + "\"")
+        buildConfigField("String", "SEMIS_VERSION", "\"" + libs.versions.semis.get() + "\"")
         buildConfigField("String", "MAPBOX_ACCESS_TOKEN", "\"" + mapboxAccessToken + "\"")
         buildConfigField("String", "MATOMO_URL", "\"https://usage.analytics.dhis2.org/matomo.php\"")
         buildConfigField("long", "VERSION_CODE", "${defaultConfig.versionCode}")

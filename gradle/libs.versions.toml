@@ -13,6 +13,7 @@ kotlinBom = "1.9.0"
 androidxComposeBom = "2023.06.01"
 androidxNavigation = "2.6.0"
 androidxHiltNavigation = "1.0.0"
+semis = "1.0.0"
 
 jacoco = '0.8.10'
 designSystem = "0.2"
