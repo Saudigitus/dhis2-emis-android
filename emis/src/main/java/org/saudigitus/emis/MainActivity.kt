@@ -67,6 +67,7 @@ class MainActivity : FragmentActivity() {
                                 viewModel = viewModel,
                                 navController = navController,
                                 navBack = { finish() },
+                                sync = ::syncProgram
                             )
                         }
                         composable(AppRoutes.TEI_LIST_ROUTE) {
@@ -74,7 +75,7 @@ class MainActivity : FragmentActivity() {
                                 viewModel = viewModel,
                                 teiCardMapper = teiCardMapper,
                                 onBack = navController::navigateUp,
-                                onSyncTei = ::syncTei,
+                                onSync = ::syncProgram,
                             )
                         }
                         composable(
@@ -93,7 +94,12 @@ class MainActivity : FragmentActivity() {
                             attendanceViewModel.setInfoCard(viewModel.infoCard.collectAsStateWithLifecycle().value)
                             attendanceViewModel.setOU(it.arguments?.getString("ou") ?: "")
 
-                            AttendanceScreen(attendanceViewModel, teiCardMapper, navController::navigateUp)
+                            AttendanceScreen(
+                                attendanceViewModel,
+                                teiCardMapper,
+                                navController::navigateUp,
+                                ::syncProgram,
+                            )
                         }
                         composable(
                             route = "${AppRoutes.PERFORMANCE_ROUTE}/{ou}/{stage}/{dataElement}/{subjectName}",
@@ -144,6 +150,7 @@ class MainActivity : FragmentActivity() {
                                 step = performanceViewModel::setButtonStep,
                                 onFilterClick = performanceViewModel::updateDataFields,
                                 onSave = performanceViewModel::save,
+                                sync = ::syncProgram,
                             )
                         }
                         composable(
@@ -169,6 +176,7 @@ class MainActivity : FragmentActivity() {
                                 onClick = { subjectId, subjectName ->
                                     navController.navigate("${AppRoutes.PERFORMANCE_ROUTE}/$ou/$stage/$subjectId/$subjectName")
                                 },
+                                sync = ::syncProgram
                             )
                         }
                     }
@@ -177,11 +185,11 @@ class MainActivity : FragmentActivity() {
         }
     }
 
-    private fun syncTei(teiUid: String) {
+    private fun syncProgram() {
         SyncDialog(
             activity = this@MainActivity,
             recordUid = viewModel.program.value,
-            syncContext = SyncContext.TrackerProgramTei(teiUid),
+            syncContext = SyncContext.TrackerProgram(viewModel.program.value),
             onNoConnectionListener = {
                 Snackbar.make(
                     this.window.decorView.rootView,

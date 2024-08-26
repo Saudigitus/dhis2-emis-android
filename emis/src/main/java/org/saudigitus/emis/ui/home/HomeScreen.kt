@@ -45,6 +45,7 @@ fun HomeRoute(
     viewModel: HomeViewModel,
     navController: NavHostController,
     navBack: () -> Unit,
+    sync: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -52,6 +53,7 @@ fun HomeRoute(
         when (it) {
             is HomeUiEvent.OnBack -> navBack()
             is HomeUiEvent.NavTo -> navController.navigate(it.route)
+            is HomeUiEvent.Sync ->  sync()
             else -> {
                 viewModel.onUiEvent(it)
             }
@@ -78,12 +80,13 @@ fun HomeUI(
                 navigationAction = { onEvent(HomeUiEvent.OnBack) },
                 disableNavigation = false,
                 actionState = ToolbarActionState(
-                    syncVisibility = false,
+                    syncVisibility = true,
                     showFavorite = true,
                 ),
                 filterAction = {
                     onEvent(HomeUiEvent.HideShowFilter)
                 },
+                syncAction = { onEvent(HomeUiEvent.Sync) }
             )
         },
     ) { paddingValues ->
