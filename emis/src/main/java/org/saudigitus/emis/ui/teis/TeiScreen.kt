@@ -41,7 +41,7 @@ fun TeiScreen(
     viewModel: HomeViewModel,
     teiCardMapper: TEICardMapper,
     onBack: () -> Unit,
-    onSyncTei: (tei: String) -> Unit,
+    onSync: () -> Unit,
 ) {
     val students by viewModel.teis.collectAsStateWithLifecycle()
     val toolbarHeaders by viewModel.toolbarHeaders.collectAsStateWithLifecycle()
@@ -60,9 +60,10 @@ fun TeiScreen(
                 navigationAction = { onBack.invoke() },
                 disableNavigation = false,
                 actionState = ToolbarActionState(
-                    syncVisibility = false,
+                    syncVisibility = true,
                     showFavorite = false,
                 ),
+                syncAction = onSync
             )
         },
     ) { paddingValues ->

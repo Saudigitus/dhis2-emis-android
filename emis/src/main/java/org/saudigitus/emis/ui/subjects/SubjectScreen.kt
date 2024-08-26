@@ -40,6 +40,7 @@ fun SubjectScreen(
     onFilterClick: (String) -> Unit,
     infoCard: InfoCard,
     onClick: (String, String) -> Unit,
+    sync: () -> Unit,
 ) {
     var displayFilters by remember { mutableStateOf(true) }
     var displayName by remember { mutableStateOf("") }
@@ -57,11 +58,12 @@ fun SubjectScreen(
                 navigationAction = { onBack.invoke() },
                 disableNavigation = false,
                 actionState = ToolbarActionState(
-                    syncVisibility = false,
+                    syncVisibility = true,
                     filterVisibility = false,
                     showCalendar = false,
                 ),
                 filterAction = { displayFilters = !displayFilters },
+                syncAction = sync
             )
         },
     ) { paddingValues ->

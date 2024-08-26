@@ -92,6 +92,7 @@ fun PerformanceScreen(
     onFilterClick: (dataElement: String) -> Unit,
     onSave: () -> Unit,
     dateValidator: (Long) -> Boolean = { true },
+    sync: () -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     var isCompleted by remember { mutableStateOf(false) }
@@ -133,12 +134,13 @@ fun PerformanceScreen(
                 navigationAction = onNavBack,
                 disableNavigation = false,
                 actionState = ToolbarActionState(
-                    syncVisibility = false,
+                    syncVisibility = true,
                     filterVisibility = false,
                     showCalendar = false,
                 ),
                 calendarAction = setDate,
                 dateValidator = dateValidator,
+                syncAction = sync,
             )
         },
         floatingActionButton = {

@@ -62,6 +62,7 @@ fun AttendanceScreen(
     viewModel: AttendanceViewModel,
     teiCardMapper: TEICardMapper,
     onBack: () -> Unit,
+    sync: () -> Unit,
 ) {
     val students by viewModel.teis.collectAsStateWithLifecycle()
     val attendanceOptions by viewModel.attendanceOptions.collectAsStateWithLifecycle()
@@ -168,7 +169,7 @@ fun AttendanceScreen(
                 navigationAction = onBack::invoke,
                 disableNavigation = false,
                 actionState = ToolbarActionState(
-                    syncVisibility = false,
+                    syncVisibility = true,
                     filterVisibility = false,
                     showCalendar = true,
                 ),
@@ -188,6 +189,7 @@ fun AttendanceScreen(
                         true
                     }
                 },
+                syncAction = sync
             )
         },
         floatingActionButton = {
