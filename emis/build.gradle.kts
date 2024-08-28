@@ -110,6 +110,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.dagger.hilt.android)
+    implementation(libs.androidx.compose.material3.windowSizeClass)
 
     kapt(libs.dagger.hilt.android.compiler)
 

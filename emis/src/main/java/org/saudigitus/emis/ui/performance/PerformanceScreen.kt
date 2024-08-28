@@ -8,9 +8,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CornerSize
@@ -65,10 +63,12 @@ import org.saudigitus.emis.ui.components.ToolbarActionState
 import org.saudigitus.emis.ui.form.FormBuilder
 import org.saudigitus.emis.ui.teis.mapper.TEICardMapper
 import org.saudigitus.emis.ui.theme.light_success
+import org.saudigitus.emis.utils.expandedFormSize
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PerformanceScreen(
+    isExpandedScreen: Boolean,
     state: PerformanceUiState,
     teiCardMapper: TEICardMapper,
     onNavBack: () -> Unit,
@@ -271,8 +271,7 @@ fun PerformanceScreen(
                             }
                             FormBuilder(
                                 modifier = Modifier
-                                    .width(120.dp)
-                                    .height(60.dp)
+                                    .expandedFormSize(isExpandedScreen)
                                     .padding(bottom = 2.dp, end = 16.dp),
                                 colors = TextFieldDefaults.textFieldColors(
                                     backgroundColor = Color.Transparent,

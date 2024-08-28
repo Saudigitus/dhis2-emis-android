@@ -1,5 +1,9 @@
 package org.saudigitus.emis.utils
 
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.arch.repositories.scope.RepositoryScope
 import org.hisp.dhis.android.core.event.Event
@@ -74,4 +78,12 @@ fun DropdownState.placeholder() = when (this.filterType) {
     FilterType.SECTION -> R.string.cls
     FilterType.SCHOOL -> R.string.school
     FilterType.NONE -> R.string.none
+}
+
+fun Modifier.expandedFormSize(isExpanded: Boolean) = if (isExpanded) {
+    this.width(170.dp)
+        .height(90.dp)
+} else {
+    this.width(120.dp)
+        .height(60.dp)
 }

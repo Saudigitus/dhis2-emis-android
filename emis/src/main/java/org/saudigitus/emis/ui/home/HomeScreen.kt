@@ -42,6 +42,7 @@ import org.saudigitus.emis.utils.getByType
 
 @Composable
 fun HomeRoute(
+    isExpandedScreen: Boolean,
     viewModel: HomeViewModel,
     navController: NavHostController,
     navBack: () -> Unit,
@@ -49,7 +50,7 @@ fun HomeRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    HomeUI(uiState = uiState) {
+    HomeUI(isExpandedScreen, uiState = uiState) {
         when (it) {
             is HomeUiEvent.OnBack -> navBack()
             is HomeUiEvent.NavTo -> navController.navigate(it.route)
@@ -64,6 +65,7 @@ fun HomeRoute(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeUI(
+    isExpandedScreen: Boolean,
     uiState: HomeUiState,
     onEvent: (HomeUiEvent) -> Unit,
 ) {
@@ -167,7 +169,11 @@ fun HomeUI(
 
                 LazyVerticalGrid(
                     modifier = Modifier.fillMaxSize(),
-                    columns = GridCells.Adaptive(128.dp),
+                    columns = if (!isExpandedScreen) {
+                        GridCells.Adaptive(128.dp)
+                    } else {
+                        GridCells.Adaptive(200.dp)
+                    },
                     contentPadding = PaddingValues(vertical = 5.dp, horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top),
                     horizontalArrangement = Arrangement.spacedBy(
