@@ -6,8 +6,12 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -42,9 +46,16 @@ class MainActivity : FragmentActivity() {
     @Inject
     lateinit var teiCardMapper: TEICardMapper
 
+    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
         setContent {
+
+            val widthSizeClass = calculateWindowSizeClass(this).widthSizeClass
+            val isExpandedScreen = (widthSizeClass == WindowWidthSizeClass.Medium) || (widthSizeClass == WindowWidthSizeClass.Expanded)
+
             EMISAndroidTheme(
                 darkTheme = false,
                 dynamicColor = false,
@@ -64,6 +75,7 @@ class MainActivity : FragmentActivity() {
                     ) {
                         composable(AppRoutes.HOME_ROUTE) {
                             HomeRoute(
+                                isExpandedScreen = isExpandedScreen,
                                 viewModel = viewModel,
                                 navController = navController,
                                 navBack = { finish() },
@@ -137,6 +149,7 @@ class MainActivity : FragmentActivity() {
                             performanceViewModel.setDefault(stage, dl)
 
                             PerformanceScreen(
+                                isExpandedScreen = isExpandedScreen,
                                 state = uiState,
                                 teiCardMapper = teiCardMapper,
                                 onNavBack = navController::navigateUp,

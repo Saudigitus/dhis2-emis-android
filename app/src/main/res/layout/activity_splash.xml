@@ -24,7 +24,8 @@
             android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            app:srcCompat="@drawable/emis_logo_white" />
+            android:visibility="visible"
+            app:srcCompat="@drawable/semis_dhis2" />
 
 
         <ProgressBar
