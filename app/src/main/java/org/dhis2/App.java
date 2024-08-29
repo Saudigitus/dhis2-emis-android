@@ -4,7 +4,6 @@ import static org.dhis2.utils.analytics.AnalyticsConstants.DATA_STORE_ANALYTICS_
 
 import android.content.Context;
 import android.os.Looper;
-import android.os.StrictMode;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -33,6 +32,7 @@ import org.dhis2.commons.reporting.CrashReportModule;
 import org.dhis2.commons.schedulers.SchedulerModule;
 import org.dhis2.commons.schedulers.SchedulersProviderImpl;
 import org.dhis2.commons.sync.SyncComponentProvider;
+import org.dhis2.commons.navigator.TeiDashboardComponentProvider;
 import org.dhis2.data.appinspector.AppInspector;
 import org.dhis2.data.dispatcher.DispatcherModule;
 import org.dhis2.data.server.SSLContextInitializer;
@@ -47,6 +47,7 @@ import org.dhis2.usescases.crash.CrashActivity;
 import org.dhis2.usescases.login.LoginComponent;
 import org.dhis2.usescases.login.LoginModule;
 import org.dhis2.usescases.teiDashboard.TeiDashboardComponent;
+import org.dhis2.usescases.teiDashboard.TeiDashboardMobileActivity;
 import org.dhis2.usescases.teiDashboard.TeiDashboardModule;
 import org.dhis2.utils.analytics.AnalyticsModule;
 import org.dhis2.utils.granularsync.SyncStatusDialogProvider;
@@ -405,5 +406,11 @@ public class App extends MultiDexApplication implements Components, LifecycleObs
         KeyValuePair granted = D2Manager.getD2().dataStoreModule().localDataStore()
                 .value(DATA_STORE_ANALYTICS_PERMISSION_KEY).blockingGet();
         return granted != null && Boolean.parseBoolean(granted.value());
+    }
+
+    @NonNull
+    @Override
+    public TeiDashboardComponentProvider getDashboard() {
+        return new TeiDashboardMobileActivity();
     }
 }

@@ -2,10 +2,11 @@ package org.saudigitus.emis.ui.base
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.async
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.dhis2.commons.data.SearchTeiModel
 import org.hisp.dhis.android.core.enrollment.EnrollmentStatus
 import org.saudigitus.emis.data.local.DataManager
@@ -70,12 +71,12 @@ abstract class BaseViewModel(
     fun setTeis(teis: List<SearchTeiModel>) {
         viewModelScope.launch {
             _teis.value = teis
-            _teiUIds.value = async {
+            _teiUIds.value = withContext(Dispatchers.IO) {
                 teis.filter {
                     it.enrollments.getOrNull(0)?.status() != EnrollmentStatus.CANCELLED
                 }
                     .mapNotNull { it.tei.uid() }
-            }.await()
+            }
         }
     }
 

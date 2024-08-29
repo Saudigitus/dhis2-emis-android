@@ -107,7 +107,7 @@ class HomeViewModel
     private fun getTeis() {
         viewModelScope.launch {
             if (!viewModelState.value.isNull) {
-                val teiList = async {
+                //val teiList =
                     repository.getTeisBy(
                         ou = "${viewModelState.value.school?.uid}",
                         program = "${uiState.value.programSettings?.getString(PROGRAM_UID)}",
@@ -118,10 +118,10 @@ class HomeViewModel
                             "${registration.value?.section}",
                         ),
                         options = viewModelState.value.options,
-                    )
-                }.await()
+                    ).collect { teiList ->
+                        setTeis(teiList)
+                    }
 
-                setTeis(teiList)
 
                 setInfoCard(
                     viewModelState.updateAndGet {

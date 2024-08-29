@@ -25,6 +25,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import org.dhis2.commons.Constants
 import org.dhis2.commons.sync.SyncContext
 import org.dhis2.commons.sync.SyncDialog
+import org.dhis2.commons.navigator.AppNavigator
 import org.saudigitus.emis.ui.attendance.AttendanceScreen
 import org.saudigitus.emis.ui.attendance.AttendanceViewModel
 import org.saudigitus.emis.ui.home.HomeRoute
@@ -88,6 +89,7 @@ class MainActivity : FragmentActivity() {
                                 teiCardMapper = teiCardMapper,
                                 onBack = navController::navigateUp,
                                 onSync = ::syncProgram,
+                                onCardClick = ::launchTeiDashboard
                             )
                         }
                         composable(
@@ -211,5 +213,17 @@ class MainActivity : FragmentActivity() {
                 ).show()
             },
         ).show()
+    }
+
+    private fun launchTeiDashboard(
+        tei: String,
+        enrollment: String
+    ) {
+        AppNavigator(
+            activity = this@MainActivity,
+            tei = tei,
+            program = viewModel.program.value,
+            enrollment = enrollment
+        ).navigateToDashboard()
     }
 }

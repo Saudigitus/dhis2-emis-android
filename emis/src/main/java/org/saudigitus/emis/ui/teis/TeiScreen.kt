@@ -42,6 +42,7 @@ fun TeiScreen(
     teiCardMapper: TEICardMapper,
     onBack: () -> Unit,
     onSync: () -> Unit,
+    onCardClick: (tei: String, enrollment: String) -> Unit,
 ) {
     val students by viewModel.teis.collectAsStateWithLifecycle()
     val toolbarHeaders by viewModel.toolbarHeaders.collectAsStateWithLifecycle()
@@ -99,7 +100,7 @@ fun TeiScreen(
                         modifier = Modifier.fillMaxSize(),
                     ) {
                         items(students) { student ->
-                            val card = student.map(teiCardMapper, showSync = false)
+                            val card = student.map(teiCardMapper, showSync = false, onCardClick = onCardClick)
                             val isInactive = student.enrollments.getOrNull(0)?.status() == EnrollmentStatus.CANCELLED
 
                             ListCard(

@@ -1,5 +1,6 @@
 package org.saudigitus.emis.data.local
 
+import kotlinx.coroutines.flow.Flow
 import org.dhis2.commons.data.SearchTeiModel
 import org.hisp.dhis.android.core.dataelement.DataElement
 import org.saudigitus.emis.data.model.CalendarConfig
@@ -44,13 +45,13 @@ interface DataManager {
 
     suspend fun getDataElement(uid: String): DataElement?
 
-    suspend fun getTeisBy(
+    fun getTeisBy(
         ou: String,
         program: String,
         stage: String,
         dataElementIds: List<String>,
         options: List<String>,
-    ): List<SearchTeiModel>
+    ): Flow<List<SearchTeiModel>>
 
     suspend fun trackedEntityInstances(
         ou: String,
