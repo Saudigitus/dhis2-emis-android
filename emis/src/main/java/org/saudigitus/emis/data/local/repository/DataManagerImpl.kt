@@ -2,6 +2,11 @@ package org.saudigitus.emis.data.local.repository
 
 import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.buffer
+import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import org.dhis2.bindings.userFriendlyValue
 import org.dhis2.commons.bindings.dataElement
@@ -225,35 +230,39 @@ class DataManagerImpl
             return@withContext d2.dataElement(uid)
         }
 
-    override suspend fun getTeisBy(
+    override fun getTeisBy(
         ou: String,
         program: String,
         stage: String,
         dataElementIds: List<String>,
         options: List<String>,
-    ): List<SearchTeiModel> = withContext(Dispatchers.IO) {
-        return@withContext d2.eventsWithTrackedDataValues(
-            ou,
-            program,
-            stage,
-        ).filter {
-            val dataElements = it.trackedEntityDataValues()?.associate { trackedEntityDataValue ->
-                Pair(trackedEntityDataValue.dataElement(), trackedEntityDataValue.value())
-            }
-            dataElements?.keys?.containsAll(dataElementIds) == true &&
-                dataElements.values.containsAll(options)
-        }.mapNotNull {
-            d2.enrollment("${it.enrollment()}")
-        }.map {
-            val tei = d2.trackedEntityModule()
-                .trackedEntityInstances()
-                .byUid().eq(it.trackedEntityInstance())
-                .withTrackedEntityAttributeValues()
-                .one().blockingGet()
+    ): Flow<List<SearchTeiModel>> = flow {
+        emit(
+            d2.eventsWithTrackedDataValues(
+                ou,
+                program,
+                stage,
+            ).filter {
+                val dataElements = it.trackedEntityDataValues()?.associate { trackedEntityDataValue ->
+                    Pair(trackedEntityDataValue.dataElement(), trackedEntityDataValue.value())
+                }
+                dataElements?.keys?.containsAll(dataElementIds) == true &&
+                    dataElements.values.containsAll(options)
+            }.mapNotNull {
+                d2.enrollment("${it.enrollment()}")
+            }.map {
+                val tei = d2.trackedEntityModule()
+                    .trackedEntityInstances()
+                    .byUid().eq(it.trackedEntityInstance())
+                    .withTrackedEntityAttributeValues()
+                    .one().blockingGet()
 
-            transform(tei, program, it)
-        }
-    }
+                transform(tei, program, it)
+            }
+        )
+    }.buffer()
+        .conflate()
+        .flowOn(Dispatchers.IO)
 
     override suspend fun trackedEntityInstances(
         ou: String,

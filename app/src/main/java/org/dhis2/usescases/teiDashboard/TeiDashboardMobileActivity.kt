@@ -36,6 +36,7 @@ import org.dhis2.commons.resources.ColorUtils
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.commons.sync.OnDismissListener
 import org.dhis2.commons.sync.SyncContext
+import org.dhis2.commons.navigator.TeiDashboardComponentProvider
 import org.dhis2.databinding.ActivityDashboardMobileBinding
 import org.dhis2.form.model.EnrollmentMode
 import org.dhis2.form.model.EnrollmentRecords
@@ -73,7 +74,8 @@ class TeiDashboardMobileActivity :
     ActivityGlobalAbstract(),
     TeiDashboardContracts.View,
     MapButtonObservable,
-    TEIDataActivityContract {
+    TEIDataActivityContract,
+    TeiDashboardComponentProvider {
     private var currentOrientation = -1
 
     @Inject
@@ -821,5 +823,19 @@ class TeiDashboardMobileActivity :
             intent.putExtra(Constants.ENROLLMENT_UID, enrollmentUid)
             return intent
         }
+    }
+
+    override fun launch(
+        context: Context,
+        teiUid: String?,
+        programUid: String?,
+        enrollmentUid: String?
+    ): Intent {
+        return intent(
+            context,
+            teiUid,
+            programUid,
+            enrollmentUid
+        )
     }
 }
