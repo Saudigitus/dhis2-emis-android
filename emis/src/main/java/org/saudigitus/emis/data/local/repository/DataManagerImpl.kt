@@ -2,6 +2,7 @@ package org.saudigitus.emis.data.local.repository
 
 import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.conflate
@@ -25,6 +26,8 @@ import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttribute
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttributeValue
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityInstance
 import org.saudigitus.emis.data.local.DataManager
+import org.saudigitus.emis.data.local.util.SqlRaw
+import org.saudigitus.emis.data.model.Attendance
 import org.saudigitus.emis.data.model.CalendarConfig
 import org.saudigitus.emis.data.model.EMISConfig
 import org.saudigitus.emis.data.model.EMISConfigItem
@@ -301,33 +304,105 @@ class DataManagerImpl
 
         val colorUtils = ColorUtils()
 
-        return@withContext d2.eventModule().events()
-            .byTrackedEntityInstanceUids(teis)
-            .byProgramUid().eq(program)
-            .byProgramStageUid().eq(programStage)
-            .byEventDate().eq(
-                if (date != null) {
-                    Date.valueOf(date)
-                } else {
-                    DateUtils.getInstance().today
-                },
-            )
-            .withTrackedEntityDataValues()
-            .blockingGet()
-            .mapNotNull {
-                eventTransform(it, dataElement, reasonDataElement)
-            }
-            .map { attendanceEntity ->
-                val status = config.attendanceStatus?.find { status ->
-                    status.code == attendanceEntity.value
-                }
-
-                attendanceEntity.withBtnSettings(
-                    icon = Utils.dynamicIcons("${status?.icon}"),
-                    iconName = "${status?.icon}",
-                    iconColor = Color(colorUtils.parseColor("${status?.color}")),
+        val deferredEvents = async {
+            d2.eventModule().events()
+                .byTrackedEntityInstanceUids(teis)
+                .byProgramUid().eq(program)
+                .byProgramStageUid().eq(programStage)
+                .byEventDate().eq(
+                    if (date != null) {
+                        Date.valueOf(date)
+                    } else {
+                        DateUtils.getInstance().today
+                    },
                 )
-            }
+                .withTrackedEntityDataValues()
+                .blockingGet()
+                .mapNotNull {
+                    eventTransform(it, dataElement, reasonDataElement)
+                }
+                .map { attendanceEntity ->
+                    val status = config.attendanceStatus?.find { status ->
+                        status.code == attendanceEntity.value
+                    }
+
+                    attendanceEntity.withBtnSettings(
+                        icon = Utils.dynamicIcons("${status?.icon}"),
+                        iconName = "${status?.icon}",
+                        iconColor = Color(colorUtils.parseColor("${status?.color}")),
+                    )
+                }
+        }
+
+        return@withContext deferredEvents.await()
+    }
+
+    override suspend fun geTeiByAttendanceStatus(
+        ou: String,
+        program: String,
+        stage: String,
+        attendanceStage: String,
+        attendanceDataElement: String,
+        reasonDataElement: String,
+        date: String?,
+        dataElementIds: List<String>,
+        options: List<String>,
+    ) = withContext(Dispatchers.IO) {
+        val config = getConfig(Constants.KEY)?.find { it.program == program }
+            ?.attendance ?: return@withContext emptyMap()
+
+        val attendanceStatus = config.attendanceStatus?.find { status ->
+            status.key == Constants.ABSENT
+        }?.code ?: ""
+
+        val colorUtils = ColorUtils()
+        val data = mutableMapOf<SearchTeiModel, AttendanceEntity>()
+
+        return@withContext try {
+            val cursor = d2.databaseAdapter().rawQuery(
+                SqlRaw.geTeiByAttendanceStatusQuery(
+                    ou,
+                    program,
+                    stage,
+                    attendanceStage,
+                    attendanceStatus,
+                    attendanceDataElement,
+                    reasonDataElement,
+                    date,
+                    dataElementIds,
+                    options,
+                )
+            )
+
+            if (cursor.count > 0) {
+                cursor.moveToFirst()
+
+                do {
+                    if (!cursor.isNull(0) &&
+                        !cursor.isNull(1) && !cursor.isNull(2)) {
+                        val response = async {
+                            teiEventTransform(
+                                teiUid = cursor.getString(1),
+                                eventUid = cursor.getString(0),
+                                program = program,
+                                attendanceDataElement = attendanceDataElement,
+                                reasonDataElement = reasonDataElement,
+                                config = config,
+                                colorUtils = colorUtils,
+                            )
+                        }
+
+                        val result = response.await()
+
+                        data[result.first] = result.second
+                    }
+                } while (cursor.moveToNext())
+
+                data
+            } else emptyMap()
+        } catch (_: Exception) {
+            emptyMap()
+        }
     }
 
     override suspend fun dateValidation(id: String): CalendarConfig? =
@@ -374,6 +449,43 @@ class DataManagerImpl
                     code = it.code(),
                 )
             }
+    }
+
+    private fun teiEventTransform(
+        teiUid: String,
+        eventUid: String,
+        program: String,
+        attendanceDataElement: String,
+        reasonDataElement: String,
+        config: Attendance,
+        colorUtils: ColorUtils,
+    ): Pair<SearchTeiModel, AttendanceEntity> {
+        val tei = d2.trackedEntityModule()
+            .trackedEntityInstances()
+            .byUid().eq(teiUid)
+            .withTrackedEntityAttributeValues()
+            .one().blockingGet()
+
+        val event = d2.eventModule().events()
+            .byUid().eq(eventUid)
+            .withTrackedEntityDataValues()
+            .one().blockingGet()
+        val enrollment = d2.enrollment(event!!.enrollment() ?: "")
+
+        val teiModel = transform(tei, program, enrollment)
+        val transformedEvent = eventTransform(event, attendanceDataElement, reasonDataElement)
+
+        val status = config.attendanceStatus?.find { status ->
+            status.code == transformedEvent?.value
+        }
+
+        val attendanceEntity = transformedEvent?.withBtnSettings(
+            icon = Utils.dynamicIcons("${status?.icon}"),
+            iconName = "${status?.icon}",
+            iconColor = Color(colorUtils.parseColor("${status?.color}")),
+        )
+
+        return Pair(teiModel, attendanceEntity!!)
     }
 
     private fun eventTransform(

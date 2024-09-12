@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -59,12 +60,26 @@ class AttendanceViewModel
     private val _absenceStateCache = MutableStateFlow<List<Absence>>(emptyList())
     val absenceStateCache: StateFlow<List<Absence>> = _absenceStateCache
 
-    init {
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
+    private val _isOnlyAbsence = MutableStateFlow(false)
+    private val isOnlyAbsence: StateFlow<Boolean> = _isOnlyAbsence
+
+    private val _options = MutableStateFlow<List<String>>(emptyList())
+    private val options: StateFlow<List<String>> = _options
+
+    fun setDefaults(title: String, onlyAbsence: Boolean = false) {
         _toolbarHeaders.update {
             it.copy(
-                title = "Attendance",
+                title = title,
             )
         }
+        _isOnlyAbsence.value = onlyAbsence
+    }
+
+    fun setOptions(academicYear: String, grade: String, section: String) {
+        _options.value = listOf(academicYear, grade, section)
     }
 
     override fun setConfig(program: String) {
@@ -84,7 +99,9 @@ class AttendanceViewModel
 
         setConfig(program)
 
-        viewModelScope.launch {
+        if (isOnlyAbsence.value) {
+            geTeiByAttendanceStatus()
+        } else {
             attendanceEvents()
         }
     }
@@ -95,7 +112,9 @@ class AttendanceViewModel
 
     override fun setDate(date: String) {
         _eventDate.value = date
-        viewModelScope.launch {
+        if (isOnlyAbsence.value) {
+            geTeiByAttendanceStatus(date)
+        } else {
             attendanceEvents(date)
         }
         _toolbarHeaders.update {
@@ -111,27 +130,72 @@ class AttendanceViewModel
         _attendanceOptions.value = repository.getAttendanceOptions(program)
     }
 
-    private suspend fun attendanceEvents(
+    private fun attendanceEvents(
         date: String? = DateHelper.formatDate(DateUtils.getInstance().today.time),
     ) {
-        teis.collect {
+        viewModelScope.launch {
             try {
-                _attendanceStatus.value = repository.getAttendanceEvent(
-                    program = program.value,
-                    programStage = datastoreAttendance.value?.programStage ?: "",
-                    dataElement = datastoreAttendance.value?.status ?: "",
-                    reasonDataElement = datastoreAttendance.value?.absenceReason ?: "",
-                    teis = teiUIds.value,
-                    date = date.toString(),
-                )
+                _attendanceStatus.value = async {
+                    repository.getAttendanceEvent(
+                        program = program.value,
+                        programStage = datastoreAttendance.value?.programStage ?: "",
+                        dataElement = datastoreAttendance.value?.status ?: "",
+                        reasonDataElement = datastoreAttendance.value?.absenceReason ?: "",
+                        teis = teiUIds.value,
+                        date = date.toString(),
+                    )
+                }.await()
 
                 clearCache()
                 attendanceCache.addAll(attendanceStatus.value)
 
                 setInitialAttendanceStatus()
             } catch (e: Exception) {
+                if (e is CancellationException) {
+                    Timber.tag("ATTENDANCE_DATA").d("Coroutine cancelled: ${e.message}")
+                    throw e
+                }
                 Timber.tag("ATTENDANCE_DATA").e(e)
             }
+        }
+    }
+
+    private fun geTeiByAttendanceStatus(
+        date: String? = DateHelper.formatDate(DateUtils.getInstance().today.time),
+    ) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            val config = repository.getConfig(KEY)?.find { it.program == program.value }
+            val registration = config?.registration
+
+            val response = async {
+                repository.geTeiByAttendanceStatus(
+                    ou = ou.value,
+                    program = program.value,
+                    stage = registration?.programStage ?: "",
+                    attendanceStage = datastoreAttendance.value?.programStage ?: "",
+                    attendanceDataElement = datastoreAttendance.value?.status ?: "",
+                    reasonDataElement = datastoreAttendance.value?.absenceReason ?: "",
+                    date = date,
+                    dataElementIds = listOf(
+                        "${registration?.academicYear}",
+                        "${registration?.grade}",
+                        "${registration?.section}",
+                    ),
+                    options = options.value
+                )
+            }
+            val data = response.await()
+
+            setTeis(data.keys.toList())
+            _attendanceStatus.value = data.values.toList()
+
+            clearCache()
+            attendanceCache.addAll(attendanceStatus.value)
+
+            setInitialAttendanceStatus()
+
+            _isLoading.value = false
         }
     }
 
@@ -333,7 +397,11 @@ class AttendanceViewModel
 
             clearCache()
             setAttendanceStep(ButtonStep.EDITING)
-            attendanceEvents(eventDate.value)
+            if (isOnlyAbsence.value) {
+                geTeiByAttendanceStatus(eventDate.value)
+            } else {
+                attendanceEvents(eventDate.value)
+            }
             onSuccess()
         }
     }
@@ -357,7 +425,9 @@ class AttendanceViewModel
 
     fun refreshOnSave() {
         setAttendanceStep(ButtonStep.EDITING)
-        viewModelScope.launch {
+        if (isOnlyAbsence.value) {
+            geTeiByAttendanceStatus(eventDate.value)
+        } else {
             attendanceEvents(eventDate.value)
         }
     }

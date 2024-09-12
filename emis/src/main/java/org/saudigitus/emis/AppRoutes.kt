@@ -7,4 +7,11 @@ object AppRoutes {
     const val ABSENTEEISM_ROUTE = "ABSENTEEISM_ROUTE"
     const val PERFORMANCE_ROUTE = "PERFORMANCE_ROUTE"
     const val SUBJECT_ROUTE = "SUBJECT_ROUTE"
+
+    fun absenteeismRoute(
+        academicYear: String?,
+        school: String?,
+        grade: String?,
+        section: String?,
+    ) = "${AppRoutes.ABSENTEEISM_ROUTE}/$school/$academicYear/$grade/$section"
 }
