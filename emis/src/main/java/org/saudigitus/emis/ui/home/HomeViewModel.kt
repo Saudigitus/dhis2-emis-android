@@ -107,21 +107,19 @@ class HomeViewModel
     private fun getTeis() {
         viewModelScope.launch {
             if (!viewModelState.value.isNull) {
-                //val teiList =
-                    repository.getTeisBy(
-                        ou = "${viewModelState.value.school?.uid}",
-                        program = "${uiState.value.programSettings?.getString(PROGRAM_UID)}",
-                        stage = "${registration.value?.programStage}",
-                        dataElementIds = listOf(
-                            "${registration.value?.academicYear}",
-                            "${registration.value?.grade}",
-                            "${registration.value?.section}",
-                        ),
-                        options = viewModelState.value.options,
-                    ).collect { teiList ->
-                        setTeis(teiList)
-                    }
-
+                repository.getTeisBy(
+                    ou = "${viewModelState.value.school?.uid}",
+                    program = "${uiState.value.programSettings?.getString(PROGRAM_UID)}",
+                    stage = "${registration.value?.programStage}",
+                    dataElementIds = listOf(
+                        "${registration.value?.academicYear}",
+                        "${registration.value?.grade}",
+                        "${registration.value?.section}",
+                    ),
+                    options = viewModelState.value.options,
+                ).collect { teiList ->
+                    setTeis(teiList)
+                }
 
                 setInfoCard(
                     viewModelState.updateAndGet {
@@ -254,20 +252,16 @@ class HomeViewModel
     )
 
     private fun closeFilterSection() {
-        viewModelState.update {
-            it.copy(displayFilters = !infoCard.value.hasData())
+        if (infoCard.value.hasData()) {
+            viewModelState.update {
+                it.copy(displayFilters = false)
+            }
         }
     }
 
     private fun onFilterClick() {
-        if (viewModelState.value.displayFilters) {
-            viewModelState.update {
-                it.copy(displayFilters = false)
-            }
-        } else {
-            viewModelState.update {
-                it.copy(displayFilters = true)
-            }
+        viewModelState.update {
+            it.copy(displayFilters = !it.displayFilters)
         }
     }
 

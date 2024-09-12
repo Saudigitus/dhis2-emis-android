@@ -11,6 +11,7 @@ import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -23,9 +24,9 @@ import androidx.navigation.navArgument
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import org.dhis2.commons.Constants
+import org.dhis2.commons.navigator.AppNavigator
 import org.dhis2.commons.sync.SyncContext
 import org.dhis2.commons.sync.SyncDialog
-import org.dhis2.commons.navigator.AppNavigator
 import org.saudigitus.emis.ui.attendance.AttendanceScreen
 import org.saudigitus.emis.ui.attendance.AttendanceViewModel
 import org.saudigitus.emis.ui.home.HomeRoute
@@ -103,8 +104,46 @@ class MainActivity : FragmentActivity() {
                             val attendanceViewModel: AttendanceViewModel = hiltViewModel()
                             val teis by viewModel.teis.collectAsStateWithLifecycle()
 
+                            attendanceViewModel.setDefaults(stringResource(R.string.attendance))
+
                             attendanceViewModel.setProgram(intent?.extras?.getString(Constants.PROGRAM_UID) ?: "")
                             attendanceViewModel.setTeis(teis)
+                            attendanceViewModel.setInfoCard(viewModel.infoCard.collectAsStateWithLifecycle().value)
+                            attendanceViewModel.setOU(it.arguments?.getString("ou") ?: "")
+
+                            AttendanceScreen(
+                                attendanceViewModel,
+                                teiCardMapper,
+                                navController::navigateUp,
+                                ::syncProgram,
+                            )
+                        }
+                        composable(
+                            route = "${AppRoutes.ABSENTEEISM_ROUTE}/{ou}/{academicYear}/{grade}/{section}",
+                            arguments = listOf(
+                                navArgument("ou") {
+                                    type = NavType.StringType
+                                },
+                                navArgument("academicYear") {
+                                    type = NavType.StringType
+                                },
+                                navArgument("grade") {
+                                    type = NavType.StringType
+                                },
+                                navArgument("section") {
+                                    type = NavType.StringType
+                                },
+                            ),
+                        ) {
+                            val attendanceViewModel: AttendanceViewModel = hiltViewModel()
+
+                            attendanceViewModel.setDefaults(stringResource(R.string.absenteeism), true)
+                            attendanceViewModel.setOptions(
+                                it.arguments?.getString("academicYear") ?: "",
+                                it.arguments?.getString("grade") ?: "",
+                                it.arguments?.getString("section") ?: ""
+                            )
+                            attendanceViewModel.setProgram(intent?.extras?.getString(Constants.PROGRAM_UID) ?: "")
                             attendanceViewModel.setInfoCard(viewModel.infoCard.collectAsStateWithLifecycle().value)
                             attendanceViewModel.setOU(it.arguments?.getString("ou") ?: "")
 

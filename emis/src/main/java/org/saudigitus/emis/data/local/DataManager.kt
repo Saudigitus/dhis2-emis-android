@@ -67,6 +67,18 @@ interface DataManager {
         date: String?,
     ): List<AttendanceEntity>
 
+    suspend fun geTeiByAttendanceStatus(
+        ou: String,
+        program: String,
+        stage: String,
+        attendanceStage: String,
+        attendanceDataElement: String,
+        reasonDataElement: String,
+        date: String?,
+        dataElementIds: List<String>,
+        options: List<String>,
+    ): Map<SearchTeiModel, AttendanceEntity>
+
     suspend fun dateValidation(id: String): CalendarConfig?
 
     suspend fun getSubjects(stage: String): List<Subject>

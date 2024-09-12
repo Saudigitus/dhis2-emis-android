@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
@@ -74,6 +75,7 @@ fun AttendanceScreen(
     val reasonOfAbsence by viewModel.reasonOfAbsence.collectAsStateWithLifecycle()
     val absence by viewModel.absenceStateCache.collectAsStateWithLifecycle()
     val schoolCalendar by viewModel.schoolCalendar.collectAsStateWithLifecycle()
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
 
     var isAbsent by remember { mutableStateOf(false) }
     var isAttendanceCompleted by remember { mutableStateOf(false) }
@@ -278,7 +280,7 @@ fun AttendanceScreen(
                             ),
                     ),
                 verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
-                horizontalAlignment = Alignment.Start,
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 ShowCard(
                     infoCard,
@@ -286,65 +288,75 @@ fun AttendanceScreen(
                     enabledIconButton = attendanceStep == ButtonStep.HOLD_SAVING,
                     onIconClick = { launchBulkAssign = true },
                 )
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                ) {
-                    itemsIndexed(students) { _, student ->
-                        val card = student.map(teiCardMapper = teiCardMapper, showSync = false)
-                        val isInactive = student.enrollments.getOrNull(0)?.status() == EnrollmentStatus.CANCELLED
 
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            contentAlignment = Alignment.CenterEnd,
-                        ) {
-                            ListCard(
-                                modifier = Modifier.testTag("TEI_ITEM")
-                                    .background(
-                                        color = if (isInactive) Color.LightGray.copy(.25f) else Color.White,
-                                    ),
-                                listAvatar = card.avatar,
-                                title = ListCardTitleModel(text = card.title),
-                                additionalInfoList = card.additionalInfo,
-                                actionButton = card.actionButton,
-                                expandLabelText = card.expandLabelText,
-                                shrinkLabelText = card.shrinkLabelText,
-                                onCardClick = card.onCardCLick,
-                                shadow = false,
-                            )
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                        color = Color(0xFF2C98F0)
+                    )
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                    ) {
+                        itemsIndexed(students) { _, student ->
+                            val card = student.map(teiCardMapper = teiCardMapper, showSync = false)
+                            val isInactive = student.enrollments.getOrNull(0)
+                                ?.status() == EnrollmentStatus.CANCELLED
 
-                            if (attendanceStep == ButtonStep.EDITING) {
-                                AttendanceItemState(
-                                    tei = student.tei.uid(),
-                                    attendanceState = attendanceStatus,
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                contentAlignment = Alignment.CenterEnd,
+                            ) {
+                                ListCard(
+                                    modifier = Modifier
+                                        .testTag("TEI_ITEM")
+                                        .background(
+                                            color = if (isInactive) Color.LightGray.copy(.25f) else Color.White,
+                                        ),
+                                    listAvatar = card.avatar,
+                                    title = ListCardTitleModel(text = card.title),
+                                    additionalInfoList = card.additionalInfo,
+                                    actionButton = card.actionButton,
+                                    expandLabelText = card.expandLabelText,
+                                    shrinkLabelText = card.shrinkLabelText,
+                                    onCardClick = card.onCardCLick,
+                                    shadow = false,
                                 )
-                            } else {
-                                AttendanceButtons(
-                                    tei = student.tei.uid(),
-                                    isEnabled = !isInactive,
-                                    btnState = attendanceBtnState,
-                                    actions = attendanceOptions,
-                                ) { index, key, tei, attendance, color ->
-                                    viewModel.setAttendance(
-                                        index,
-                                        student.tei.organisationUnit() ?: "",
-                                        tei ?: student.tei.uid(),
-                                        attendance,
-                                        null,
-                                        color,
-                                        true,
+
+                                if (attendanceStep == ButtonStep.EDITING) {
+                                    AttendanceItemState(
+                                        tei = student.tei.uid(),
+                                        attendanceState = attendanceStatus,
                                     )
-                                    if (key.lowercase() == ABSENT) {
-                                        cachedTEIId = tei ?: student.tei.uid()
-                                        isAbsent = true
-                                        viewModel.setAbsence(
+                                } else {
+                                    AttendanceButtons(
+                                        tei = student.tei.uid(),
+                                        isEnabled = !isInactive,
+                                        btnState = attendanceBtnState,
+                                        actions = attendanceOptions,
+                                    ) { index, key, tei, attendance, color ->
+                                        viewModel.setAttendance(
                                             index,
                                             student.tei.organisationUnit() ?: "",
                                             tei ?: student.tei.uid(),
                                             attendance,
-                                            color,
                                             null,
+                                            color,
+                                            true,
                                         )
+                                        if (key.lowercase() == ABSENT) {
+                                            cachedTEIId = tei ?: student.tei.uid()
+                                            isAbsent = true
+                                            viewModel.setAbsence(
+                                                index,
+                                                student.tei.organisationUnit() ?: "",
+                                                tei ?: student.tei.uid(),
+                                                attendance,
+                                                color,
+                                                null,
+                                            )
+                                        }
                                     }
                                 }
                             }
