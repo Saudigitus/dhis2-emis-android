@@ -191,7 +191,7 @@ fun AttendanceScreen(
                         true
                     }
                 },
-                syncAction = sync
+                syncAction = sync,
             )
         },
         floatingActionButton = {
@@ -292,7 +292,7 @@ fun AttendanceScreen(
                 if (isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.CenterHorizontally),
-                        color = Color(0xFF2C98F0)
+                        color = Color(0xFF2C98F0),
                     )
                 } else {
                     LazyColumn(

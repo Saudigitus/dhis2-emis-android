@@ -17,7 +17,7 @@ object UserPreferencesSerializer : Serializer<UserPreferences> {
         return try {
             Json.decodeFromString(
                 deserializer = UserPreferences.serializer(),
-                string = input.readBytes().decodeToString()
+                string = input.readBytes().decodeToString(),
             )
         } catch (e: java.lang.Exception) {
             Timber.e(e)
@@ -31,8 +31,8 @@ object UserPreferencesSerializer : Serializer<UserPreferences> {
             output.write(
                 Json.encodeToString(
                     serializer = UserPreferences.serializer(),
-                    value = t
-                ).encodeToByteArray()
+                    value = t,
+                ).encodeToByteArray(),
             )
         }
     }

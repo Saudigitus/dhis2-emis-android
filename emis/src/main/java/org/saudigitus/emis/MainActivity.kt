@@ -27,7 +27,6 @@ import org.dhis2.commons.Constants
 import org.dhis2.commons.navigator.AppNavigator
 import org.dhis2.commons.sync.SyncContext
 import org.dhis2.commons.sync.SyncDialog
-import org.dhis2.commons.navigator.AppNavigator
 import org.saudigitus.emis.ui.attendance.AttendanceScreen
 import org.saudigitus.emis.ui.attendance.AttendanceViewModel
 import org.saudigitus.emis.ui.home.HomeRoute
@@ -55,7 +54,6 @@ class MainActivity : FragmentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
-
             val widthSizeClass = calculateWindowSizeClass(this).widthSizeClass
             val isExpandedScreen = (widthSizeClass == WindowWidthSizeClass.Medium) || (widthSizeClass == WindowWidthSizeClass.Expanded)
 
@@ -82,7 +80,7 @@ class MainActivity : FragmentActivity() {
                                 viewModel = viewModel,
                                 navController = navController,
                                 navBack = { finish() },
-                                sync = ::syncProgram
+                                sync = ::syncProgram,
                             )
                         }
                         composable(AppRoutes.TEI_LIST_ROUTE) {
@@ -91,7 +89,7 @@ class MainActivity : FragmentActivity() {
                                 teiCardMapper = teiCardMapper,
                                 onBack = navController::navigateUp,
                                 onSync = ::syncProgram,
-                                onCardClick = ::launchTeiDashboard
+                                onCardClick = ::launchTeiDashboard,
                             )
                         }
                         composable(
@@ -142,7 +140,7 @@ class MainActivity : FragmentActivity() {
                             attendanceViewModel.setOptions(
                                 it.arguments?.getString("academicYear") ?: "",
                                 it.arguments?.getString("grade") ?: "",
-                                it.arguments?.getString("section") ?: ""
+                                it.arguments?.getString("section") ?: "",
                             )
                             attendanceViewModel.setProgram(intent?.extras?.getString(Constants.PROGRAM_UID) ?: "")
                             attendanceViewModel.setInfoCard(viewModel.infoCard.collectAsStateWithLifecycle().value)
@@ -231,7 +229,7 @@ class MainActivity : FragmentActivity() {
                                 onClick = { subjectId, subjectName ->
                                     navController.navigate("${AppRoutes.PERFORMANCE_ROUTE}/$ou/$stage/$subjectId/$subjectName")
                                 },
-                                sync = ::syncProgram
+                                sync = ::syncProgram,
                             )
                         }
                     }
@@ -257,13 +255,13 @@ class MainActivity : FragmentActivity() {
 
     private fun launchTeiDashboard(
         tei: String,
-        enrollment: String
+        enrollment: String,
     ) {
         AppNavigator(
             activity = this@MainActivity,
             tei = tei,
             program = viewModel.program.value,
-            enrollment = enrollment
+            enrollment = enrollment,
         ).navigateToDashboard()
     }
 }

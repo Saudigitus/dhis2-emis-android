@@ -182,7 +182,7 @@ class AttendanceViewModel
                         "${registration?.grade}",
                         "${registration?.section}",
                     ),
-                    options = options.value
+                    options = options.value,
                 )
             }
             val data = response.await()

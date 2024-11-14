@@ -63,7 +63,7 @@ fun SubjectScreen(
                     showCalendar = false,
                 ),
                 filterAction = { displayFilters = !displayFilters },
-                syncAction = sync
+                syncAction = sync,
             )
         },
     ) { paddingValues ->

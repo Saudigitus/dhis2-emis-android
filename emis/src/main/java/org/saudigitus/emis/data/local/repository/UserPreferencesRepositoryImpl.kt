@@ -15,8 +15,8 @@ val Context.dataStore by dataStore("preferences.json", UserPreferencesSerializer
 
 class UserPreferencesRepositoryImpl
 @Inject constructor(
-    @ApplicationContext val context: Context
-): UserPreferencesRepository {
+    @ApplicationContext val context: Context,
+) : UserPreferencesRepository {
     override suspend fun save(userPreferences: UserPreferences) {
         withContext(Dispatchers.IO) {
             context.dataStore.updateData {

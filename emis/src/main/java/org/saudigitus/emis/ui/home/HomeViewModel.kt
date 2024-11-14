@@ -33,7 +33,7 @@ import javax.inject.Inject
 class HomeViewModel
 @Inject constructor(
     private val repository: DataManager,
-    private val preferencesRepository: UserPreferencesRepository
+    private val preferencesRepository: UserPreferencesRepository,
 ) : BaseViewModel(repository) {
 
     private val _registration = MutableStateFlow<Registration?>(null)
@@ -331,8 +331,8 @@ class HomeViewModel
                                 ),
                                 FilterType.GRADE to viewModelState.value.filterSelection.second!!,
                                 FilterType.SECTION to viewModelState.value.filterSelection.third!!,
-                            )
-                        )
+                            ),
+                        ),
                     )
                 } catch (_: Exception) {}
             }
