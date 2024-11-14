@@ -3,6 +3,7 @@ package org.saudigitus.emis.ui.home
 import android.os.Bundle
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -14,8 +15,10 @@ import kotlinx.coroutines.launch
 import org.dhis2.commons.Constants.DATA_SET_NAME
 import org.dhis2.commons.Constants.PROGRAM_UID
 import org.saudigitus.emis.data.local.DataManager
+import org.saudigitus.emis.data.local.UserPreferencesRepository
 import org.saudigitus.emis.data.model.OU
 import org.saudigitus.emis.data.model.Registration
+import org.saudigitus.emis.data.model.UserPreferences
 import org.saudigitus.emis.ui.base.BaseViewModel
 import org.saudigitus.emis.ui.components.DropdownItem
 import org.saudigitus.emis.ui.components.DropdownState
@@ -23,12 +26,14 @@ import org.saudigitus.emis.ui.components.InfoCard
 import org.saudigitus.emis.ui.components.ToolbarHeaders
 import org.saudigitus.emis.ui.teis.FilterType
 import org.saudigitus.emis.utils.Constants
+import org.saudigitus.emis.utils.toOu
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel
 @Inject constructor(
     private val repository: DataManager,
+    private val preferencesRepository: UserPreferencesRepository
 ) : BaseViewModel(repository) {
 
     private val _registration = MutableStateFlow<Registration?>(null)
@@ -46,6 +51,23 @@ class HomeViewModel
             SharingStarted.Eagerly,
             viewModelState.value,
         )
+
+    init {
+        viewModelScope.launch {
+            preferencesRepository.getPreferences().collect { prefs ->
+                if (prefs.filters.isNotEmpty()) {
+                    viewModelState.update {
+                        it.copy(
+                            academicYear = prefs.filters[FilterType.ACADEMIC_YEAR],
+                            school = prefs.filters[FilterType.SCHOOL]?.toOu(),
+                            grade = prefs.filters[FilterType.GRADE],
+                            section = prefs.filters[FilterType.SECTION],
+                        )
+                    }
+                }
+            }
+        }
+    }
 
     override fun setConfig(program: String) {
     }
@@ -296,6 +318,25 @@ class HomeViewModel
     }
 
     private fun invokeInFilters() {
+        viewModelScope.launch {
+            if (viewModelState.value.infoCard.hasData()) {
+                try {
+                    preferencesRepository.save(
+                        UserPreferences(
+                            filters = persistentMapOf(
+                                FilterType.ACADEMIC_YEAR to viewModelState.value.filterSelection.first!!,
+                                FilterType.SCHOOL to DropdownItem(
+                                    id = viewModelState.value.school?.uid ?: "",
+                                    itemName = viewModelState.value.school?.displayName ?: "",
+                                ),
+                                FilterType.GRADE to viewModelState.value.filterSelection.second!!,
+                                FilterType.SECTION to viewModelState.value.filterSelection.third!!,
+                            )
+                        )
+                    )
+                } catch (_: Exception) {}
+            }
+        }
         closeFilterSection()
         getTeis()
     }

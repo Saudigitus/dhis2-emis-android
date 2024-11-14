@@ -111,6 +111,10 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.dagger.hilt.android)
     implementation(libs.androidx.compose.material3.windowSizeClass)
+    implementation(libs.datastore)
+    implementation(libs.kotlin.serialization.json)
+    implementation(libs.kotlinx.collections.immutable)
+
 
     kapt(libs.dagger.hilt.android.compiler)
 

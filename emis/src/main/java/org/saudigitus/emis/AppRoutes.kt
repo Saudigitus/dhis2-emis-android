@@ -13,5 +13,5 @@ object AppRoutes {
         school: String?,
         grade: String?,
         section: String?,
-    ) = "${AppRoutes.ABSENTEEISM_ROUTE}/$school/$academicYear/$grade/$section"
+    ) = "${ABSENTEEISM_ROUTE}/$school/$academicYear/$grade/$section"
 }

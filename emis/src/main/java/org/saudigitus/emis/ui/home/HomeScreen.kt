@@ -141,7 +141,7 @@ fun HomeUI(
                     )
                 }
             }
-            if (uiState.isLoading && uiState.isNull) {
+            if (!uiState.infoCard.hasData()) {
                 LinearProgressIndicator(
                     modifier = Modifier.fillMaxWidth(),
                 )
