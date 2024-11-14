@@ -13,8 +13,10 @@ import org.dhis2.form.ui.provider.HintProviderImpl
 import org.hisp.dhis.android.core.D2
 import org.saudigitus.emis.data.local.DataManager
 import org.saudigitus.emis.data.local.FormRepository
+import org.saudigitus.emis.data.local.UserPreferencesRepository
 import org.saudigitus.emis.data.local.repository.DataManagerImpl
 import org.saudigitus.emis.data.local.repository.FormRepositoryImpl
+import org.saudigitus.emis.data.local.repository.UserPreferencesRepositoryImpl
 import org.saudigitus.emis.service.RuleEngineRepository
 import org.saudigitus.emis.ui.teis.mapper.TEICardMapper
 import javax.inject.Singleton
@@ -47,6 +49,12 @@ object AppModule {
         networkUtils: NetworkUtils,
         ruleEngineRepository: RuleEngineRepository,
     ): DataManager = DataManagerImpl(d2, networkUtils, ruleEngineRepository)
+
+    @Provides
+    @Singleton
+    fun providesUserPreferences(
+        @ApplicationContext context: Context,
+    ): UserPreferencesRepository = UserPreferencesRepositoryImpl(context)
 
     @Provides
     @Singleton

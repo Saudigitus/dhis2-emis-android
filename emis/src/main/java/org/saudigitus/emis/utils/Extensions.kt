@@ -9,6 +9,8 @@ import org.hisp.dhis.android.core.arch.repositories.scope.RepositoryScope
 import org.hisp.dhis.android.core.event.Event
 import org.hisp.dhis.android.core.option.Option
 import org.saudigitus.emis.R
+import org.saudigitus.emis.data.model.OU
+import org.saudigitus.emis.ui.components.DropdownItem
 import org.saudigitus.emis.ui.components.DropdownState
 import org.saudigitus.emis.ui.teis.FilterType
 
@@ -79,6 +81,11 @@ fun DropdownState.placeholder() = when (this.filterType) {
     FilterType.SCHOOL -> R.string.school
     FilterType.NONE -> R.string.none
 }
+
+fun DropdownItem.toOu() = OU(
+    uid = this.id,
+    displayName = this.itemName,
+)
 
 fun Modifier.expandedFormSize(isExpanded: Boolean) = if (isExpanded) {
     this.width(170.dp)

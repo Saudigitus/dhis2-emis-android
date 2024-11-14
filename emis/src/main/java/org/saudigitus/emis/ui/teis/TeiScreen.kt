@@ -64,7 +64,7 @@ fun TeiScreen(
                     syncVisibility = true,
                     showFavorite = false,
                 ),
-                syncAction = onSync
+                syncAction = onSync,
             )
         },
     ) { paddingValues ->

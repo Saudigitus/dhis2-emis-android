@@ -7,7 +7,7 @@ fun SearchTeiModel.map(
     teiCardMapper: TEICardMapper,
     onSyncIconClick: ((uid: String) -> Unit)? = null,
     showSync: Boolean = true,
-    onCardClick: (tei: String, enrollment: String) -> Unit = {_, _ ->},
+    onCardClick: (tei: String, enrollment: String) -> Unit = { _, _ -> },
 ) = teiCardMapper.map(
     searchTEIModel = this,
     onSyncIconClick = {

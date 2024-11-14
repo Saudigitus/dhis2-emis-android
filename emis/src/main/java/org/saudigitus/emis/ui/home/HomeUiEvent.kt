@@ -9,5 +9,5 @@ sealed class HomeUiEvent {
     data class NavTo(val route: String) : HomeUiEvent()
     data object OnBack : HomeUiEvent()
     data object HideShowFilter : HomeUiEvent()
-    data object Sync: HomeUiEvent()
+    data object Sync : HomeUiEvent()
 }

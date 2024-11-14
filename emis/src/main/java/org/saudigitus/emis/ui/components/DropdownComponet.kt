@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
+import kotlinx.serialization.Serializable
 import org.dhis2.commons.orgunitselector.OUTreeFragment
 import org.dhis2.commons.orgunitselector.OrgUnitSelectorScope
 import org.saudigitus.emis.R
@@ -55,6 +56,7 @@ import org.saudigitus.emis.ui.teis.FilterType
 import org.saudigitus.emis.utils.icon
 import org.saudigitus.emis.utils.placeholder
 
+@Serializable
 data class DropdownItem(
     val id: String,
     val itemName: String,

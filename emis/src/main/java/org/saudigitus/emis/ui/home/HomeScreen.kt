@@ -54,7 +54,7 @@ fun HomeRoute(
         when (it) {
             is HomeUiEvent.OnBack -> navBack()
             is HomeUiEvent.NavTo -> navController.navigate(it.route)
-            is HomeUiEvent.Sync ->  sync()
+            is HomeUiEvent.Sync -> sync()
             else -> {
                 viewModel.onUiEvent(it)
             }
@@ -88,7 +88,7 @@ fun HomeUI(
                 filterAction = {
                     onEvent(HomeUiEvent.HideShowFilter)
                 },
-                syncAction = { onEvent(HomeUiEvent.Sync) }
+                syncAction = { onEvent(HomeUiEvent.Sync) },
             )
         },
     ) { paddingValues ->
@@ -141,7 +141,7 @@ fun HomeUI(
                     )
                 }
             }
-            if (uiState.isLoading && uiState.isNull) {
+            if (!uiState.infoCard.hasData()) {
                 LinearProgressIndicator(
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -199,12 +199,16 @@ fun HomeUI(
                             label = stringResource(R.string.absenteeism),
                             enabled = uiState.infoCard.hasData(),
                             onClick = {
-                                onEvent(HomeUiEvent.NavTo(AppRoutes.absenteeismRoute(
-                                    uiState.academicYear?.code,
-                                    uiState.school?.uid,
-                                    uiState.grade?.code,
-                                    uiState.section?.code
-                                )))
+                                onEvent(
+                                    HomeUiEvent.NavTo(
+                                        AppRoutes.absenteeismRoute(
+                                            uiState.academicYear?.code,
+                                            uiState.school?.uid,
+                                            uiState.grade?.code,
+                                            uiState.section?.code,
+                                        ),
+                                    ),
+                                )
                             },
                         )
                     }

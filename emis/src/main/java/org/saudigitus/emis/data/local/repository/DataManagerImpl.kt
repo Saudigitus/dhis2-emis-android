@@ -261,7 +261,7 @@ class DataManagerImpl
                     .one().blockingGet()
 
                 transform(tei, program, it)
-            }
+            },
         )
     }.buffer()
         .conflate()
@@ -371,7 +371,7 @@ class DataManagerImpl
                     date,
                     dataElementIds,
                     options,
-                )
+                ),
             )
 
             if (cursor.count > 0) {
@@ -379,7 +379,8 @@ class DataManagerImpl
 
                 do {
                     if (!cursor.isNull(0) &&
-                        !cursor.isNull(1) && !cursor.isNull(2)) {
+                        !cursor.isNull(1) && !cursor.isNull(2)
+                    ) {
                         val response = async {
                             teiEventTransform(
                                 teiUid = cursor.getString(1),
@@ -399,7 +400,9 @@ class DataManagerImpl
                 } while (cursor.moveToNext())
 
                 data
-            } else emptyMap()
+            } else {
+                emptyMap()
+            }
         } catch (_: Exception) {
             emptyMap()
         }

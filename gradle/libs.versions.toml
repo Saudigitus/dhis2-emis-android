@@ -102,6 +102,8 @@ rxrelay = "2.1.1"
 preference_ktx = "1.2.1"
 uiautomator = "2.2.0"
 maplibre = "10.2.0"
+datastore = "1.0.0"
+ktxCollectionsImmutable = "0.3.5"
 [libraries]
 gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "gradle" }
 kotlinPlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -155,7 +157,8 @@ androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", versi
 kotlin-bom = { group = "org.jetbrains.kotlin", name = "kotlin-bom", version.ref = "kotlinBom" }
 
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxcoroutines" }
-
+datastore = { group = "androidx.datastore", name = "datastore", version.ref = "datastore" }
+kotlinx-collections-immutable = { group = "org.jetbrains.kotlinx", name = "kotlinx-collections-immutable", version.ref = "ktxCollectionsImmutable" }
 kotlin-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxserialization" }
 google-flexbox = { group = "com.google.android.flexbox", name = "flexbox", version.ref = "flexbox" }
 google-guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }
