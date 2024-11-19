@@ -1,6 +1,7 @@
 package org.saudigitus.emis.ui.home
 
 import android.os.Bundle
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.persistentMapOf
@@ -38,6 +39,9 @@ class HomeViewModel
 
     private val _registration = MutableStateFlow<Registration?>(null)
     private val registration: StateFlow<Registration?> = _registration
+
+    private val _isFilterOpened = MutableStateFlow(true)
+    private val isFilterOpened: StateFlow<Boolean> = _isFilterOpened
 
     private val viewModelState = MutableStateFlow(
         HomeUiState(
@@ -217,6 +221,7 @@ class HomeViewModel
                 academicYear = academicYear,
             )
         }
+        getTeis()
         invokeInFilters()
     }
 
@@ -274,7 +279,7 @@ class HomeViewModel
     )
 
     private fun closeFilterSection() {
-        if (infoCard.value.hasData()) {
+        if (infoCard.value.hasData() && isFilterOpened.value) {
             viewModelState.update {
                 it.copy(displayFilters = false)
             }
@@ -282,6 +287,7 @@ class HomeViewModel
     }
 
     private fun onFilterClick() {
+        _isFilterOpened.value = !isFilterOpened.value
         viewModelState.update {
             it.copy(displayFilters = !it.displayFilters)
         }

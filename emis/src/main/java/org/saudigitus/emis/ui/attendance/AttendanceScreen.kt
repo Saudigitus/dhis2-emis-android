@@ -222,6 +222,7 @@ fun AttendanceScreen(
                 },
                 onClick = {
                     if (attendanceStep == ButtonStep.HOLD_SAVING) {
+                        isAttendanceCompleted = false
                         viewModel.setAttendanceStep(ButtonStep.SAVING)
                     } else {
                         viewModel.setAttendanceStep(ButtonStep.HOLD_SAVING)

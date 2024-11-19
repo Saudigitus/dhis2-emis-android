@@ -14,5 +14,5 @@ object Constants {
     const val ABSENT = "absent"
 
     //
-    const val DEFAULT_COLOR = "F81C784"
+    const val DEFAULT_COLOR = "#F81C784"
 }

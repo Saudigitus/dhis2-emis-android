@@ -41,6 +41,7 @@ import org.saudigitus.emis.ui.components.DropdownItem
 import org.saudigitus.emis.utils.Constants
 import org.saudigitus.emis.utils.DateHelper
 import org.saudigitus.emis.utils.Utils
+import org.saudigitus.emis.utils.Utils.getAttendanceStatusColor
 import org.saudigitus.emis.utils.eventsWithTrackedDataValues
 import org.saudigitus.emis.utils.optionByOptionSet
 import org.saudigitus.emis.utils.optionsByOptionSetAndCode
@@ -219,7 +220,7 @@ class DataManagerImpl
                     dataElement = "${config.status}",
                     icon = Utils.dynamicIcons("${status.icon}"),
                     iconName = "${status.icon}",
-                    color = Color(colorUtils.parseColor(status.color ?: Constants.DEFAULT_COLOR)),
+                    color = getAttendanceStatusColor("${status.key}", "${status.color}"),
                     actionOrder = it.sortOrder,
                 )
             } else {
