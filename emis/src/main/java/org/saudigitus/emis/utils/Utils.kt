@@ -1,7 +1,9 @@
 package org.saudigitus.emis.utils
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import org.dhis2.commons.resources.ColorUtils
 import org.saudigitus.emis.R
 
 object Utils {
@@ -31,6 +33,24 @@ object Utils {
             true
         } catch (e: NumberFormatException) {
             false
+        }
+    }
+
+    fun getAttendanceStatusColor(key: String, statusColor: String): Color {
+        return try {
+            val colorUtils = ColorUtils()
+            Color(colorUtils.parseColor(statusColor))
+        } catch(_: Exception) {
+            getAttendanceStatusColor(key)
+        }
+    }
+
+    private fun getAttendanceStatusColor(key: String): Color {
+        return when(key) {
+            "present" -> Color(0xFF81C784)
+            "absent" -> Color(0xFFE57373)
+            "late" -> Color(0xFFFACC95)
+            else -> Color.LightGray
         }
     }
 }
