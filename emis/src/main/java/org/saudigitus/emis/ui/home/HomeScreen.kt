@@ -192,26 +192,6 @@ fun HomeUI(
                             },
                         )
                     }
-                    item {
-                        HomeItem(
-                            modifier = Modifier.fillMaxWidth(),
-                            icon = painterResource(R.drawable.s_calendar),
-                            label = stringResource(R.string.absenteeism),
-                            enabled = uiState.infoCard.hasData(),
-                            onClick = {
-                                onEvent(
-                                    HomeUiEvent.NavTo(
-                                        AppRoutes.absenteeismRoute(
-                                            uiState.academicYear?.code,
-                                            uiState.school?.uid,
-                                            uiState.grade?.code,
-                                            uiState.section?.code,
-                                        ),
-                                    ),
-                                )
-                            },
-                        )
-                    }
                     if (!uiState.isStaff) {
                         item {
                             HomeItem(
