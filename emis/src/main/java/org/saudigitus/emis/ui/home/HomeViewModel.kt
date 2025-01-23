@@ -56,7 +56,7 @@ class HomeViewModel
             viewModelState.value,
         )
 
-    init {
+    /*init {
         viewModelScope.launch {
             preferencesRepository.getPreferences().collect { prefs ->
                 if (prefs.filters.isNotEmpty()) {
@@ -72,7 +72,7 @@ class HomeViewModel
             }
         }
     }
-
+*/
     override fun setConfig(program: String) {
     }
 
@@ -221,7 +221,6 @@ class HomeViewModel
                 academicYear = academicYear,
             )
         }
-        getTeis()
         invokeInFilters()
     }
 
@@ -324,7 +323,7 @@ class HomeViewModel
     }
 
     private fun invokeInFilters() {
-        viewModelScope.launch {
+        /*viewModelScope.launch {
             if (viewModelState.value.infoCard.hasData()) {
                 try {
                     preferencesRepository.save(
@@ -342,7 +341,7 @@ class HomeViewModel
                     )
                 } catch (_: Exception) {}
             }
-        }
+        }*/
         closeFilterSection()
         getTeis()
     }

@@ -205,7 +205,6 @@ class DataManagerImpl
             ?.attendance ?: return@withContext emptyList()
 
         val optionsCode = config.attendanceStatus?.mapNotNull { it.code } ?: emptyList()
-        val colorUtils = ColorUtils()
 
         return@withContext getOptionsByCode("${config.status}", optionsCode).mapNotNull {
             val status = config.attendanceStatus?.find { status ->
@@ -303,8 +302,6 @@ class DataManagerImpl
         val config = getConfig(Constants.KEY)?.find { it.program == program }
             ?.attendance ?: return@withContext emptyList()
 
-        val colorUtils = ColorUtils()
-
         val deferredEvents = async {
             d2.eventModule().events()
                 .byTrackedEntityInstanceUids(teis)
@@ -330,7 +327,7 @@ class DataManagerImpl
                     attendanceEntity.withBtnSettings(
                         icon = Utils.dynamicIcons("${status?.icon}"),
                         iconName = "${status?.icon}",
-                        iconColor = Color(colorUtils.parseColor("${status?.color}")),
+                        iconColor = getAttendanceStatusColor("${status?.key}", "${status?.color}"),
                     )
                 }
         }
@@ -356,7 +353,6 @@ class DataManagerImpl
             status.key == Constants.ABSENT
         }?.code ?: ""
 
-        val colorUtils = ColorUtils()
         val data = mutableMapOf<SearchTeiModel, AttendanceEntity>()
 
         return@withContext try {
@@ -390,7 +386,6 @@ class DataManagerImpl
                                 attendanceDataElement = attendanceDataElement,
                                 reasonDataElement = reasonDataElement,
                                 config = config,
-                                colorUtils = colorUtils,
                             )
                         }
 
@@ -462,7 +457,6 @@ class DataManagerImpl
         attendanceDataElement: String,
         reasonDataElement: String,
         config: Attendance,
-        colorUtils: ColorUtils,
     ): Pair<SearchTeiModel, AttendanceEntity> {
         val tei = d2.trackedEntityModule()
             .trackedEntityInstances()
@@ -486,7 +480,7 @@ class DataManagerImpl
         val attendanceEntity = transformedEvent?.withBtnSettings(
             icon = Utils.dynamicIcons("${status?.icon}"),
             iconName = "${status?.icon}",
-            iconColor = Color(colorUtils.parseColor("${status?.color}")),
+            iconColor = getAttendanceStatusColor("${status?.key}", "${status?.color}"),
         )
 
         return Pair(teiModel, attendanceEntity!!)
