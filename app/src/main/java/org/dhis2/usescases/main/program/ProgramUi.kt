@@ -575,7 +575,7 @@ private fun stateAdditionalInfoItem(state: State) = AdditionalInfoItem(
     value = when (state) {
         State.TO_POST,
         State.TO_UPDATE,
-            -> stringResource(id = R.string.not_synced)
+        -> stringResource(id = R.string.not_synced)
 
         State.ERROR -> stringResource(id = R.string.sync_error_title)
         State.WARNING -> stringResource(id = R.string.sync_warning)
@@ -610,13 +610,13 @@ private fun ProvideSyncButton(
     val buttonText = when (state) {
         State.TO_POST,
         State.TO_UPDATE,
-            -> {
+        -> {
             stringResource(R.string.sync)
         }
 
         State.ERROR,
         State.WARNING,
-            -> {
+        -> {
             stringResource(R.string.sync_retry)
         }
 

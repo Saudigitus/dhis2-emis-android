@@ -1,10 +1,8 @@
 package org.saudigitus.emis.ui.home
 
 import android.os.Bundle
-import android.util.Log
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -19,7 +17,6 @@ import org.saudigitus.emis.data.local.DataManager
 import org.saudigitus.emis.data.local.UserPreferencesRepository
 import org.saudigitus.emis.data.model.OU
 import org.saudigitus.emis.data.model.Registration
-import org.saudigitus.emis.data.model.UserPreferences
 import org.saudigitus.emis.ui.base.BaseViewModel
 import org.saudigitus.emis.ui.components.DropdownItem
 import org.saudigitus.emis.ui.components.DropdownState
@@ -27,7 +24,6 @@ import org.saudigitus.emis.ui.components.InfoCard
 import org.saudigitus.emis.ui.components.ToolbarHeaders
 import org.saudigitus.emis.ui.teis.FilterType
 import org.saudigitus.emis.utils.Constants
-import org.saudigitus.emis.utils.toOu
 import javax.inject.Inject
 
 @HiltViewModel

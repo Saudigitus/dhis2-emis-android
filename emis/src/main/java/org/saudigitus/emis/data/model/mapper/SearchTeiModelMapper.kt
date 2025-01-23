@@ -1,6 +1,5 @@
 package org.saudigitus.emis.data.model.mapper
 
-
 import org.saudigitus.emis.data.model.SearchTeiModel
 import org.saudigitus.emis.ui.teis.mapper.TEICardMapper
 

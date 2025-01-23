@@ -3,7 +3,7 @@ package org.dhis2.commons.navigator
 import android.content.Context
 import android.content.Intent
 
-interface TeiDashboardComponentProvider  {
+interface TeiDashboardComponentProvider {
     fun launch(
         context: Context,
         teiUid: String?,

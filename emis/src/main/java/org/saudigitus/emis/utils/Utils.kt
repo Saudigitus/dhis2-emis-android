@@ -40,13 +40,13 @@ object Utils {
         return try {
             val colorUtils = ColorUtils()
             Color(colorUtils.parseColor(statusColor))
-        } catch(_: Exception) {
+        } catch (_: Exception) {
             getAttendanceStatusColor(key)
         }
     }
 
     private fun getAttendanceStatusColor(key: String): Color {
-        return when(key) {
+        return when (key) {
             "present" -> Color(0xFF81C784)
             "absent" -> Color(0xFFE57373)
             "late" -> Color(0xFFFACC95)
