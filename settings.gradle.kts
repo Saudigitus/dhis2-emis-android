@@ -5,3 +5,4 @@ include(
     ":stock-usecase", ":emis"
 )
 include(":dhis2-mobile-program-rules")
+include(":tracker")

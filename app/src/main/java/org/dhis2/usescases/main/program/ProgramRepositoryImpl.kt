@@ -9,10 +9,8 @@ import org.dhis2.commons.resources.MetadataIconProvider
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.commons.schedulers.SchedulerProvider
 import org.dhis2.data.dhislogic.DhisProgramUtils
-import org.dhis2.data.dhislogic.DhisTrackedEntityInstanceUtils
 import org.dhis2.data.service.SyncStatusData
 import org.hisp.dhis.android.core.D2
-import org.hisp.dhis.android.core.arch.call.D2ProgressSyncStatus
 import org.hisp.dhis.android.core.common.State
 import org.hisp.dhis.android.core.program.Program
 import org.hisp.dhis.android.core.program.ProgramType.WITHOUT_REGISTRATION
@@ -25,7 +23,6 @@ internal class ProgramRepositoryImpl(
     private val d2: D2,
     private val filterPresenter: FilterPresenter,
     private val dhisProgramUtils: DhisProgramUtils,
-    private val dhisTeiUtils: DhisTrackedEntityInstanceUtils,
     private val resourceManager: ResourceManager,
     private val metadataIconProvider: MetadataIconProvider,
     private val schedulerProvider: SchedulerProvider,
@@ -33,9 +30,9 @@ internal class ProgramRepositoryImpl(
 
     private val programViewModelMapper = ProgramViewModelMapper()
     private var lastSyncStatus: SyncStatusData? = null
-    private var baseProgramCache: List<ProgramViewModel> = emptyList()
+    private var baseProgramCache: List<ProgramUiModel> = emptyList()
 
-    override fun homeItems(syncStatusData: SyncStatusData): Flowable<List<ProgramViewModel>> {
+    override fun homeItems(syncStatusData: SyncStatusData): Flowable<List<ProgramUiModel>> {
         return programModels(syncStatusData).onErrorReturn { arrayListOf() }
             .mergeWith(aggregatesModels(syncStatusData).onErrorReturn { arrayListOf() })
             .flatMapIterable { data -> data }
@@ -50,7 +47,7 @@ internal class ProgramRepositoryImpl(
 
     override fun aggregatesModels(
         syncStatusData: SyncStatusData,
-    ): Flowable<List<ProgramViewModel>> {
+    ): Flowable<List<ProgramUiModel>> {
         return Flowable.fromCallable {
             aggregatesModels().blockingFirst()
                 .applySync(syncStatusData)
@@ -72,7 +69,7 @@ internal class ProgramRepositoryImpl(
         return config.find { it.program == program } != null
     }
 
-    private fun aggregatesModels(): Flowable<List<ProgramViewModel>> {
+    private fun aggregatesModels(): Flowable<List<ProgramUiModel>> {
         return filterPresenter.filteredDataSetInstances().get()
             .toFlowable()
             .map { dataSetSummaries ->
@@ -83,13 +80,8 @@ internal class ProgramRepositoryImpl(
                             programViewModelMapper.map(
                                 dataSet,
                                 it,
-                                if (filterPresenter.isAssignedToMeApplied()) {
-                                    0
-                                } else {
-                                    it.dataSetInstanceCount()
-                                },
+                                it.dataSetInstanceCount(),
                                 resourceManager.defaultDataSetLabel(),
-                                filterPresenter.areFiltersActive(),
                                 metadataIconProvider(dataSet.style(), SurfaceColor.Primary),
                             )
                         }
@@ -97,7 +89,7 @@ internal class ProgramRepositoryImpl(
             }
     }
 
-    override fun programModels(syncStatusData: SyncStatusData): Flowable<List<ProgramViewModel>> {
+    override fun programModels(syncStatusData: SyncStatusData): Flowable<List<ProgramUiModel>> {
         return Flowable.fromCallable {
             baseProgramCache.ifEmpty {
                 baseProgramCache = basePrograms()
@@ -107,7 +99,7 @@ internal class ProgramRepositoryImpl(
         }
     }
 
-    private fun basePrograms(): List<ProgramViewModel> {
+    private fun basePrograms(): List<ProgramUiModel> {
         return dhisProgramUtils.getProgramsInCaptureOrgUnits()
             .flatMap { programs ->
                 ParallelFlowable.from(Flowable.fromIterable(programs))
@@ -128,8 +120,6 @@ internal class ProgramRepositoryImpl(
                     0,
                     recordLabel,
                     state,
-                    hasOverdue = false,
-                    filtersAreActive = false,
                     metadataIconData = metadataIconProvider(program.style(), SurfaceColor.Primary),
                 ).copy(
                     stockConfig = if (d2.isStockProgram(program.uid())) {
@@ -142,28 +132,24 @@ internal class ProgramRepositoryImpl(
             }.toList().toFlowable().blockingFirst()
     }
 
-    private fun List<ProgramViewModel>.applyFilters(): List<ProgramViewModel> {
+    private fun List<ProgramUiModel>.applyFilters(): List<ProgramUiModel> {
         return map { programModel ->
             val program = d2.programModule().programs().uid(programModel.uid).blockingGet()
-            val (count, hasOverdue) =
+            val count =
                 if (program?.programType() == WITHOUT_REGISTRATION) {
                     getSingleEventCount(program)
                 } else if (program?.programType() == WITH_REGISTRATION) {
-                    getTrackerTeiCountAndOverdue(program)
+                    getTrackerTeiCount(program)
                 } else {
-                    Pair(0, false)
+                    0
                 }
-            programModel.copy(
-                count = count,
-                hasOverdueEvent = hasOverdue,
-                filtersAreActive = filterPresenter.areFiltersActive(),
-            )
+            programModel.copy(count = count)
         }
     }
 
-    private fun List<ProgramViewModel>.applySync(
+    private fun List<ProgramUiModel>.applySync(
         syncStatusData: SyncStatusData,
-    ): List<ProgramViewModel> {
+    ): List<ProgramUiModel> {
         return map { programModel ->
             programModel.copy(
                 downloadState = when {
@@ -173,15 +159,8 @@ internal class ProgramRepositoryImpl(
                     syncStatusData.isProgramDownloading(programModel.uid) ->
                         ProgramDownloadState.DOWNLOADING
 
-                    syncStatusData.wasProgramDownloading(lastSyncStatus, programModel.uid) ->
-                        when (syncStatusData.programSyncStatusMap[programModel.uid]?.syncStatus) {
-                            D2ProgressSyncStatus.SUCCESS -> ProgramDownloadState.DOWNLOADED
-                            D2ProgressSyncStatus.ERROR,
-                            D2ProgressSyncStatus.PARTIAL_ERROR,
-                            -> ProgramDownloadState.ERROR
-
-                            null -> ProgramDownloadState.DOWNLOADED
-                        }
+                    syncStatusData.isProgramDownloaded(programModel.uid) ->
+                        ProgramDownloadState.DOWNLOADED
 
                     else ->
                         ProgramDownloadState.NONE
@@ -191,20 +170,13 @@ internal class ProgramRepositoryImpl(
         }
     }
 
-    private fun getSingleEventCount(program: Program): Pair<Int, Boolean> {
-        return Pair(
-            filterPresenter.filteredEventProgram(program)
-                .blockingGet().filter { event -> event.syncState() != State.RELATIONSHIP }.size,
-            false,
-        )
+    private fun getSingleEventCount(program: Program): Int {
+        return filterPresenter.filteredEventProgram(program)
+            .blockingGet().filter { event -> event.syncState() != State.RELATIONSHIP }.size
     }
 
-    private fun getTrackerTeiCountAndOverdue(program: Program): Pair<Int, Boolean> {
-        val teiIds = filterPresenter.filteredTrackerProgram(program)
-            .offlineFirst().blockingGetUids()
-        val mCount = teiIds.size
-        val mOverdue = dhisTeiUtils.hasOverdueInProgram(teiIds, program)
-
-        return Pair(mCount, mOverdue)
+    private fun getTrackerTeiCount(program: Program): Int {
+        return filterPresenter.filteredTrackerProgram(program)
+            .offlineFirst().blockingCount()
     }
 }

@@ -9,6 +9,7 @@ import org.dhis2.bindings.dp
 import org.dhis2.databinding.ActivitySearchBinding
 import org.dhis2.usescases.searchTrackEntity.SearchAnalytics
 import org.dhis2.usescases.searchTrackEntity.SearchList
+import org.dhis2.usescases.searchTrackEntity.SearchScreenState
 import org.dhis2.usescases.searchTrackEntity.SearchTEScreenState
 import org.dhis2.usescases.searchTrackEntity.ui.BackdropManager.changeBoundsIf
 import org.dhis2.utils.isPortrait
@@ -24,7 +25,9 @@ class SearchScreenConfigurator(
                 if (isPortrait()) {
                     configureListScreen(screenState)
                 } else {
-                    configureLandscapeAnalyticsScreen(false)
+                    if (screenState.screenState != SearchScreenState.MAP) {
+                        configureLandscapeAnalyticsScreen(false)
+                    }
                     configureLandscapeListScreen(screenState)
                 }
         }
@@ -78,9 +81,8 @@ class SearchScreenConfigurator(
         }
         binding.filterRecyclerLayout.visibility = View.VISIBLE
         binding.searchContainer.visibility = View.GONE
-        if (isPortrait()) binding.navigationBar.hide()
         filterIsOpenCallback(true)
-        changeBounds(R.id.filterRecyclerLayout, 16.dp)
+        changeBounds(false, R.id.filterRecyclerLayout, 16.dp)
     }
 
     fun closeBackdrop() {
@@ -90,9 +92,8 @@ class SearchScreenConfigurator(
         }
         binding.filterRecyclerLayout.visibility = View.GONE
         binding.searchContainer.visibility = View.GONE
-        if (isPortrait()) binding.navigationBar.show()
         filterIsOpenCallback(false)
-        changeBounds(R.id.backdropGuideTop, 0)
+        changeBounds(true, R.id.backdropGuideTop, 0)
     }
 
     private fun openSearch() {
@@ -102,14 +103,14 @@ class SearchScreenConfigurator(
             binding.title.visibility = View.VISIBLE
         }
         binding.searchContainer.visibility = View.VISIBLE
-        if (isPortrait()) binding.navigationBar.hide()
         filterIsOpenCallback(false)
-        changeBounds(R.id.searchContainer, 0)
+        changeBounds(false, R.id.searchContainer, 0)
     }
 
-    private fun changeBounds(endID: Int, margin: Int) {
+    private fun changeBounds(isNavigationBarVisible: Boolean, endID: Int, margin: Int) {
         changeBoundsIf(
             isPortrait(),
+            isNavigationBarVisible,
             binding.backdropLayout,
             endID,
             margin,

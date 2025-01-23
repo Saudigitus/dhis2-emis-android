@@ -37,15 +37,14 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:srcCompat="@drawable/ic_arrow_back" />
 
-                <ImageView
-                    android:id="@+id/moreOptions"
-                    style="@style/ActionIcon"
-                    android:onClick="showMoreOptions"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/ic_more"
-                    tools:ignore="ContentDescription" />
+                <androidx.compose.ui.platform.ComposeView
+                  android:id="@+id/moreOptions"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  app:layout_constraintBottom_toBottomOf="parent"
+                  app:layout_constraintEnd_toEndOf="parent"
+                  app:layout_constraintTop_toTopOf="parent"
+                  />
 
                 <org.dhis2.utils.customviews.CircularCompletionView
                     android:id="@+id/completion"
@@ -54,7 +53,7 @@
                     app:circleColor="@color/circleColor"
                     app:completionColor="@color/completionColor"
                     app:layout_constraintBottom_toBottomOf="@+id/moreOptions"
-                    app:layout_constraintEnd_toStartOf="@id/moreOptions"
+                    app:layout_constraintEnd_toStartOf="@id/relationshipIcon"
                     app:layout_constraintTop_toTopOf="@+id/moreOptions"
                     app:percentageColor="@color/percentageColor"
                     app:percentageSize="13sp"
@@ -62,6 +61,17 @@
                     app:strokeSize="3dp"
                     tools:initialPercentage="0.1"
                     tools:initialSecondaryPercentage="0.2" />
+
+                <androidx.compose.ui.platform.ComposeView
+                    android:id="@+id/relationshipIcon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toBottomOf="@+id/moreOptions"
+                    app:layout_constraintEnd_toStartOf="@id/moreOptions"
+                    app:layout_constraintTop_toTopOf="@+id/moreOptions"
+                    tools:ignore="ContentDescription"
+                    tools:visibility="visible" />
 
                 <TextView
                     android:id="@+id/programStageName"
@@ -96,7 +106,6 @@
                 <ImageView
                     android:id="@+id/syncButton"
                     style="@style/ActionIcon"
-                    android:onClick="showMoreOptions"
                     android:visibility="gone"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toStartOf="@id/completion"
@@ -239,17 +248,13 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                    <org.dhis2.utils.customviews.navigationbar.NavigationBottomBar
+                    <androidx.compose.ui.platform.ComposeView
                         android:id="@+id/navigationBar"
-                        style="@style/DhisBottomNavigationView"
                         android:layout_width="0dp"
-                        android:layout_height="53dp"
-                        app:forceShowAnalytics="true"
-                        app:initialPage="0"
+                        android:layout_height="wrap_content"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:menu="@menu/navigation_event_menu" />
+                        app:layout_constraintStart_toStartOf="parent" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.constraintlayout.widget.ConstraintLayout>

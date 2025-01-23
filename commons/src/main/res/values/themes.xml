@@ -57,7 +57,7 @@
     </style>
 
     <style name="SplashTheme" parent="Theme.MaterialComponents.Light.NoActionBar.Bridge">
-        <item name="android:windowBackground">@color/white</item>
+        <item name="android:windowBackground">@drawable/splash_background</item>
     </style>
 
     <style name="LoginTheme" parent="AppTheme">
@@ -88,10 +88,6 @@
         <item name="period_button">@drawable/period_button_red</item>
         <item name="period_time_button">@drawable/period_time_button_red</item>
         <item name="toast_bg">@drawable/toast_bg_red</item>
-    </style>
-
-    <style name="AppTheme.Launcher">
-        <item name="android:windowBackground">@color/white</item>
     </style>
 
     <style name="GreenTheme" parent="AppTheme">

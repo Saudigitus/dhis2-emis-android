@@ -31,6 +31,7 @@ import org.dhis2.commons.prefs.PreferenceModule;
 import org.dhis2.commons.reporting.CrashReportModule;
 import org.dhis2.commons.schedulers.SchedulerModule;
 import org.dhis2.commons.schedulers.SchedulersProviderImpl;
+import org.dhis2.commons.service.SessionManagerModule;
 import org.dhis2.commons.sync.SyncComponentProvider;
 import org.dhis2.commons.navigator.TeiDashboardComponentProvider;
 import org.dhis2.data.appinspector.AppInspector;
@@ -202,6 +203,7 @@ public class App extends MultiDexApplication implements Components, LifecycleObs
                 .preferenceModule(new PreferenceModule())
                 .networkUtilsModule(new NetworkUtilsModule())
                 .workManagerController(new WorkManagerModule())
+                .sessionManagerService(new SessionManagerModule())
                 .coroutineDispatchers(new DispatcherModule())
                 .crashReportModule(new CrashReportModule())
                 .customDispatcher(new CustomDispatcherModule())

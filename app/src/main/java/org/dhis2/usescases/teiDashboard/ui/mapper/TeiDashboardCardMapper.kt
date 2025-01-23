@@ -22,7 +22,7 @@ import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttribute
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttributeValue
 import org.hisp.dhis.mobile.ui.designsystem.component.AdditionalInfoItem
 import org.hisp.dhis.mobile.ui.designsystem.component.Avatar
-import org.hisp.dhis.mobile.ui.designsystem.component.AvatarStyle
+import org.hisp.dhis.mobile.ui.designsystem.component.AvatarStyleData
 import org.hisp.dhis.mobile.ui.designsystem.theme.SurfaceColor
 import java.io.File
 import java.util.Date
@@ -68,9 +68,10 @@ class TeiDashboardCardMapper(
         val painter = BitmapPainter(bitmap)
 
         Avatar(
-            imagePainter = painter,
+            style = AvatarStyleData.Image(
+                imagePainter = painter,
+            ),
             onImageClick = { onImageClick.invoke(file) },
-            style = AvatarStyle.IMAGE,
         )
     }
 
@@ -81,7 +82,9 @@ class TeiDashboardCardMapper(
                 ?.let {
                     val attribute = it.filterAttributes().firstOrNull()
                     val key = attribute?.first?.displayFormName()
-                    val value = attribute?.second?.value()
+                    val value = attribute?.second?.value()?.takeIf { attrValue ->
+                        attrValue.isNotEmpty()
+                    } ?: "-"
                     "$key: $value"
                 } ?: "-"
 
@@ -101,8 +104,9 @@ class TeiDashboardCardMapper(
         }.map {
             if (it.first.valueType() == ValueType.PHONE_NUMBER) {
                 AdditionalInfoItem(
-                    key = "${it.first.displayFormName()}:",
-                    value = it.second.value() ?: "",
+                    key = it.first.displayFormName(),
+                    value = it.second.value()?.takeIf { attrValue -> attrValue.isNotEmpty() }
+                        ?: "-",
                     icon = {
                         Icon(
                             imageVector = Icons.Filled.PhoneEnabled,
@@ -115,8 +119,8 @@ class TeiDashboardCardMapper(
                 )
             } else if (it.first.valueType() == ValueType.EMAIL) {
                 AdditionalInfoItem(
-                    key = "${it.first.displayFormName()}:",
-                    value = it.second.value() ?: "",
+                    key = it.first.displayFormName(),
+                    value = it.second.value() ?: "-",
                     icon = {
                         Icon(
                             imageVector = Icons.Filled.MailOutline,
@@ -129,8 +133,8 @@ class TeiDashboardCardMapper(
                 )
             } else {
                 AdditionalInfoItem(
-                    key = "${it.first.displayFormName()}:",
-                    value = it.second.value() ?: "",
+                    key = it.first.displayFormName(),
+                    value = it.second.value() ?: "-",
                 )
             }
         }.toMutableList()
@@ -145,7 +149,7 @@ class TeiDashboardCardMapper(
                     if (item.currentProgram().displayIncidentDate() == true) {
                         addIncidentDate(
                             list,
-                            item.currentProgram().incidentDateLabel(),
+                            item.currentProgram().displayIncidentDateLabel(),
                             item.currentEnrollment.incidentDate(),
                         )
                     }
@@ -153,11 +157,15 @@ class TeiDashboardCardMapper(
                     addEnrollmentDate(
                         item.currentProgram().uid(),
                         list,
-                        item.currentProgram().enrollmentDateLabel(),
+                        item.currentProgram().displayEnrollmentDateLabel(),
                         item.currentEnrollment.enrollmentDate(),
                     )
                 }.also { list ->
-                    if (item.orgUnits.isNotEmpty()) {
+                    addOwnedBy(
+                        list,
+                        item.ownerOrgUnit,
+                    )
+                    if (item.getCurrentOrgUnit() != item.ownerOrgUnit) {
                         addEnrollIn(
                             list,
                             item.getCurrentOrgUnit(),
@@ -201,7 +209,20 @@ class TeiDashboardCardMapper(
         list.add(
             AdditionalInfoItem(
                 key = resourceManager.getString(R.string.enrolledIn),
-                value = currentOrgUnit?.displayName() ?: "",
+                value = currentOrgUnit?.displayName() ?: "-",
+                isConstantItem = true,
+            ),
+        )
+    }
+
+    private fun addOwnedBy(
+        list: MutableList<AdditionalInfoItem>,
+        ownedByOrgUnit: OrganisationUnit?,
+    ) {
+        list.add(
+            AdditionalInfoItem(
+                key = resourceManager.getString(R.string.ownedBy),
+                value = ownedByOrgUnit?.displayName() ?: "-",
                 isConstantItem = true,
             ),
         )
@@ -214,8 +235,8 @@ class TeiDashboardCardMapper(
     ) {
         list.add(
             AdditionalInfoItem(
-                key = "${incidentDateLabel ?: resourceManager.getString(R.string.incident_date)}:",
-                value = incidentDate.toUi() ?: "",
+                key = incidentDateLabel ?: resourceManager.getString(R.string.incident_date),
+                value = incidentDate.toUi() ?: "-",
                 isConstantItem = true,
             ),
         )
@@ -229,14 +250,12 @@ class TeiDashboardCardMapper(
     ) {
         list.add(
             AdditionalInfoItem(
-                key = "${
-                    programLabel ?: resourceManager.formatWithEnrollmentLabel(
-                        programUid,
-                        R.string.enrollment_date_V2,
-                        1,
-                    )
-                }:",
-                value = enrollmentDate.toUi() ?: "",
+                key = programLabel ?: resourceManager.formatWithEnrollmentLabel(
+                    programUid,
+                    R.string.enrollment_date_V2,
+                    1,
+                ),
+                value = enrollmentDate.toUi() ?: "-",
                 isConstantItem = true,
             ),
         )
@@ -246,5 +265,4 @@ class TeiDashboardCardMapper(
         this.filter { it.first.valueType() != ValueType.IMAGE }
             .filter { it.first.valueType() != ValueType.COORDINATE }
             .filter { it.first.valueType() != ValueType.FILE_RESOURCE }
-            .filter { it.second.value()?.isNotEmpty() == true }
 }

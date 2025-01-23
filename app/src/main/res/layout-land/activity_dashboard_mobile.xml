@@ -45,15 +45,16 @@
                     style="@style/ActionIcon"
                     android:visibility="gone"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/relationshipMapIcon"
+                    app:layout_constraintEnd_toStartOf="@id/relationshipIcon"
                     app:layout_constraintTop_toTopOf="parent"
                     app:srcCompat="@drawable/ic_sync"
                     app:tint="?colorOnPrimary"
                     tools:ignore="ContentDescription" />
 
-                <ImageView
-                    android:id="@+id/relationshipMapIcon"
-                    style="@style/ActionIcon"
+                <androidx.compose.ui.platform.ComposeView
+                    android:id="@+id/relationshipIcon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:visibility="gone"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toStartOf="@id/moreOptions"
@@ -63,16 +64,14 @@
                     tools:ignore="ContentDescription"
                     tools:visibility="visible" />
 
-                <ImageView
-                    android:id="@+id/moreOptions"
-                    style="@style/ActionIcon"
-                    android:layout_height="match_parent"
-                    android:onClick="showMoreOptions"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/ic_more"
-                    tools:ignore="ContentDescription" />
+                <androidx.compose.ui.platform.ComposeView
+                  android:id="@+id/moreOptions"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  app:layout_constraintBottom_toBottomOf="parent"
+                  app:layout_constraintEnd_toEndOf="parent"
+                  app:layout_constraintTop_toTopOf="parent"
+                  />
 
                 <androidx.constraintlayout.widget.Guideline
                     android:id="@+id/progressGuideline"
@@ -158,7 +157,6 @@
                     android:layout_width="0dp"
                     android:layout_height="0dp"
                     android:background="@color/white"
-                    android:elevation="3dp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toStartOf="@id/guideline625"
                     app:layout_constraintStart_toEndOf="@id/guideline25"
@@ -176,25 +174,23 @@
                         app:tint="@color/white" />
                 </FrameLayout>
 
-                <androidx.viewpager2.widget.ViewPager2
-                    android:id="@+id/tei_table_pager"
+                <FrameLayout
+                    android:id="@+id/fragmentContainer"
                     android:layout_width="0dp"
                     android:layout_height="0dp"
+                    android:background="@drawable/ic_front_home_backdrop_bg"
                     app:layout_constraintBottom_toTopOf="@id/navigationBar"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@id/guideline625"
                     app:layout_constraintTop_toTopOf="parent" />
 
-                <org.dhis2.utils.customviews.navigationbar.NavigationBottomBar
+                <androidx.compose.ui.platform.ComposeView
                     android:id="@+id/navigationBar"
-                    style="@style/DhisBottomNavigationView"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    app:forceShowAnalytics="true"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="@id/guideline625"
-                    app:menu="@menu/navigation_dashboard_landscape_menu" />
+                    app:layout_constraintStart_toStartOf="@id/guideline625" />
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>

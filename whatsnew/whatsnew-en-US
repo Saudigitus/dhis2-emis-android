@@ -1,9 +1,6 @@
-# Release notes - Android App for DHIS2 - 3.0.0.1
+This is a patch version that fixes:
+- ANDROAPP-6653 Large option sets freeze the app
+- ANDROAPP-6665 Filters persists when exiting the program or data set
+- ANDROAPP-6691 NullPointerException: Dataset table
 
-### Bug
-
-[ANDROAPP-6194](https://dhis2.atlassian.net/browse/ANDROAPP-6194) Unable to search outside the program
-
-[ANDROAPP-6195](https://dhis2.atlassian.net/browse/ANDROAPP-6195) Missing terms in transifex
-
-[ANDROAPP-6210](https://dhis2.atlassian.net/browse/ANDROAPP-6210) UninitializedPropertyAccessException on breaking the glass
+You can find all the details on Jira and Github.
