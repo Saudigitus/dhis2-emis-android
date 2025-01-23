@@ -575,7 +575,7 @@ private fun stateAdditionalInfoItem(state: State) = AdditionalInfoItem(
     value = when (state) {
         State.TO_POST,
         State.TO_UPDATE,
-        -> stringResource(id = R.string.not_synced)
+            -> stringResource(id = R.string.not_synced)
 
         State.ERROR -> stringResource(id = R.string.sync_error_title)
         State.WARNING -> stringResource(id = R.string.sync_warning)
@@ -589,11 +589,16 @@ private fun stateAdditionalInfoItem(state: State) = AdditionalInfoItem(
     isConstantItem = true,
 )
 
-@Preview
 @Composable
-fun ProgramTestWithDescription() {
-    ProgramItem(
-        programViewModel = testingProgramModel().copy(description = "Program description"),
+private fun ProgramAvatar(program: ProgramUiModel, avatarSize: MetadataAvatarSize) {
+    Avatar(
+        style = AvatarStyleData.Metadata(
+            imageCardData = program.metadataIconData.imageCardData,
+            avatarSize = avatarSize,
+            tintColor = program.metadataIconData.color.copy(
+                alpha = program.getAlphaValue(),
+            ),
+        ),
     )
 }
 
@@ -605,13 +610,13 @@ private fun ProvideSyncButton(
     val buttonText = when (state) {
         State.TO_POST,
         State.TO_UPDATE,
-        -> {
+            -> {
             stringResource(R.string.sync)
         }
 
         State.ERROR,
         State.WARNING,
-        -> {
+            -> {
             stringResource(R.string.sync_retry)
         }
 
@@ -679,7 +684,6 @@ private fun testingProgramModel() = ProgramUiModel(
     state = State.SYNCED,
     downloadState = ProgramDownloadState.NONE,
     stockConfig = null,
-    isSEMIS = false,
     lastUpdated = Date(),
 )
 

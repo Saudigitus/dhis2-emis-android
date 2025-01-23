@@ -1,4 +1,5 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     id("com.android.library")
     kotlin("android")
@@ -6,6 +7,7 @@ plugins {
     id("kotlin-parcelize")
     id("dagger.hilt.android.plugin")
     id("kotlinx-serialization")
+    alias(libs.plugins.kotlin.compose.compiler)
 }
 
 apply(from = "${project.rootDir}/jacoco/jacoco.gradle.kts")
@@ -25,7 +27,6 @@ android {
 
     defaultConfig {
         minSdk = libs.versions.minSdk.get().toInt()
-        targetSdk = libs.versions.sdk.get().toInt()
         multiDexEnabled = true
 
         javaCompileOptions {
@@ -77,13 +78,11 @@ android {
             )
         }
     }
+}
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.kotlinCompilerExtensionVersion.get()
-    }
-
-    kotlinOptions {
-        jvmTarget = "17"
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
     }
 }
 
@@ -92,12 +91,10 @@ dependencies {
     implementation(project(":commons"))
     implementation(project(":compose-table"))
     implementation(project(":form"))
+    implementation(project(":dhis2-mobile-program-rules"))
 
     implementation(libs.androidx.coreKtx)
-    implementation(platform(libs.kotlin.bom))
-    implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.lifecycle.runtimeCompose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.viewModelKtx)
     implementation(libs.androidx.navigation.compose)
@@ -110,10 +107,11 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.dagger.hilt.android)
-    implementation(libs.androidx.compose.material3.windowSizeClass)
+    implementation(libs.androidx.material3.window)
     implementation(libs.datastore)
     implementation(libs.kotlin.serialization.json)
     implementation(libs.kotlinx.collections.immutable)
+    implementation(libs.androidx.lifecycle.runtime.compose.android)
 
 
     kapt(libs.dagger.hilt.android.compiler)
@@ -123,7 +121,6 @@ dependencies {
     debugImplementation(libs.bundles.stock.debugImplementation)
     releaseImplementation(libs.bundles.stock.releaseImplementation)
     testImplementation(libs.bundles.stock.test)
-    androidTestImplementation(libs.bundles.stock.androidTest)
 
     debugImplementation(libs.analytics.flipper.network) {
         exclude("com.squareup.okhttp3")

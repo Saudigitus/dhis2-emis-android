@@ -1,11 +1,11 @@
 package org.saudigitus.emis.data.local
 
 import kotlinx.coroutines.flow.Flow
-import org.dhis2.commons.data.SearchTeiModel
 import org.hisp.dhis.android.core.dataelement.DataElement
 import org.saudigitus.emis.data.model.CalendarConfig
 import org.saudigitus.emis.data.model.EMISConfigItem
 import org.saudigitus.emis.data.model.ProgramStage
+import org.saudigitus.emis.data.model.SearchTeiModel
 import org.saudigitus.emis.data.model.Subject
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
 import org.saudigitus.emis.ui.attendance.AttendanceOption

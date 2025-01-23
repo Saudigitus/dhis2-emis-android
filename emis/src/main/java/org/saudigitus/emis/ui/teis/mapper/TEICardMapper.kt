@@ -3,25 +3,25 @@ package org.saudigitus.emis.ui.teis.mapper
 import android.content.Context
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.Icon
+import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Sync
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
-import org.dhis2.commons.data.SearchTeiModel
 import org.dhis2.commons.date.toDateSpan
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.commons.ui.model.ListCardUiModel
 import org.hisp.dhis.android.core.common.State
 import org.hisp.dhis.mobile.ui.designsystem.component.AdditionalInfoItem
 import org.hisp.dhis.mobile.ui.designsystem.component.Avatar
-import org.hisp.dhis.mobile.ui.designsystem.component.AvatarStyle
+import org.hisp.dhis.mobile.ui.designsystem.component.AvatarStyleData
 import org.hisp.dhis.mobile.ui.designsystem.component.Button
 import org.hisp.dhis.mobile.ui.designsystem.component.ButtonStyle
 import org.hisp.dhis.mobile.ui.designsystem.theme.TextColor
 import org.saudigitus.emis.R
+import org.saudigitus.emis.data.model.SearchTeiModel
 import org.saudigitus.emis.utils.Utils.isStringCastableToInt
 import java.io.File
 
@@ -61,14 +61,12 @@ class TEICardMapper(
             val painter = BitmapPainter(bitmap)
 
             Avatar(
-                imagePainter = painter,
-                style = AvatarStyle.IMAGE,
+                style = AvatarStyleData.Image(painter),
                 onImageClick = { onImageClick(item.profilePicturePath) },
             )
         } else {
             Avatar(
-                textAvatar = getTitleFirstLetter(item),
-                style = AvatarStyle.TEXT,
+                style = AvatarStyleData.Text(getTitleFirstLetter(item)),
             )
         }
     }

@@ -76,6 +76,7 @@ android {
 
     defaultConfig {
         applicationId = "com.dhis2.semis"
+        compileSdk = libs.versions.sdk.get().toInt()
         targetSdk = libs.versions.sdk.get().toInt()
         minSdk = libs.versions.minSdk.get().toInt()
         versionCode = libs.versions.vCode.get().toInt()

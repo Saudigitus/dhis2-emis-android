@@ -12,10 +12,8 @@ import kotlinx.coroutines.withContext
 import org.dhis2.bindings.userFriendlyValue
 import org.dhis2.commons.bindings.dataElement
 import org.dhis2.commons.bindings.enrollment
-import org.dhis2.commons.data.SearchTeiModel
 import org.dhis2.commons.date.DateUtils
 import org.dhis2.commons.network.NetworkUtils
-import org.dhis2.commons.resources.ColorUtils
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.arch.repositories.scope.RepositoryScope
 import org.hisp.dhis.android.core.dataelement.DataElement
@@ -32,6 +30,7 @@ import org.saudigitus.emis.data.model.CalendarConfig
 import org.saudigitus.emis.data.model.EMISConfig
 import org.saudigitus.emis.data.model.EMISConfigItem
 import org.saudigitus.emis.data.model.ProgramStage
+import org.saudigitus.emis.data.model.SearchTeiModel
 import org.saudigitus.emis.data.model.Subject
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
 import org.saudigitus.emis.data.model.dto.withBtnSettings

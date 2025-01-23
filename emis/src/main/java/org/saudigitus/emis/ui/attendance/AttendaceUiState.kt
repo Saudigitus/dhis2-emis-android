@@ -1,8 +1,8 @@
 package org.saudigitus.emis.ui.attendance
 
 import androidx.compose.ui.graphics.Color
-import org.dhis2.commons.data.SearchTeiModel
 import org.saudigitus.emis.data.model.CalendarConfig
+import org.saudigitus.emis.data.model.SearchTeiModel
 import org.saudigitus.emis.data.model.dto.Absence
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
 import org.saudigitus.emis.ui.components.DropdownItem

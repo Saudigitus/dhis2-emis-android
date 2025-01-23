@@ -157,7 +157,6 @@ fun launchOuTreeSelector(
     onSchoolSelected: (school: OU) -> Unit,
 ) {
     OUTreeFragment.Builder()
-        .showAsDialog()
         .singleSelection()
         .orgUnitScope(OrgUnitSelectorScope.ProgramCaptureScope(program))
         .withPreselectedOrgUnits(

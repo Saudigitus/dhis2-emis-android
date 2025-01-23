@@ -7,6 +7,9 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldColors
 import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -63,7 +66,7 @@ fun InputField(
                 KeyboardType.Email -> {
                     IconButton(onClick = { action = Intent.ACTION_SENDTO }) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_form_email),
+                            imageVector = Icons.Default.Email,
                             contentDescription = label,
                         )
                     }
@@ -72,7 +75,7 @@ fun InputField(
                 KeyboardType.Phone -> {
                     IconButton(onClick = { action = Intent.ACTION_DIAL }) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_form_phone),
+                            imageVector = Icons.Default.Phone,
                             contentDescription = label,
                         )
                     }

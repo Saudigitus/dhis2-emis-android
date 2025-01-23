@@ -1,6 +1,6 @@
 package org.saudigitus.emis.ui.performance
 
-import org.dhis2.commons.data.SearchTeiModel
+import org.saudigitus.emis.data.model.SearchTeiModel
 import org.saudigitus.emis.data.model.Subject
 import org.saudigitus.emis.ui.components.ToolbarHeaders
 import org.saudigitus.emis.ui.form.Field

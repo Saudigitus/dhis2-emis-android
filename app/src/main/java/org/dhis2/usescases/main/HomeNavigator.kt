@@ -46,7 +46,7 @@ fun ProgramUiModel.toHomeItemData(): HomeItemData {
             HomeItemData.EventProgram(
                 uid,
                 title,
-                accessDataWrite,
+                accessDataWrite
             )
 
         ProgramType.WITH_REGISTRATION.name ->
