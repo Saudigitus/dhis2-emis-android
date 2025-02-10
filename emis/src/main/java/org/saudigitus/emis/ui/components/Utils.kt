@@ -16,6 +16,7 @@ import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -80,6 +81,11 @@ fun CustomDatePicker(
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = null,
         initialDisplayMode = DisplayMode.Picker,
+        selectableDates = object: SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                return dateValidator(utcTimeMillis)
+            }
+        }
     )
 
     var selectedDate by remember {
@@ -127,7 +133,6 @@ fun CustomDatePicker(
                 state = datePickerState,
                 title = {},
                 showModeToggle = false,
-                // dateValidator = dateValidator,
             )
         }
     }
