@@ -81,11 +81,11 @@ fun CustomDatePicker(
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = null,
         initialDisplayMode = DisplayMode.Picker,
-        selectableDates = object: SelectableDates {
+        selectableDates = object : SelectableDates {
             override fun isSelectableDate(utcTimeMillis: Long): Boolean {
                 return dateValidator(utcTimeMillis)
             }
-        }
+        },
     )
 
     var selectedDate by remember {

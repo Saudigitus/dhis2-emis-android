@@ -299,7 +299,7 @@ fun AttendanceScreen(
                 } else {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(bottom = 108.dp)
+                        contentPadding = PaddingValues(bottom = 108.dp),
                     ) {
                         itemsIndexed(students) { _, student ->
                             val card = student.map(teiCardMapper = teiCardMapper, showSync = false)
