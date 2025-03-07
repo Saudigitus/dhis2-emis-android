@@ -5,16 +5,23 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -46,7 +53,7 @@ fun HomeRoute(
     viewModel: HomeViewModel,
     navController: NavHostController,
     navBack: () -> Unit,
-    sync: () -> Unit,
+    sync: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -139,6 +146,23 @@ fun HomeUI(
                             onEvent(HomeUiEvent.OnFilterChange(FilterType.SECTION, item))
                         },
                     )
+
+                    Button(
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                            .height(54.dp),
+                        onClick = { onEvent.invoke(HomeUiEvent.OnDownloadStudent) }
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Download,
+                                contentDescription = stringResource(R.string.dowload_teis)
+                            )
+                            Text(stringResource(R.string.dowload_teis))
+                        }
+                    }
                 }
             }
             if (!uiState.infoCard.hasData()) {
@@ -192,7 +216,7 @@ fun HomeUI(
                             },
                         )
                     }
-                    item {
+                    /*item {
                         HomeItem(
                             modifier = Modifier.fillMaxWidth(),
                             icon = painterResource(R.drawable.s_calendar),
@@ -211,7 +235,7 @@ fun HomeUI(
                                 )
                             },
                         )
-                    }
+                    }*/
                     if (!uiState.isStaff) {
                         item {
                             HomeItem(

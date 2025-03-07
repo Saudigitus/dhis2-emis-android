@@ -61,4 +61,5 @@
     <string name="programs">Programs:</string>
     <string name="sync_offline_check_connection">Looks like you\\\'re offline. Please check you connection</string>
     <string name="none">None</string>
+    <string name="dowload_teis">Sync Students</string>
 </resources>

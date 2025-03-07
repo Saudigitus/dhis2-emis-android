@@ -1,6 +1,7 @@
 package org.saudigitus.emis.ui.home
 
 import android.os.Bundle
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
@@ -17,6 +18,7 @@ import org.saudigitus.emis.data.local.DataManager
 import org.saudigitus.emis.data.local.UserPreferencesRepository
 import org.saudigitus.emis.data.model.OU
 import org.saudigitus.emis.data.model.Registration
+import org.saudigitus.emis.helper.SEMISSync
 import org.saudigitus.emis.ui.base.BaseViewModel
 import org.saudigitus.emis.ui.components.DropdownItem
 import org.saudigitus.emis.ui.components.DropdownState
@@ -31,6 +33,7 @@ class HomeViewModel
 @Inject constructor(
     private val repository: DataManager,
     private val preferencesRepository: UserPreferencesRepository,
+    private val semisSync: SEMISSync
 ) : BaseViewModel(repository) {
 
     private val _registration = MutableStateFlow<Registration?>(null)
@@ -52,9 +55,9 @@ class HomeViewModel
             viewModelState.value,
         )
 
-    /*init {
+    init {
         viewModelScope.launch {
-            preferencesRepository.getPreferences().collect { prefs ->
+            /*preferencesRepository.getPreferences().collect { prefs ->
                 if (prefs.filters.isNotEmpty()) {
                     viewModelState.update {
                         it.copy(
@@ -65,10 +68,10 @@ class HomeViewModel
                         )
                     }
                 }
-            }
+            }*/
+
         }
     }
-*/
     override fun setConfig(program: String) {
     }
 
@@ -138,7 +141,7 @@ class HomeViewModel
                         "${registration.value?.grade}",
                         "${registration.value?.section}",
                     ),
-                    options = viewModelState.value.options,
+                    dataValues = viewModelState.value.options,
                 ).collect { teiList ->
                     setTeis(teiList)
                 }
@@ -313,6 +316,26 @@ class HomeViewModel
             }
             is HomeUiEvent.OnFilterChange<*> -> {
                 onFilterItemClick(homeUiEvent.filterType, homeUiEvent.obj)
+            }
+            is HomeUiEvent.OnDownloadStudent -> {
+                viewModelScope.launch {
+                    val dataElementIds = listOf(
+                        "${registration.value?.academicYear}",
+                        "${registration.value?.grade}",
+                        "${registration.value?.section}",
+                    )
+
+                    val dataValues = viewModelState.value.options
+
+                    if (dataValues.isNotEmpty() && program.value.isNotEmpty()) {
+                        semisSync.downloadTEIsByUids(
+                            ou = viewModelState.value.school?.uid ?: "",
+                            program = program.value,
+                            dataElementIds = dataElementIds,
+                            dataValues = dataValues
+                        )
+                    }
+                }
             }
             else -> {}
         }
