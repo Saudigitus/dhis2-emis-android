@@ -1,6 +1,7 @@
 package org.saudigitus.emis.ui.home
 
 import android.os.Bundle
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
@@ -128,16 +129,18 @@ class HomeViewModel
 
     private fun getTeis() {
         viewModelScope.launch {
-            if (!viewModelState.value.isNull) {
+            if (!viewModelState.value.isNull || viewModelState.value.isStaffFiltersNotNull) {
+                val dataElements = listOf(
+                    registration.value?.academicYear,
+                    registration.value?.grade,
+                    registration.value?.section,
+                ).mapNotNull { it }
+
                 repository.getTeisBy(
                     ou = "${viewModelState.value.school?.uid}",
                     program = "${uiState.value.programSettings?.getString(PROGRAM_UID)}",
                     stage = "${registration.value?.programStage}",
-                    dataElementIds = listOf(
-                        "${registration.value?.academicYear}",
-                        "${registration.value?.grade}",
-                        "${registration.value?.section}",
-                    ),
+                    dataElementIds = dataElements,
                     options = viewModelState.value.options,
                 ).collect { teiList ->
                     setTeis(teiList)

@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -298,6 +299,7 @@ fun AttendanceScreen(
                 } else {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(bottom = 108.dp),
                     ) {
                         itemsIndexed(students) { _, student ->
                             val card = student.map(teiCardMapper = teiCardMapper, showSync = false)
@@ -341,6 +343,7 @@ fun AttendanceScreen(
                                             index,
                                             student.tei.organisationUnit() ?: "",
                                             tei ?: student.tei.uid(),
+                                            student.enrollments.getOrNull(0)?.uid() ?: "",
                                             attendance,
                                             null,
                                             color,
@@ -353,6 +356,7 @@ fun AttendanceScreen(
                                                 index,
                                                 student.tei.organisationUnit() ?: "",
                                                 tei ?: student.tei.uid(),
+                                                student.enrollments.getOrNull(0)?.uid() ?: "",
                                                 attendance,
                                                 color,
                                                 null,

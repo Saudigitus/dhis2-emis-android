@@ -24,8 +24,8 @@ abstract class BaseViewModel(
     private val _teis = MutableStateFlow<List<SearchTeiModel>>(emptyList())
     val teis: StateFlow<List<SearchTeiModel>> = _teis
 
-    private val _teiUIds = MutableStateFlow<List<String>>(emptyList())
-    protected val teiUIds: StateFlow<List<String>> = _teiUIds
+    private val _teiUIds = MutableStateFlow<List<Pair<String, String>>>(emptyList())
+    protected val teiUIds: StateFlow<List<Pair<String, String>>> = _teiUIds
 
     protected val _toolbarHeaders = MutableStateFlow(
         ToolbarHeaders(
@@ -75,7 +75,7 @@ abstract class BaseViewModel(
                 teis.filter {
                     it.enrollments.getOrNull(0)?.status() != EnrollmentStatus.CANCELLED
                 }
-                    .mapNotNull { it.tei.uid() }
+                    .map { Pair(it.tei.uid(), it.enrollments.getOrNull(0)?.uid() ?: "") }
             }
         }
     }

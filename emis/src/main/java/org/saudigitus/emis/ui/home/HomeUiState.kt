@@ -26,6 +26,9 @@ data class HomeUiState(
     val isNull: Boolean
         get() = academicYear == null && school == null && grade == null && section == null
 
+    val isStaffFiltersNotNull: Boolean
+        get() = key == Constants.STAFF && academicYear != null && school != null
+
     val isStaff: Boolean
         get() = key == Constants.STAFF
 

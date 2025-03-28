@@ -62,22 +62,18 @@ class DataManagerImpl
             .byDisplayName().eq(Constants.DEFAULT).one().blockingGet()?.uid()
 
     private fun createEventProjection(
-        tei: String,
+        enrollment: String,
         ou: String,
         program: String,
         programStage: String,
     ): String {
-        val enrollment = d2.enrollmentModule().enrollments()
-            .byTrackedEntityInstance().eq(tei)
-            .one().blockingGet()
-
         return d2.eventModule().events()
             .blockingAdd(
                 EventCreateProjection.builder()
                     .organisationUnit(ou)
                     .program(program).programStage(programStage)
                     .attributeOptionCombo(getAttributeOptionCombo())
-                    .enrollment(enrollment?.uid()).build(),
+                    .enrollment(enrollment).build(),
             )
     }
 
@@ -109,7 +105,7 @@ class DataManagerImpl
                     programStage,
                     attendance.date,
                 ) ?: createEventProjection(
-                    attendance.tei,
+                    attendance.enrollment,
                     ou,
                     program,
                     programStage,
@@ -497,6 +493,7 @@ class DataManagerImpl
 
             AttendanceEntity(
                 tei = tei,
+                enrollment = event.enrollment() ?: "",
                 dataElement = dataElement,
                 value = dataValue.value().toString(),
                 reasonDataElement = if (reason == null) {

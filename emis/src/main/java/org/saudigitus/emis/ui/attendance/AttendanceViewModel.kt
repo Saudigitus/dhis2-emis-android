@@ -141,7 +141,7 @@ class AttendanceViewModel
                         programStage = datastoreAttendance.value?.programStage ?: "",
                         dataElement = datastoreAttendance.value?.status ?: "",
                         reasonDataElement = datastoreAttendance.value?.absenceReason ?: "",
-                        teis = teiUIds.value,
+                        teis = teiUIds.value.map { it.first },
                         date = date.toString(),
                     )
                 }.await()
@@ -272,7 +272,8 @@ class AttendanceViewModel
                 setAttendance(
                     index = index,
                     ou = ou.value,
-                    tei = it,
+                    tei = it.first,
+                    enrollment = it.second,
                     value = value,
                     reasonOfAbsence = reasonOfAbsence,
                     color = color,
@@ -286,6 +287,7 @@ class AttendanceViewModel
         index: Int,
         ou: String,
         tei: String,
+        enrollment: String,
         value: String,
         reasonOfAbsence: String? = null,
         color: Color? = null,
@@ -295,6 +297,7 @@ class AttendanceViewModel
 
         val attendance = AttendanceEntity(
             tei = tei,
+            enrollment = enrollment,
             dataElement = datastoreAttendance.value?.status ?: "",
             value = value,
             reasonDataElement = datastoreAttendance.value?.absenceReason,
@@ -327,6 +330,7 @@ class AttendanceViewModel
         index: Int? = null,
         ou: String? = null,
         tei: String? = null,
+        enrollment: String? = null,
         value: String? = null,
         color: Color? = null,
         reasonOfAbsence: String? = null,
@@ -344,6 +348,11 @@ class AttendanceViewModel
         if (tei != null) {
             _absenceState.update {
                 it.copy(tei = tei)
+            }
+        }
+        if (enrollment != null) {
+            _absenceState.update {
+                it.copy(enrollment = enrollment)
             }
         }
         if (value != null) {
@@ -366,6 +375,7 @@ class AttendanceViewModel
         setAttendance(
             index = absenceState.value.index,
             ou = absenceState.value.ou,
+            enrollment = absenceState.value.enrollment,
             tei = absenceState.value.tei,
             value = absenceState.value.value,
             color = absenceState.value.color,
