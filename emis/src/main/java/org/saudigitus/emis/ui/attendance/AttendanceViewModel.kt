@@ -2,6 +2,7 @@ package org.saudigitus.emis.ui.attendance
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
@@ -15,6 +16,7 @@ import org.dhis2.commons.date.DateUtils
 import org.saudigitus.emis.data.local.DataManager
 import org.saudigitus.emis.data.local.FormRepository
 import org.saudigitus.emis.data.model.Attendance
+import org.saudigitus.emis.data.model.Summary
 import org.saudigitus.emis.data.model.dto.Absence
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
 import org.saudigitus.emis.ui.base.BaseViewModel
@@ -22,6 +24,7 @@ import org.saudigitus.emis.ui.components.DropdownItem
 import org.saudigitus.emis.utils.Constants.KEY
 import org.saudigitus.emis.utils.DateHelper
 import org.saudigitus.emis.utils.Utils.WHITE
+import org.saudigitus.emis.utils.Utils.getIconByName
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -416,12 +419,18 @@ class AttendanceViewModel
         }
     }
 
-    fun getSummary(): List<Triple<Int, ImageVector?, Color?>> {
-        val summaries = attendanceOptions.value.map { Triple(it.code, it.icon, it.color) }
+    fun getSummary(): List<Summary> {
+        val summaries = attendanceOptions.value.map { Pair(it.code, Triple(it.iconName, it.icon, it.color)) }
             .map { status ->
+
                 val count = attendanceCache.count { it.value.equals(status.first, true) }
 
-                Triple(count, status.second, status.third)
+                Summary(
+                    count,
+                    status.second.first,
+                    status.second.second,
+                    status.second.third
+                )
             }
 
         return summaries
