@@ -157,7 +157,7 @@ class PerformanceViewModel
                         program = program.value,
                         programStage = programStage.value,
                         dataElement = dl,
-                        teis = teiUIds.value,
+                        teis = teiUIds.value.map { it.first },
                     ).conflate()
                     .distinctUntilChanged()
                     .collectLatest { events ->
@@ -179,7 +179,7 @@ class PerformanceViewModel
                     program = program.value,
                     programStage = programStage.value,
                     dataElement = dl,
-                    teis = teiUIds.value,
+                    teis = teiUIds.value.map { it.first },
                 ).conflate()
                 .distinctUntilChanged()
                 .collectLatest { events ->

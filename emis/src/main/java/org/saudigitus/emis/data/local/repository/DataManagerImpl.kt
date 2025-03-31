@@ -8,15 +8,23 @@ import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
+import org.dhis2.bindings.userFriendlyValue
 import org.dhis2.commons.bindings.dataElement
 import org.dhis2.commons.bindings.enrollment
 import org.dhis2.commons.date.DateUtils
 import org.dhis2.commons.network.NetworkUtils
 import org.hisp.dhis.android.core.D2
+import org.hisp.dhis.android.core.arch.repositories.scope.RepositoryScope
 import org.hisp.dhis.android.core.dataelement.DataElement
+import org.hisp.dhis.android.core.enrollment.Enrollment
+import org.hisp.dhis.android.core.event.Event
 import org.hisp.dhis.android.core.event.EventCreateProjection
+import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttribute
+import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttributeValue
+import org.hisp.dhis.android.core.trackedentity.TrackedEntityInstance
 import org.saudigitus.emis.data.local.DataManager
 import org.saudigitus.emis.data.local.util.SqlRaw
+import org.saudigitus.emis.data.model.Attendance
 import org.saudigitus.emis.data.model.CalendarConfig
 import org.saudigitus.emis.data.model.EMISConfig
 import org.saudigitus.emis.data.model.EMISConfigItem
@@ -53,22 +61,18 @@ class DataManagerImpl
             .byDisplayName().eq(Constants.DEFAULT).one().blockingGet()?.uid()
 
     private fun createEventProjection(
-        tei: String,
+        enrollment: String,
         ou: String,
         program: String,
         programStage: String,
     ): String {
-        val enrollment = d2.enrollmentModule().enrollments()
-            .byTrackedEntityInstance().eq(tei)
-            .one().blockingGet()
-
         return d2.eventModule().events()
             .blockingAdd(
                 EventCreateProjection.builder()
                     .organisationUnit(ou)
                     .program(program).programStage(programStage)
                     .attributeOptionCombo(getAttributeOptionCombo())
-                    .enrollment(enrollment?.uid()).build(),
+                    .enrollment(enrollment).build(),
             )
     }
 
@@ -100,7 +104,7 @@ class DataManagerImpl
                     programStage,
                     attendance.date,
                 ) ?: createEventProjection(
-                    attendance.tei,
+                    attendance.enrollment,
                     ou,
                     program,
                     programStage,
