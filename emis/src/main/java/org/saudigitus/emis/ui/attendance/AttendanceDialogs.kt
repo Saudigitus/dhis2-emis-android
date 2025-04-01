@@ -20,8 +20,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.LocalTextStyle
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Help
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.Card
@@ -41,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
@@ -50,8 +49,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import org.saudigitus.emis.R
+import org.saudigitus.emis.data.model.Summary
 import org.saudigitus.emis.ui.components.ActionButtons
 import org.saudigitus.emis.ui.components.DropdownItem
+import org.saudigitus.emis.utils.Utils
 
 @Composable
 fun ReasonForAbsenceDialog(
@@ -134,7 +135,7 @@ fun ReasonForAbsenceDialog(
 @Composable
 fun AttendanceSummaryDialog(
     title: String,
-    data: List<Triple<Int, ImageVector?, Color?>>,
+    data: List<Summary>,
     themeColor: Color,
     disableActions: Boolean = false,
     onCancel: () -> Unit,
@@ -172,9 +173,10 @@ fun AttendanceSummaryDialog(
         ) {
             for (summary in data) {
                 SummaryComponent(
-                    summary = "${summary.first}",
-                    containerColor = summary.third ?: Color.LightGray,
-                    icon = summary.second ?: Icons.Default.Help,
+                    summary = "${summary.count}",
+                    containerColor = summary.color ?: Color.LightGray,
+                    icon = summary.icon ?:
+                    ImageVector.vectorResource(Utils.getIconByName("${summary.iconName}")),
                 )
             }
         }
