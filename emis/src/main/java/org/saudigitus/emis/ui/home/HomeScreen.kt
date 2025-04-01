@@ -106,39 +106,63 @@ fun HomeUI(
                     verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top),
                     horizontalAlignment = Alignment.Start,
                 ) {
-                    DropDownWithSelectionByCode(
-                        dropdownState = uiState.dataElementFilters.getByType(FilterType.ACADEMIC_YEAR),
-                        defaultSelection = uiState.filterSelection.first,
-                        onItemClick = { item ->
-                            onEvent(HomeUiEvent.OnFilterChange(FilterType.ACADEMIC_YEAR, item))
-                        },
-                    )
+                    uiState.dataElementFilters.forEachIndexed { index, filter ->
+                        if (filter.filterType == FilterType.ACADEMIC_YEAR) {
+                            AnimatedVisibility(filter.data.isNotEmpty()) {
+                                DropDownWithSelectionByCode(
+                                    dropdownState = uiState.dataElementFilters.getByType(FilterType.ACADEMIC_YEAR),
+                                    defaultSelection = uiState.filterSelection.first,
+                                    onItemClick = { item ->
+                                        onEvent(
+                                            HomeUiEvent.OnFilterChange(
+                                                FilterType.ACADEMIC_YEAR,
+                                                item
+                                            )
+                                        )
+                                    },
+                                )
+                            }
+                        } else {
+                            if (index == 1) {
+                                DropDownOu(
+                                    placeholder = stringResource(R.string.school),
+                                    leadingIcon = ImageVector.vectorResource(R.drawable.ic_location_on),
+                                    selectedSchool = uiState.school,
+                                    program = uiState.programSettings?.getString(Constants.PROGRAM_UID)
+                                        ?: "",
+                                    onItemClick = {
+                                        onEvent(HomeUiEvent.OnFilterChange(FilterType.SCHOOL, it))
+                                    },
+                                )
+                            }
 
-                    DropDownOu(
-                        placeholder = stringResource(R.string.school),
-                        leadingIcon = ImageVector.vectorResource(R.drawable.ic_location_on),
-                        selectedSchool = uiState.school,
-                        program = uiState.programSettings?.getString(Constants.PROGRAM_UID) ?: "",
-                        onItemClick = {
-                            onEvent(HomeUiEvent.OnFilterChange(FilterType.SCHOOL, it))
-                        },
-                    )
-
-                    DropDown(
-                        dropdownState = uiState.dataElementFilters.getByType(FilterType.GRADE),
-                        defaultSelection = uiState.filterSelection.second,
-                        onItemClick = { item ->
-                            onEvent(HomeUiEvent.OnFilterChange(FilterType.GRADE, item))
-                        },
-                    )
-
-                    DropDown(
-                        dropdownState = uiState.dataElementFilters.getByType(FilterType.SECTION),
-                        defaultSelection = uiState.filterSelection.third,
-                        onItemClick = { item ->
-                            onEvent(HomeUiEvent.OnFilterChange(FilterType.SECTION, item))
-                        },
-                    )
+                            AnimatedVisibility(filter.data.isNotEmpty()) {
+                                DropDown(
+                                    dropdownState = filter,
+                                    defaultSelection = if (filter.filterType == FilterType.GRADE) {
+                                        uiState.filterSelection.second
+                                    } else uiState.filterSelection.third,
+                                    onItemClick = { item ->
+                                        if (filter.filterType == FilterType.GRADE) {
+                                            onEvent(
+                                                HomeUiEvent.OnFilterChange(
+                                                    FilterType.GRADE,
+                                                    item
+                                                )
+                                            )
+                                        } else {
+                                            onEvent(
+                                                HomeUiEvent.OnFilterChange(
+                                                    FilterType.SECTION,
+                                                    item
+                                                )
+                                            )
+                                        }
+                                    },
+                                )
+                            }
+                        }
+                    }
                 }
             }
             if (!uiState.infoCard.hasData()) {
