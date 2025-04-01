@@ -77,16 +77,10 @@ class TEICardMapper(
     }
 
     private fun getTitle(item: SearchTeiModel): String {
-        val attr1 = item.attributeValues?.values?.toList()?.getOrNull(1)?.value()?.trim()
-        val attr2 = item.attributeValues?.values?.toList()?.getOrNull(2)?.value()?.trim()
+        val attr1 = item.attributeValues?.values?.toList()?.getOrNull(1)?.value()?.trim() ?: ""
+        val attr2 = item.attributeValues?.values?.toList()?.getOrNull(2)?.value()?.trim() ?: ""
 
-        return if (attr1 != null && isStringCastableToInt(attr1)) {
-            "$attr2"
-        } else if (attr2 != null && isStringCastableToInt(attr2)) {
-            "$attr1"
-        } else {
-            "$attr1 $attr2"
-        }
+        return "$attr1 $attr2"
     }
 
     private fun getAdditionalInfoList(item: SearchTeiModel): List<AdditionalInfoItem> {
