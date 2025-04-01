@@ -1,7 +1,6 @@
 package org.saudigitus.emis.ui.home
 
 import android.os.Bundle
-import android.util.Log
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
@@ -33,7 +32,7 @@ class HomeViewModel
 @Inject constructor(
     private val repository: DataManager,
     private val preferencesRepository: UserPreferencesRepository,
-    private val semisSync: SEMISSync
+    private val semisSync: SEMISSync,
 ) : BaseViewModel(repository) {
 
     private val _registration = MutableStateFlow<Registration?>(null)
@@ -69,7 +68,6 @@ class HomeViewModel
                     }
                 }
             }*/
-
         }
     }
     override fun setConfig(program: String) {
@@ -334,7 +332,7 @@ class HomeViewModel
                             ou = viewModelState.value.school?.uid ?: "",
                             program = program.value,
                             dataElementIds = dataElementIds,
-                            dataValues = dataValues
+                            dataValues = dataValues,
                         )
                     }
                 }

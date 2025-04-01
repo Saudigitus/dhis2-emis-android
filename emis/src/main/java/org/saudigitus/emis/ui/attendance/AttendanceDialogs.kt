@@ -175,8 +175,8 @@ fun AttendanceSummaryDialog(
                 SummaryComponent(
                     summary = "${summary.count}",
                     containerColor = summary.color ?: Color.LightGray,
-                    icon = summary.icon ?:
-                    ImageVector.vectorResource(Utils.getIconByName("${summary.iconName}")),
+                    icon = summary.icon
+                        ?: ImageVector.vectorResource(Utils.getIconByName("${summary.iconName}")),
                 )
             }
         }

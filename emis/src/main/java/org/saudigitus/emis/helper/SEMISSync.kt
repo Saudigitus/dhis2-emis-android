@@ -8,7 +8,7 @@ import org.hisp.dhis.android.core.D2
 import javax.inject.Inject
 
 class SEMISSync
-@Inject constructor (
+@Inject constructor(
     private val d2: D2,
     private val networkUtils: NetworkUtils,
 ) : ISEMISSync {
@@ -17,9 +17,8 @@ class SEMISSync
         ou: String,
         program: String,
         dataElementIds: List<String>,
-        dataValues:List<String>,
+        dataValues: List<String>,
     ) = withContext(Dispatchers.IO) {
-
         val teiUids = async {
             searchTrackedEntityInstances(ou, program, dataElementIds, dataValues)
         }
@@ -36,7 +35,7 @@ class SEMISSync
         ou: String,
         program: String,
         dataElementIds: List<String>,
-        dataValues:List<String>,
+        dataValues: List<String>,
     ): List<String> {
         val repository = d2.trackedEntityModule().trackedEntitySearch()
 

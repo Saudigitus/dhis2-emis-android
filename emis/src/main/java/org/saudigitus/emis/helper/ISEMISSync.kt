@@ -1,13 +1,11 @@
 package org.saudigitus.emis.helper
 
-import org.saudigitus.emis.data.model.SearchTeiModel
-
 interface ISEMISSync {
 
     suspend fun downloadTEIsByUids(
         ou: String,
         program: String,
         dataElementIds: List<String>,
-        dataValues:List<String>,
+        dataValues: List<String>,
     )
 }

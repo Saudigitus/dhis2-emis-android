@@ -10,5 +10,5 @@ sealed class HomeUiEvent {
     data object OnBack : HomeUiEvent()
     data object HideShowFilter : HomeUiEvent()
     data object Sync : HomeUiEvent()
-    data object OnDownloadStudent: HomeUiEvent()
+    data object OnDownloadStudent : HomeUiEvent()
 }

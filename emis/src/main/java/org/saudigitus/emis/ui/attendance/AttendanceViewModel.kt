@@ -1,8 +1,6 @@
 package org.saudigitus.emis.ui.attendance
 
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.vectorResource
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
@@ -24,7 +22,6 @@ import org.saudigitus.emis.ui.components.DropdownItem
 import org.saudigitus.emis.utils.Constants.KEY
 import org.saudigitus.emis.utils.DateHelper
 import org.saudigitus.emis.utils.Utils.WHITE
-import org.saudigitus.emis.utils.Utils.getIconByName
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -429,7 +426,7 @@ class AttendanceViewModel
                     count,
                     status.second.first,
                     status.second.second,
-                    status.second.third
+                    status.second.third,
                 )
             }
 

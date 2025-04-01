@@ -123,8 +123,8 @@ fun HomeUI(
                                         onEvent(
                                             HomeUiEvent.OnFilterChange(
                                                 FilterType.ACADEMIC_YEAR,
-                                                item
-                                            )
+                                                item,
+                                            ),
                                         )
                                     },
                                 )
@@ -148,21 +148,23 @@ fun HomeUI(
                                     dropdownState = filter,
                                     defaultSelection = if (filter.filterType == FilterType.GRADE) {
                                         uiState.filterSelection.second
-                                    } else uiState.filterSelection.third,
+                                    } else {
+                                        uiState.filterSelection.third
+                                    },
                                     onItemClick = { item ->
                                         if (filter.filterType == FilterType.GRADE) {
                                             onEvent(
                                                 HomeUiEvent.OnFilterChange(
                                                     FilterType.GRADE,
-                                                    item
-                                                )
+                                                    item,
+                                                ),
                                             )
                                         } else {
                                             onEvent(
                                                 HomeUiEvent.OnFilterChange(
                                                     FilterType.SECTION,
-                                                    item
-                                                )
+                                                    item,
+                                                ),
                                             )
                                         }
                                     },
@@ -172,15 +174,15 @@ fun HomeUI(
                             Button(
                                 modifier = Modifier.align(Alignment.CenterHorizontally)
                                     .height(54.dp),
-                                onClick = { onEvent.invoke(HomeUiEvent.OnDownloadStudent) }
+                                onClick = { onEvent.invoke(HomeUiEvent.OnDownloadStudent) },
                             ) {
                                 Row(
                                     horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
-                                    verticalAlignment = Alignment.CenterVertically
+                                    verticalAlignment = Alignment.CenterVertically,
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Download,
-                                        contentDescription = stringResource(R.string.dowload_teis)
+                                        contentDescription = stringResource(R.string.dowload_teis),
                                     )
                                     Text(stringResource(R.string.dowload_teis))
                                 }
