@@ -20,6 +20,7 @@ interface DataManager {
         attendance: AttendanceEntity,
     )
     suspend fun getConfig(id: String): List<EMISConfigItem>?
+    suspend fun getTrackedEntityType(program: String): String?
 
     /**
      * @param ou OrganizationUnit uid

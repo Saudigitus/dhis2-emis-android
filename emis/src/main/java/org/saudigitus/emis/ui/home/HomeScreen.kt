@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.Button
@@ -27,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
@@ -170,23 +172,31 @@ fun HomeUI(
                                     },
                                 )
                             }
-
-                            Button(
-                                modifier = Modifier.align(Alignment.CenterHorizontally)
-                                    .height(54.dp),
-                                onClick = { onEvent.invoke(HomeUiEvent.OnDownloadStudent) },
-                            ) {
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Download,
-                                        contentDescription = stringResource(R.string.dowload_teis),
-                                    )
-                                    Text(stringResource(R.string.dowload_teis))
-                                }
-                            }
+                        }
+                    }
+                    Button(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                            .align(Alignment.CenterHorizontally)
+                            .height(54.dp)
+                            .shadow(
+                                elevation = 2.dp,
+                                ambientColor = Color.Black.copy(alpha = 0.1f),
+                                shape = RoundedCornerShape(30.dp),
+                                clip = false,
+                            ),
+                        onClick = { onEvent.invoke(HomeUiEvent.OnDownloadStudent) },
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Download,
+                                contentDescription = stringResource(R.string.dowload_teis, uiState.trackedEntityType),
+                            )
+                            Text(stringResource(R.string.dowload_teis, uiState.trackedEntityType))
                         }
                     }
                 }

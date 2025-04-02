@@ -133,6 +133,15 @@ class DataManagerImpl
             return@withContext EMISConfig.fromJson(dataStore?.value())
         }
 
+    override suspend fun getTrackedEntityType(program: String) = withContext(Dispatchers.IO) {
+        return@withContext d2.programModule().programs()
+            .byUid().eq(program)
+            .withTrackedEntityType()
+            .one().blockingGet()
+            ?.trackedEntityType()
+            ?.displayName()
+    }
+
     override suspend fun getOptions(
         ou: String?,
         program: String?,
