@@ -69,6 +69,7 @@ class Transformations(private val d2: D2) {
 
             AttendanceEntity(
                 tei = tei,
+                enrollment = event.enrollment()!!,
                 dataElement = dataElement,
                 value = dataValue.value().toString(),
                 reasonDataElement = if (reason == null) {

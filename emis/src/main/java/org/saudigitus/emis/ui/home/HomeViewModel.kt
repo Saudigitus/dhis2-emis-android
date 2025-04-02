@@ -14,9 +14,9 @@ import kotlinx.coroutines.launch
 import org.dhis2.commons.Constants.DATA_SET_NAME
 import org.dhis2.commons.Constants.PROGRAM_UID
 import org.saudigitus.emis.data.local.DataManager
-import org.saudigitus.emis.data.local.UserPreferencesRepository
 import org.saudigitus.emis.data.model.OU
 import org.saudigitus.emis.data.model.Registration
+import org.saudigitus.emis.helper.ISEMISSync
 import org.saudigitus.emis.helper.SEMISSync
 import org.saudigitus.emis.ui.base.BaseViewModel
 import org.saudigitus.emis.ui.components.DropdownItem
@@ -31,8 +31,7 @@ import javax.inject.Inject
 class HomeViewModel
 @Inject constructor(
     private val repository: DataManager,
-    private val preferencesRepository: UserPreferencesRepository,
-    private val semisSync: SEMISSync,
+    private val semisSync: ISEMISSync,
 ) : BaseViewModel(repository) {
 
     private val _registration = MutableStateFlow<Registration?>(null)
@@ -83,7 +82,10 @@ class HomeViewModel
                 val defaultConfig = config.default
                 _registration.value = config.registration
                 viewModelState.update {
-                    it.copy(key = config.key)
+                    it.copy(
+                        key = config.key,
+                        trackedEntityType = repository.getTrackedEntityType(program) ?: ""
+                    )
                 }
 
                 val filterData = listOf(
@@ -320,10 +322,10 @@ class HomeViewModel
             is HomeUiEvent.OnDownloadStudent -> {
                 viewModelScope.launch {
                     val dataElementIds = listOf(
-                        "${registration.value?.academicYear}",
-                        "${registration.value?.grade}",
-                        "${registration.value?.section}",
-                    )
+                        registration.value?.academicYear,
+                        registration.value?.grade,
+                        registration.value?.section,
+                    ).mapNotNull { it }
 
                     val dataValues = viewModelState.value.options
 

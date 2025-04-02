@@ -18,6 +18,7 @@ data class HomeUiState(
     val grade: DropdownItem? = null,
     val section: DropdownItem? = null,
     val key: String? = null,
+    val trackedEntityType: String = "",
     val dataElementFilters: List<DropdownState> = emptyList(),
     val toolbarHeaders: ToolbarHeaders = ToolbarHeaders(""),
     val programSettings: Bundle? = null,
