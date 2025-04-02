@@ -17,8 +17,11 @@ import org.saudigitus.emis.data.local.UserPreferencesRepository
 import org.saudigitus.emis.data.local.repository.DataManagerImpl
 import org.saudigitus.emis.data.local.repository.FormRepositoryImpl
 import org.saudigitus.emis.data.local.repository.UserPreferencesRepositoryImpl
+import org.saudigitus.emis.helper.ISEMISSync
+import org.saudigitus.emis.helper.SEMISSync
 import org.saudigitus.emis.service.RuleEngineRepository
 import org.saudigitus.emis.ui.teis.mapper.TEICardMapper
+import org.saudigitus.emis.utils.Transformations
 import javax.inject.Singleton
 
 @Module
@@ -44,11 +47,23 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun providesTransformations(d2: D2): Transformations = Transformations(d2)
+
+    @Provides
+    @Singleton
     fun providesDataManager(
         d2: D2,
+        transformations: Transformations,
         networkUtils: NetworkUtils,
         ruleEngineRepository: RuleEngineRepository,
-    ): DataManager = DataManagerImpl(d2, networkUtils, ruleEngineRepository)
+    ): DataManager = DataManagerImpl(d2, transformations, networkUtils, ruleEngineRepository)
+
+    @Provides
+    @Singleton
+    fun providesSEMISSync(
+        d2: D2,
+        networkUtils: NetworkUtils,
+    ): ISEMISSync = SEMISSync(d2, networkUtils)
 
     @Provides
     @Singleton

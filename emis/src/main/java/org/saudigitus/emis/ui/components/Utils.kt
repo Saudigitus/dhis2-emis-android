@@ -133,7 +133,6 @@ fun CustomDatePicker(
                 state = datePickerState,
                 title = {},
                 showModeToggle = false,
-                // dateValidator = dateValidator,
             )
         }
     }

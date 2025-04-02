@@ -7,5 +7,5 @@ data class Summary(
     val count: Int,
     val iconName: String?,
     val icon: ImageVector? = null,
-    val color: Color? = null
+    val color: Color? = null,
 )

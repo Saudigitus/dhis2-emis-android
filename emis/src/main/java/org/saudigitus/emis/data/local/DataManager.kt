@@ -50,13 +50,8 @@ interface DataManager {
         program: String,
         stage: String,
         dataElementIds: List<String>,
-        options: List<String>,
+        dataValues: List<String>,
     ): Flow<List<SearchTeiModel>>
-
-    suspend fun trackedEntityInstances(
-        ou: String,
-        program: String,
-    ): List<SearchTeiModel>
 
     suspend fun getAttendanceEvent(
         program: String,
