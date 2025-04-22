@@ -1,5 +1,6 @@
 package org.saudigitus.emis.data.local.repository
 
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
@@ -35,7 +36,7 @@ import org.saudigitus.emis.utils.Utils.getAttendanceStatusColor
 import org.saudigitus.emis.utils.eventsWithTrackedDataValues
 import org.saudigitus.emis.utils.optionByOptionSet
 import org.saudigitus.emis.utils.optionsByOptionSetAndCode
-import org.saudigitus.emis.utils.optionsNotInOptionGroup
+import org.saudigitus.emis.utils.optionsNotInOptionsSets
 import timber.log.Timber
 import java.sql.Date
 import javax.inject.Inject
@@ -149,31 +150,24 @@ class DataManagerImpl
     ): List<DropdownItem> = withContext(Dispatchers.IO) {
         val optionSet = d2.dataElement(dataElement)?.optionSetUid()
 
-        val hideOptions = if (ou != null && program != null) {
-            ruleEngineRepository.applyOptionRules(ou, program, dataElement)
+        val hideOptions = ruleEngineRepository.applyOptionRules(ou, program.orEmpty(), dataElement)
+
+        val rawOptions = if (hideOptions.isEmpty()) {
+            d2.optionByOptionSet(optionSet)
         } else {
-            emptyList()
+            d2.optionsNotInOptionsSets(hideOptions, optionSet)
         }
 
-        return@withContext if (hideOptions.isEmpty()) {
-            d2.optionByOptionSet(optionSet).map {
+        return@withContext rawOptions
+            .map {
                 DropdownItem(
-                    id = it.uid(),
-                    itemName = "${it.displayName()}",
-                    code = it.code() ?: "",
-                    sortOrder = it.sortOrder(),
+                    id        = it.uid(),
+                    itemName  = it.displayName().orEmpty(),
+                    code      = it.code().orEmpty(),
+                    sortOrder = it.sortOrder()
                 )
             }
-        } else {
-            d2.optionsNotInOptionGroup(hideOptions, optionSet).map {
-                DropdownItem(
-                    id = it.uid(),
-                    itemName = "${it.displayName()}",
-                    code = it.code() ?: "",
-                    sortOrder = it.sortOrder(),
-                )
-            }.sortedBy { it.sortOrder }
-        }
+            .sortedBy { it.sortOrder }
     }
 
     override suspend fun getOptionsByCode(

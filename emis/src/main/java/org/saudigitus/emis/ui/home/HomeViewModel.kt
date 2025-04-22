@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import org.dhis2.commons.Constants.DATA_SET_NAME
 import org.dhis2.commons.Constants.PROGRAM_UID
 import org.saudigitus.emis.data.local.DataManager
+import org.saudigitus.emis.data.model.DefaultConfig
 import org.saudigitus.emis.data.model.OU
 import org.saudigitus.emis.data.model.Registration
 import org.saudigitus.emis.helper.ISEMISSync
@@ -26,6 +27,14 @@ import org.saudigitus.emis.ui.components.ToolbarHeaders
 import org.saudigitus.emis.ui.teis.FilterType
 import org.saudigitus.emis.utils.Constants
 import javax.inject.Inject
+import kotlin.text.Typography.section
+
+
+private data class FilterSpec(
+    val type: FilterType,
+    val idProvider: Registration.() -> String?
+)
+
 
 @HiltViewModel
 class HomeViewModel
@@ -53,24 +62,46 @@ class HomeViewModel
             viewModelState.value,
         )
 
-    init {
-        viewModelScope.launch {
-            /*preferencesRepository.getPreferences().collect { prefs ->
-                if (prefs.filters.isNotEmpty()) {
-                    viewModelState.update {
-                        it.copy(
-                            academicYear = prefs.filters[FilterType.ACADEMIC_YEAR],
-                            school = prefs.filters[FilterType.SCHOOL]?.toOu(),
-                            grade = prefs.filters[FilterType.GRADE],
-                            section = prefs.filters[FilterType.SECTION],
-                        )
-                    }
-                }
-            }*/
-        }
-    }
     override fun setConfig(program: String) {
     }
+
+    private suspend fun loadFiltersSequentially(
+        defaultConfig: DefaultConfig? = null
+    ) {
+        val specs = listOf(
+            FilterSpec(FilterType.ACADEMIC_YEAR) { academicYear },
+            FilterSpec(FilterType.GRADE)       { grade },
+            FilterSpec(FilterType.SECTION)     { section }
+        )
+
+        val results = mutableListOf<DropdownState>()
+
+        specs.forEach { spec ->
+            val elementId = registration.value?.run(spec.idProvider).orEmpty()
+            if (elementId.isBlank()) return@forEach
+
+            val options = options(elementId)
+            val displayName = getDataElementName(elementId)
+
+            val state = DropdownState(
+                spec.type,
+                null,
+                null,
+                displayName,
+                options,
+            )
+
+            results.add(state)
+        }
+        viewModelState.update {
+            it.copy(dataElementFilters = results)
+        }
+        setAcademicYear(
+            results.find { it.filterType == FilterType.ACADEMIC_YEAR }
+                ?.data?.find { it.code == defaultConfig?.currentAcademicYear },
+        )
+    }
+
 
     override fun setProgram(program: String) {
         _program.value = program
@@ -87,38 +118,7 @@ class HomeViewModel
                         trackedEntityType = repository.getTrackedEntityType(program) ?: ""
                     )
                 }
-
-                val filterData = listOf(
-                    DropdownState(
-                        FilterType.ACADEMIC_YEAR,
-                        null,
-                        null,
-                        getDataElementName("${registration.value?.academicYear}"),
-                        options("${registration.value?.academicYear}"),
-                    ),
-                    DropdownState(
-                        FilterType.GRADE,
-                        null,
-                        null,
-                        getDataElementName("${registration.value?.grade}"),
-                        options("${registration.value?.grade}"),
-                    ),
-                    DropdownState(
-                        FilterType.SECTION,
-                        null,
-                        null,
-                        getDataElementName("${registration.value?.section}"),
-                        options("${registration.value?.section}"),
-                    ),
-                )
-
-                viewModelState.update {
-                    it.copy(dataElementFilters = filterData)
-                }
-                setAcademicYear(
-                    filterData.find { it.filterType == FilterType.ACADEMIC_YEAR }
-                        ?.data?.find { it.code == defaultConfig?.currentAcademicYear },
-                )
+                loadFiltersSequentially(defaultConfig)
             }
         }
     }

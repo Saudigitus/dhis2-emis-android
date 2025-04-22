@@ -343,7 +343,7 @@ fun AttendanceScreen(
                                             index,
                                             student.tei.organisationUnit() ?: "",
                                             tei ?: student.tei.uid(),
-                                            student.enrollments.getOrNull(0)?.uid() ?: "",
+                                            student.selectedEnrollment.uid() ?: "",
                                             attendance,
                                             null,
                                             color,
