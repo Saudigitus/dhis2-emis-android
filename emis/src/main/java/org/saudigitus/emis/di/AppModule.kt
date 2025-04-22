@@ -78,7 +78,11 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun providesFormRepository(d2: D2, hintProvider: HintProvider): FormRepository {
-        return FormRepositoryImpl(d2, hintProvider)
+    fun providesFormRepository(
+        d2: D2,
+        hintProvider: HintProvider,
+        dataManager: DataManager,
+    ): FormRepository {
+        return FormRepositoryImpl(d2, hintProvider, dataManager)
     }
 }

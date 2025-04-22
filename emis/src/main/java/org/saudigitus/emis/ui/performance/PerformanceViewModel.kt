@@ -137,7 +137,7 @@ class PerformanceViewModel
         viewModelScope.launch {
             _programStage.value = stage
             viewModelState.update {
-                it.copy(formFields = formRepository.keyboardInputTypeByStage(stage, dl))
+                it.copy(formFields = formRepository.keyboardInputTypeByStage(program.value, stage, dl))
             }
         }
     }
