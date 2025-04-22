@@ -30,7 +30,7 @@ interface DataManager {
      * Set ou uid and program uid to apply the program rules
      */
     suspend fun getOptions(
-        ou: String?,
+        ou: String? = null,
         program: String?,
         dataElement: String,
     ): List<DropdownItem>

@@ -61,7 +61,7 @@ fun FormBuilder(
 
             if (formField.hasOptions() || data?.hasOptions == true) {
                 DropdownField(
-                    label = if (fields.size == 1) label ?: "-" else formField.label,
+                    label = if (fields.size == 1) label.orEmpty() else formField.label,
                     placeholder = formField.placeholder,
                     data = formField.options ?: emptyList(),
                     selectedItem = data?.itemOptions,

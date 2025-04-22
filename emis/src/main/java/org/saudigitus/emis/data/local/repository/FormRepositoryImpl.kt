@@ -13,6 +13,7 @@ import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.common.ValueType
 import org.hisp.dhis.android.core.event.Event
 import org.hisp.dhis.android.core.event.EventCreateProjection
+import org.saudigitus.emis.data.local.DataManager
 import org.saudigitus.emis.data.local.FormRepository
 import org.saudigitus.emis.data.model.EventTuple
 import org.saudigitus.emis.data.model.Option
@@ -20,7 +21,6 @@ import org.saudigitus.emis.ui.form.FormData
 import org.saudigitus.emis.ui.form.FormField
 import org.saudigitus.emis.utils.Constants
 import org.saudigitus.emis.utils.DateHelper
-import org.saudigitus.emis.utils.optionByOptionSet
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -28,6 +28,7 @@ class FormRepositoryImpl
 @Inject constructor(
     private val d2: D2,
     private val hintProvider: HintProvider,
+    private val dataManager: DataManager,
 ) : FormRepository {
 
     private fun getAttributeOptionCombo() =
@@ -97,6 +98,7 @@ class FormRepositoryImpl
     }
 
     override suspend fun keyboardInputTypeByStage(
+        program: String,
         stage: String,
         dl: String,
     ) = withContext(Dispatchers.IO) {
@@ -106,28 +108,30 @@ class FormRepositoryImpl
             .blockingGet()
             .map { stageDls ->
                 FormField(
-                    uid = stageDls.dataElement()?.uid() ?: "",
-                    label = stageDls.dataElement()?.displayFormName() ?: "",
+                    uid = stageDls.dataElement()?.uid().orEmpty(),
+                    label = stageDls.dataElement()?.displayFormName().orEmpty(),
                     type = stageDls.dataElement()?.valueType(),
                     placeholder = hintProvider
                         .provideDateHint(stageDls.dataElement()?.valueType() ?: ValueType.TEXT),
-                    options = getOptions(stageDls.dataElement()?.uid() ?: "").map { option ->
-                        Option(
-                            uid = option.uid(),
-                            code = option.code(),
-                            displayName = option.displayName(),
-                        )
-                    },
+                    options = getOptions(program, stageDls.dataElement()?.uid().orEmpty())
                 )
             }
     }
 
     override suspend fun getOptions(
+        program: String,
         dataElement: String,
-    ): List<org.hisp.dhis.android.core.option.Option> = withContext(Dispatchers.IO) {
-        val optionSet = d2.dataElement(dataElement)?.optionSetUid() ?: return@withContext emptyList()
-
-        return@withContext d2.optionByOptionSet(optionSet)
+    ): List<Option> = withContext(Dispatchers.IO) {
+        return@withContext dataManager.getOptions(
+            program = program,
+            dataElement = dataElement
+        ).map {
+            Option(
+                uid = it.id,
+                code = it.code,
+                displayName = it.itemName,
+            )
+        }
     }
 
     @Throws(IllegalArgumentException::class)
@@ -146,20 +150,21 @@ class FormRepositoryImpl
                 .withTrackedEntityDataValues()
                 .blockingGet()
                 .mapNotNull {
-                    eventsTransform(it, dataElement)
+                    eventsTransform(it, program, dataElement)
                 },
         )
     }.flowOn(Dispatchers.IO)
 
     private suspend fun eventsTransform(
         event: Event,
+        program: String,
         dataElement: String,
     ): FormData? {
         val dataValue = event.trackedEntityDataValues()?.find { it.dataElement() == dataElement }
         val tei = d2.enrollment(event.enrollment().toString())?.trackedEntityInstance() ?: ""
 
         val dl = d2.dataElement(dataElement)
-        val options = this.getOptions(dataElement)
+        val options = this.getOptions(program, dataElement)
 
         return if (dataValue != null) {
             FormData(
@@ -172,13 +177,7 @@ class FormRepositoryImpl
                 valueType = dl?.valueType(),
                 hasOptions = options.isNotEmpty(),
                 itemOptions = if (options.isNotEmpty()) {
-                    val opt = options.find { option -> option.code() == dataValue.value() }
-
-                    Option(
-                        uid = opt?.uid() ?: "",
-                        code = opt?.code(),
-                        displayName = opt?.displayName(),
-                    )
+                    options.find { option -> option.code == dataValue.value() }
                 } else {
                     null
                 },
