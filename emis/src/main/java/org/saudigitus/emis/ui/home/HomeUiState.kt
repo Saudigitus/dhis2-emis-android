@@ -2,6 +2,7 @@ package org.saudigitus.emis.ui.home
 
 import android.os.Bundle
 import androidx.compose.runtime.Stable
+import org.saudigitus.emis.data.model.Module
 import org.saudigitus.emis.data.model.OU
 import org.saudigitus.emis.ui.components.DropdownItem
 import org.saudigitus.emis.ui.components.DropdownState
@@ -23,6 +24,7 @@ data class HomeUiState(
     val toolbarHeaders: ToolbarHeaders = ToolbarHeaders(""),
     val programSettings: Bundle? = null,
     val infoCard: InfoCard = InfoCard(),
+    val modules: List<Module> = emptyList(),
 ) {
     val isNull: Boolean
         get() = academicYear == null && school == null && grade == null && section == null
@@ -52,4 +54,6 @@ data class HomeUiState(
 
     val filterSelection: Triple<DropdownItem?, DropdownItem?, DropdownItem?>
         get() = Triple(academicYear, grade, section)
+
+    fun hasModules(key: String): Boolean  = modules.any { it.key == key && it.display }
 }

@@ -115,7 +115,8 @@ class HomeViewModel
                 viewModelState.update {
                     it.copy(
                         key = config.key,
-                        trackedEntityType = repository.getTrackedEntityType(program) ?: ""
+                        trackedEntityType = repository.getTrackedEntityType(program).orEmpty(),
+                        modules = config.modules
                     )
                 }
                 loadFiltersSequentially(defaultConfig)

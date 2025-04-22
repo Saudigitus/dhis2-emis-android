@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonProperty
 data class EMISConfigItem(
     @JsonProperty("attendance")
     val attendance: Attendance?,
+    @JsonProperty("modules")
+    val modules: List<Module> = emptyList(),
     @JsonProperty("defaults")
     val default: DefaultConfig?,
     @JsonProperty("key")

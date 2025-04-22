@@ -7,6 +7,10 @@ object Constants {
     const val STAFF = "staff"
     const val STUDENT = "student"
 
+    const val ATTENDANCE = "attendance"
+    const val ABSENTEEISM = "absenteeism"
+    const val PERFORMANCE = "performance"
+
     // attr
     const val DEFAULT = "default"
 
