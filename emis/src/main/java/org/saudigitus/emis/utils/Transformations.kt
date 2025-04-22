@@ -137,6 +137,7 @@ class Transformations(private val d2: D2) {
 
         if (enrollment != null) {
             searchTei.addEnrollment(enrollment)
+            searchTei.setCurrentEnrollment(enrollment)
         }
 
         searchTei.displayOrgUnit = displayOrgUnit()

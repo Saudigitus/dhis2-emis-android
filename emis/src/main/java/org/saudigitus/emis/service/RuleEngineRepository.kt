@@ -1,5 +1,6 @@
 package org.saudigitus.emis.service
 
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
@@ -129,7 +130,7 @@ class RuleEngineRepository @Inject constructor(
     private suspend fun ruleContext(
         ruleVariables: List<RuleVariable>,
         rules: List<Rule>,
-        supplementaryData: Map<String, List<String>>,
+        supplementaryData: Map<String, List<String>> = emptyMap(),
         constants: Map<String, String>,
     ) = withContext(Dispatchers.IO) {
         return@withContext RuleEngineContext(
@@ -141,13 +142,15 @@ class RuleEngineRepository @Inject constructor(
     }
 
     private suspend fun executeContext(
-        ou: String,
+        ou: String? = null,
         program: String,
     ) = withContext(Dispatchers.IO) {
         val rules = async { rules(program) }.await()
         val ruleVariables = ruleVariables(program)
         val constants = async { constants() }.await()
-        val supplementaryData = async { supplementaryData(ou) }.await()
+        val supplementaryData = ou?.let {
+            async { supplementaryData(it) }.await()
+        } ?: emptyMap()
 
         return@withContext ruleContext(
             ruleVariables,
@@ -195,19 +198,19 @@ class RuleEngineRepository @Inject constructor(
         )
     }
 
-    suspend fun applyOptionRules(
-        ou: String,
-        program: String,
-        dataElement: String,
+     suspend fun applyOptionRules(
+         ou: String? = null,
+         program: String,
+         dataElement: String,
     ) = withContext(Dispatchers.IO) {
         val ruleContext = async { executeContext(ou, program) }.await()
 
         val actions = ruleContext.rules.flatMap { it.actions }
-            .filter { it.type == ProgramRuleActionType.HIDEOPTIONGROUP.name }
+            .filter { it.type == ProgramRuleActionType.HIDEOPTION.name }
 
         return@withContext actions.mapNotNull {
             if (it.values["field"] == dataElement) {
-                it.values["optionGroup"]
+                it.values["option"]
             } else {
                 null
             }
