@@ -198,23 +198,32 @@ class RuleEngineRepository @Inject constructor(
         )
     }
 
-     suspend fun applyOptionRules(
-         ou: String? = null,
-         program: String,
-         dataElement: String,
+    suspend fun applyOptionRules(
+        ou: String? = null,
+        program: String,
+        dataElement: String,
     ) = withContext(Dispatchers.IO) {
-        val ruleContext = async { executeContext(ou, program) }.await()
-
-        val actions = ruleContext.rules.flatMap { it.actions }
-            .filter { it.type == ProgramRuleActionType.HIDEOPTION.name }
-
-        return@withContext actions.mapNotNull {
-            if (it.values["field"] == dataElement) {
-                it.values["option"]
-            } else {
-                null
+        val ruleContext = executeContext(ou, program)
+        ruleContext.rules
+            .asSequence()
+            .flatMap { it.actions.asSequence() }
+            .filter {
+                it.type in setOf(
+                    ProgramRuleActionType.HIDEOPTION.name,
+                    ProgramRuleActionType.HIDEOPTIONGROUP.name
+                )
             }
-        }
+            .mapNotNull { action ->
+                val fieldMatches = action.values["field"] == dataElement
+                if (!fieldMatches) return@mapNotNull null
+
+                when (action.type) {
+                    ProgramRuleActionType.HIDEOPTION.name -> action.values["option"]
+                    ProgramRuleActionType.HIDEOPTIONGROUP.name -> action.values["optionGroup"]
+                    else -> null
+                }
+            }
+            .toList()
     }
 
     suspend fun evaluate(

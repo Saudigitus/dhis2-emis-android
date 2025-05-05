@@ -228,17 +228,20 @@ class HomeViewModel
 
     private suspend fun reloadFilters(): MutableList<DropdownState> {
         val filters = uiState.value.dataElementFilters.toMutableList()
-        filters.removeAt(1)
-        filters.add(
-            index = 1,
-            DropdownState(
-                FilterType.GRADE,
-                null,
-                null,
-                getDataElementName("${registration.value?.grade}"),
-                options("${registration.value?.grade}"),
-            ),
-        )
+
+        if (filters.size > 1) {
+            filters.removeAt(1)
+            filters.add(
+                index = 1,
+                DropdownState(
+                    FilterType.GRADE,
+                    null,
+                    null,
+                    getDataElementName("${registration.value?.grade}"),
+                    options("${registration.value?.grade}"),
+                ),
+            )
+        }
 
         return filters
     }
@@ -345,25 +348,6 @@ class HomeViewModel
     }
 
     private fun invokeInFilters() {
-        /*viewModelScope.launch {
-            if (viewModelState.value.infoCard.hasData()) {
-                try {
-                    preferencesRepository.save(
-                        UserPreferences(
-                            filters = persistentMapOf(
-                                FilterType.ACADEMIC_YEAR to viewModelState.value.filterSelection.first!!,
-                                FilterType.SCHOOL to DropdownItem(
-                                    id = viewModelState.value.school?.uid ?: "",
-                                    itemName = viewModelState.value.school?.displayName ?: "",
-                                ),
-                                FilterType.GRADE to viewModelState.value.filterSelection.second!!,
-                                FilterType.SECTION to viewModelState.value.filterSelection.third!!,
-                            ),
-                        ),
-                    )
-                } catch (_: Exception) {}
-            }
-        }*/
         closeFilterSection()
         getTeis()
     }
