@@ -92,6 +92,7 @@ dependencies {
     implementation(project(":compose-table"))
     implementation(project(":form"))
     implementation(project(":dhis2-mobile-program-rules"))
+    implementation(project(":dhis_android_analytics"))
 
     implementation(libs.androidx.coreKtx)
     implementation(libs.androidx.activity.compose)
