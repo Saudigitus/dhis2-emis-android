@@ -76,6 +76,7 @@ class MainActivity : FragmentActivity() {
                     ) {
                         composable(AppRoutes.HOME_ROUTE) {
                             HomeRoute(
+                                activity = this@MainActivity,
                                 isExpandedScreen = isExpandedScreen,
                                 viewModel = viewModel,
                                 navController = navController,
