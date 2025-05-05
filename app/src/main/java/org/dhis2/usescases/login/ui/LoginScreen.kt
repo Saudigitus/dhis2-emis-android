@@ -77,7 +77,7 @@ fun LoginTopBar(
                     .weight(1f)
                     .height(48.dp),
                 painter = painterResource(id = R.drawable.emis_logo_white),
-                contentDescription = "HOME logo",
+                contentDescription = "SEMIS logo",
             )
 
             if (displayMoreActions) {
