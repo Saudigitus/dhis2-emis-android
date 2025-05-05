@@ -36,6 +36,7 @@ import org.saudigitus.emis.utils.Utils.getAttendanceStatusColor
 import org.saudigitus.emis.utils.eventsWithTrackedDataValues
 import org.saudigitus.emis.utils.optionByOptionSet
 import org.saudigitus.emis.utils.optionsByOptionSetAndCode
+import org.saudigitus.emis.utils.optionsNotInOptionGroup
 import org.saudigitus.emis.utils.optionsNotInOptionsSets
 import timber.log.Timber
 import java.sql.Date
@@ -152,10 +153,10 @@ class DataManagerImpl
 
         val hideOptions = ruleEngineRepository.applyOptionRules(ou, program.orEmpty(), dataElement)
 
-        val rawOptions = if (hideOptions.isEmpty()) {
-            d2.optionByOptionSet(optionSet)
-        } else {
-            d2.optionsNotInOptionsSets(hideOptions, optionSet)
+        val rawOptions = when {
+            hideOptions.isEmpty() -> d2.optionByOptionSet(optionSet)
+            ou != null -> d2.optionsNotInOptionGroup(hideOptions, optionSet)
+            else -> d2.optionsNotInOptionsSets(hideOptions, optionSet)
         }
 
         return@withContext rawOptions
