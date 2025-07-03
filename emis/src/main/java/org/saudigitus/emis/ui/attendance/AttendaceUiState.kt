@@ -13,8 +13,8 @@ import org.saudigitus.emis.ui.form.FormData
 import org.saudigitus.emis.ui.form.FormField
 
 data class AttendanceUiState(
+    val isLoading: Boolean = false,
     val toolbarHeaders: ToolbarHeaders = ToolbarHeaders(""),
-    val infoCard: InfoCard = InfoCard(),
     val students: List<SearchTeiModel> = emptyList(),
     val attendanceOptions: List<AttendanceOption> = emptyList(),
     val attendanceBtnState: List<AttendanceActionButtonState> = emptyList(),

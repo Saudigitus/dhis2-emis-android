@@ -18,7 +18,6 @@ import org.saudigitus.emis.data.model.DefaultConfig
 import org.saudigitus.emis.data.model.OU
 import org.saudigitus.emis.data.model.Registration
 import org.saudigitus.emis.helper.ISEMISSync
-import org.saudigitus.emis.helper.SEMISSync
 import org.saudigitus.emis.ui.base.BaseViewModel
 import org.saudigitus.emis.ui.components.DropdownItem
 import org.saudigitus.emis.ui.components.DropdownState
@@ -27,7 +26,6 @@ import org.saudigitus.emis.ui.components.ToolbarHeaders
 import org.saudigitus.emis.ui.teis.FilterType
 import org.saudigitus.emis.utils.Constants
 import javax.inject.Inject
-import kotlin.text.Typography.section
 
 
 private data class FilterSpec(
@@ -335,7 +333,7 @@ class HomeViewModel
 
                     if (dataValues.isNotEmpty() && program.value.isNotEmpty()) {
                         semisSync.downloadTEIsByUids(
-                            ou = viewModelState.value.school?.uid ?: "",
+                            ou = viewModelState.value.school?.uid.orEmpty(),
                             program = program.value,
                             dataElementIds = dataElementIds,
                             dataValues = dataValues,

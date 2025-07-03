@@ -1,10 +1,12 @@
 package org.saudigitus.emis.helper
 
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import org.dhis2.commons.network.NetworkUtils
 import org.hisp.dhis.android.core.D2
+import org.hisp.dhis.android.core.organisationunit.OrganisationUnitMode
 import javax.inject.Inject
 
 class SEMISSync
@@ -39,9 +41,13 @@ class SEMISSync
     ): List<String> {
         val repository = d2.trackedEntityModule().trackedEntitySearch()
 
+        Log.e("DATA_ELEMENTS_IDS", dataElementIds.toString())
+        Log.e("DATA_VALUES", dataValues.toString())
+
         return if (networkUtils.isOnline()) {
             repository.onlineFirst().allowOnlineCache().eq(true)
                 .byOrgUnits().eq(ou)
+                .byOrgUnitMode().eq(OrganisationUnitMode.ACCESSIBLE)
                 .byProgram().eq(program)
                 .byDataValue(dataElementIds[0]).eq(dataValues[0])
                 .byDataValue(dataElementIds[1]).eq(dataValues[1])

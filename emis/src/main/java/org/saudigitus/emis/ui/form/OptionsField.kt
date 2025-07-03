@@ -43,6 +43,7 @@ fun <T> DropdownField(
     placeholder: String,
     data: List<T>,
     selectedItem: T? = null,
+    enabled: Boolean = true,
     colors: TextFieldColors = TextFieldDefaults.colors(
         focusedContainerColor = SurfaceColor.Surface,
         unfocusedContainerColor = SurfaceColor.SurfaceDim,
@@ -80,8 +81,10 @@ fun <T> DropdownField(
             placeholder = { Text(text = placeholder) },
             readOnly = true,
             singleLine = true,
+            enabled = enabled,
             trailingIcon = {
                 IconButton(
+                    enabled = enabled,
                     onClick = {
                         isExpanded = !isExpanded
                     },

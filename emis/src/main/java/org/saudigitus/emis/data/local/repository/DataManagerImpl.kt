@@ -16,6 +16,7 @@ import org.dhis2.commons.network.NetworkUtils
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.dataelement.DataElement
 import org.hisp.dhis.android.core.event.EventCreateProjection
+import org.hisp.dhis.android.core.event.EventStatus
 import org.saudigitus.emis.data.local.DataManager
 import org.saudigitus.emis.data.local.util.SqlRaw
 import org.saudigitus.emis.data.model.CalendarConfig
@@ -119,6 +120,7 @@ class DataManagerImpl
 
                 val repository = d2.eventModule().events().uid(uid)
                 repository.setEventDate(Date.valueOf(attendance.date))
+                repository.setStatus(EventStatus.COMPLETED)
             } catch (e: Exception) {
                 Timber.tag("SAVE_EVENT").e(e)
             }
@@ -379,7 +381,7 @@ class DataManagerImpl
                     .byKey().eq(id)
                     .one().blockingGet()
 
-                EMISConfig.schoolCalendarJson(dataStore?.value())
+                EMISConfig.translateFromJson<CalendarConfig>(dataStore?.value())
             } catch (_: Exception) {
                 null
             }

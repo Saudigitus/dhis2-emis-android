@@ -374,6 +374,25 @@ class TeiDashboardMobileActivity :
                 IndicatorsFragment().apply {
                     arguments = Bundle().apply {
                         putString(VISUALIZATION_TYPE, VisualizationType.TRACKER.name)
+                        putString(org.saudigitus.emis.utils.Constants.ANALYTICS_PROGRAM, programUid)
+                        putString(org.saudigitus.emis.utils.Constants.ANALYTICS_TEI, teiUid)
+                        putString(
+                            org.saudigitus.emis.utils.Constants.OWNER_ORG_UNIT,
+                            dashboardViewModel.dashboardModel.value?.ownerOrgUnit
+                                ?.displayName().orEmpty()
+                        )
+                        putString(
+                            org.saudigitus.emis.utils.Constants.ACADEMIC_YEAR,
+                            intent.extras?.getString(org.saudigitus.emis.utils.Constants.ACADEMIC_YEAR)
+                        )
+                        putString(
+                            org.saudigitus.emis.utils.Constants.TRACKER_NAME,
+                            dashboardViewModel.dashboardModel.value
+                                ?.getTrackedEntityAttributeValueBySortOrder(2)
+                                .orEmpty() + " " + dashboardViewModel.dashboardModel.value
+                                ?.getTrackedEntityAttributeValueBySortOrder(3)
+                                .orEmpty()
+                        )
                     }
                 }
             }
@@ -807,6 +826,22 @@ class TeiDashboardMobileActivity :
             intent.putExtra(Constants.ENROLLMENT_UID, enrollmentUid)
             return intent
         }
+
+        @JvmStatic
+        fun intent(
+            context: Context?,
+            teiUid: String?,
+            programUid: String?,
+            enrollmentUid: String?,
+            academicYear: String = "",
+        ): Intent {
+            val intent = Intent(context, TeiDashboardMobileActivity::class.java)
+            intent.putExtra(TEI_UID, teiUid)
+            intent.putExtra(Constants.PROGRAM_UID, programUid)
+            intent.putExtra(Constants.ENROLLMENT_UID, enrollmentUid)
+            intent.putExtra(org.saudigitus.emis.utils.Constants.ACADEMIC_YEAR, academicYear)
+            return intent
+        }
     }
 
     override fun launch(
@@ -814,12 +849,14 @@ class TeiDashboardMobileActivity :
         teiUid: String?,
         programUid: String?,
         enrollmentUid: String?,
+        academicYear: String,
     ): Intent {
         return intent(
             context,
             teiUid,
             programUid,
             enrollmentUid,
+            academicYear
         )
     }
 

@@ -7,6 +7,7 @@ class AppNavigator(
     val tei: String,
     val program: String,
     val enrollment: String,
+    val academicYear: String
 ) {
     fun navigateToDashboard() {
         (activity.applicationContext as? NavigatorComponentProvider)
@@ -16,6 +17,7 @@ class AppNavigator(
                 tei,
                 program,
                 enrollment,
+                academicYear
             )
             ?.let {
                 activity.startActivity(it)

@@ -22,10 +22,10 @@ class EMISConfig {
             null
         }
 
-        fun schoolCalendarJson(json: String?): CalendarConfig? =
+        inline fun <reified T> translateFromJson(json: String?): T? =
             if (json != null) {
                 translateJsonToObject()
-                    .readValue(json, CalendarConfig::class.java)
+                    .readValue(json, T::class.java)
             } else {
                 null
             }

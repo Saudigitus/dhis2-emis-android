@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class CalendarConfig(
+    @JsonProperty("academicYear")
+    val academicYear: AcademicYear,
     @JsonProperty("classPeriods")
     val classPeriods: List<ClassPeriod>,
     @JsonProperty("holidays")
