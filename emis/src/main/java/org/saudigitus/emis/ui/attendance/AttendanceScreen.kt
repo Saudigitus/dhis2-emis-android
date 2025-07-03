@@ -54,6 +54,7 @@ import org.saudigitus.emis.ui.components.ToolbarActionState
 import org.saudigitus.emis.ui.teis.mapper.TEICardMapper
 import org.saudigitus.emis.ui.theme.light_success
 import org.saudigitus.emis.utils.DateHelper
+import org.saudigitus.emis.utils.getReasonByTei
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,18 +71,13 @@ fun AttendanceScreen(
     val attendanceStep by viewModel.attendanceStep.collectAsStateWithLifecycle()
     val attendanceStatus by viewModel.attendanceStatus.collectAsStateWithLifecycle()
     val toolbarHeaders by viewModel.toolbarHeaders.collectAsStateWithLifecycle()
-    val reasonOfAbsence by viewModel.reasonOfAbsence.collectAsStateWithLifecycle()
-    val absence by viewModel.absenceStateCache.collectAsStateWithLifecycle()
     val schoolCalendar by viewModel.schoolCalendar.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val formFields by viewModel.formFields.collectAsStateWithLifecycle()
 
-    var isAbsent by remember { mutableStateOf(false) }
     var isAttendanceCompleted by remember { mutableStateOf(false) }
     var launchBulkAssign by remember { mutableStateOf(false) }
     var isBulk by remember { mutableStateOf(false) }
-
-    var cachedTEIId by remember { mutableStateOf("") }
 
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
@@ -291,6 +287,7 @@ fun AttendanceScreen(
                                 isEnabled = !isInactive,
                                 student = student,
                                 card = card,
+                                selectedReason = attendanceStatus.getReasonByTei(student.tei?.uid().orEmpty()),
                                 setAttendance = { index, ou, tei, value, reasonOfAbsence, color, hasPersisted ->
                                     viewModel.setAttendance(
                                         index,
@@ -304,13 +301,11 @@ fun AttendanceScreen(
                                     )
                                 },
                                 setTEIAbsence = { index, tei, value, color ->
-                                    cachedTEIId = tei
-                                    isAbsent = true
                                     viewModel.setAbsence(
                                         index,
                                         student.tei.organisationUnit().orEmpty(),
                                         tei,
-                                        student.enrollments.getOrNull(0)?.uid().orEmpty(),
+                                        student.selectedEnrollment.uid().orEmpty(),
                                         value,
                                         color,
                                         null,
@@ -321,6 +316,7 @@ fun AttendanceScreen(
                                 },
                                 onNext = { tei, ou, fieldData ->
                                     viewModel.setAbsence(reasonOfAbsence = fieldData.second)
+                                    viewModel.save()
                                 },
                             )
                         }

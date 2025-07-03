@@ -19,6 +19,7 @@ import org.dhis2.composetable.ui.keyboardAsState
 import org.hisp.dhis.android.core.common.ValueType
 import org.hisp.dhis.mobile.ui.designsystem.component.InputShellState
 import org.hisp.dhis.mobile.ui.designsystem.theme.SurfaceColor
+import org.saudigitus.emis.utils.findByCode
 
 @Composable
 fun FormBuilder(
@@ -34,6 +35,7 @@ fun FormBuilder(
     state: List<Field>,
     key: String,
     fields: List<FormField>,
+    selectedItemCode: String? = null,
     formData: List<FormData>? = emptyList(),
     onNext: (Triple<String, String?, ValueType?>) -> Unit,
     setFormState: (
@@ -65,7 +67,7 @@ fun FormBuilder(
                     label = if (fields.size == 1) label.orEmpty() else formField.label,
                     placeholder = formField.placeholder,
                     data = formField.options ?: emptyList(),
-                    selectedItem = data?.itemOptions,
+                    selectedItem = data?.itemOptions ?: formField.options?.findByCode(selectedItemCode.orEmpty()),
                     enabled = enabled,
                     colors =
                         androidx.compose.material3.TextFieldDefaults.colors(

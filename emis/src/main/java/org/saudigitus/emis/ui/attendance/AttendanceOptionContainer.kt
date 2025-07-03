@@ -11,10 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -22,8 +19,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -32,9 +27,6 @@ import org.dhis2.commons.ui.model.ListCardUiModel
 import org.hisp.dhis.android.core.common.ValueType
 import org.hisp.dhis.mobile.ui.designsystem.component.ListCard
 import org.hisp.dhis.mobile.ui.designsystem.component.ListCardTitleModel
-import org.hisp.dhis.mobile.ui.designsystem.theme.Radius
-import org.hisp.dhis.mobile.ui.designsystem.theme.SurfaceColor
-import org.hisp.dhis.mobile.ui.designsystem.theme.TextColor
 import org.saudigitus.emis.R
 import org.saudigitus.emis.data.model.SearchTeiModel
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
@@ -42,7 +34,6 @@ import org.saudigitus.emis.ui.form.Field
 import org.saudigitus.emis.ui.form.FormBuilder
 import org.saudigitus.emis.ui.form.FormField
 import org.saudigitus.emis.utils.Constants.ABSENT
-import kotlin.reflect.jvm.internal.impl.types.checker.TypeRefinementSupport.Enabled
 
 @Stable
 @Suppress("DEPRECATION")
@@ -57,6 +48,7 @@ fun AttendanceOptionContainer(
     card: ListCardUiModel,
     student: SearchTeiModel,
     isEnabled: Boolean = true,
+    selectedReason: String? = null,
     setAttendance: (
         index: Int,
         ou: String,
@@ -66,7 +58,7 @@ fun AttendanceOptionContainer(
         color: Color?,
         hasPersisted: Boolean,
     ) -> Unit,
-    setTEIAbsence: (index: Int, tei: String, value: String, color: Color?,) -> Unit,
+    setTEIAbsence: (index: Int, tei: String, value: String, color: Color?) -> Unit,
     setAbsenceState: (
         key: String,
         dataElement: String,
@@ -135,11 +127,12 @@ fun AttendanceOptionContainer(
             }
         }
         AbsenceForm(
-            visibility = isAbsent,
+            visibility = isAbsent || selectedReason != null,
             enabled = attendanceStep == ButtonStep.HOLD_SAVING,
             student = student,
             formFields = formFields,
             fieldsState = fieldsState,
+            selectedReason = selectedReason,
             onNext = onNext,
             setAbsenceState = setAbsenceState,
         )
@@ -153,6 +146,7 @@ private fun AbsenceForm(
     visibility: Boolean = false,
     enabled: Boolean = true,
     student: SearchTeiModel,
+    selectedReason: String? = null,
     formFields: List<FormField> = emptyList(),
     fieldsState: List<Field> = emptyList(),
     onNext: (
@@ -190,6 +184,7 @@ private fun AbsenceForm(
                 state = fieldsState,
                 key = student.uid(),
                 fields = formFields,
+                selectedItemCode = selectedReason,
                 onNext = {
                     onNext.invoke(
                         student.uid(),

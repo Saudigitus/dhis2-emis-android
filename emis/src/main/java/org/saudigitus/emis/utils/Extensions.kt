@@ -11,6 +11,7 @@ import org.hisp.dhis.android.core.option.Option
 import org.saudigitus.emis.R
 import org.saudigitus.emis.data.model.AnalyticGroup
 import org.saudigitus.emis.data.model.OU
+import org.saudigitus.emis.data.model.dto.AttendanceEntity
 import org.saudigitus.emis.ui.components.DropdownItem
 import org.saudigitus.emis.ui.components.DropdownState
 import org.saudigitus.emis.ui.teis.FilterType
@@ -112,3 +113,10 @@ fun List<AnalyticGroup>.isTypeEmpty(type: String) =
 
 fun List<AnalyticGroup>.getByType(type: String) =
     this.find { it.type == type }
+
+fun List<org.saudigitus.emis.data.model.Option>.findByCode(code: String) =
+    this.find { it.code == code }
+
+fun List<AttendanceEntity>.getReasonByTei(tei: String) =
+    this.find { it.tei == tei }
+        ?.reasonOfAbsence
