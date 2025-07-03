@@ -9,5 +9,6 @@ interface TeiDashboardComponentProvider {
         teiUid: String?,
         programUid: String?,
         enrollmentUid: String?,
+        academicYear: String
     ): Intent
 }

@@ -103,6 +103,7 @@ class MainActivity : FragmentActivity() {
                         ) {
                             val attendanceViewModel: AttendanceViewModel = hiltViewModel()
                             val teis by viewModel.teis.collectAsStateWithLifecycle()
+                            val infoCard by attendanceViewModel.infoCard.collectAsStateWithLifecycle()
 
                             attendanceViewModel.setDefaults(stringResource(R.string.attendance))
 
@@ -114,6 +115,7 @@ class MainActivity : FragmentActivity() {
                             AttendanceScreen(
                                 attendanceViewModel,
                                 teiCardMapper,
+                                infoCard,
                                 navController::navigateUp,
                                 ::syncProgram,
                             )
@@ -136,6 +138,7 @@ class MainActivity : FragmentActivity() {
                             ),
                         ) {
                             val attendanceViewModel: AttendanceViewModel = hiltViewModel()
+                            val infoCard by attendanceViewModel.infoCard.collectAsStateWithLifecycle()
 
                             attendanceViewModel.setDefaults(stringResource(R.string.absenteeism), true)
                             attendanceViewModel.setOptions(
@@ -150,6 +153,7 @@ class MainActivity : FragmentActivity() {
                             AttendanceScreen(
                                 attendanceViewModel,
                                 teiCardMapper,
+                                infoCard = infoCard,
                                 navController::navigateUp,
                                 ::syncProgram,
                             )
@@ -263,6 +267,7 @@ class MainActivity : FragmentActivity() {
             tei = tei,
             program = viewModel.program.value,
             enrollment = enrollment,
+            academicYear = viewModel.uiState.value.academicYear?.itemName.orEmpty()
         ).navigateToDashboard()
     }
 }

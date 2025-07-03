@@ -9,6 +9,7 @@ import org.hisp.dhis.android.core.arch.repositories.scope.RepositoryScope
 import org.hisp.dhis.android.core.event.Event
 import org.hisp.dhis.android.core.option.Option
 import org.saudigitus.emis.R
+import org.saudigitus.emis.data.model.AnalyticGroup
 import org.saudigitus.emis.data.model.OU
 import org.saudigitus.emis.ui.components.DropdownItem
 import org.saudigitus.emis.ui.components.DropdownState
@@ -105,3 +106,9 @@ fun Modifier.expandedFormSize(isExpanded: Boolean) = if (isExpanded) {
     this.width(120.dp)
         .height(60.dp)
 }
+
+fun List<AnalyticGroup>.isTypeEmpty(type: String) =
+    this.any { it.type == type }
+
+fun List<AnalyticGroup>.getByType(type: String) =
+    this.find { it.type == type }

@@ -11,9 +11,11 @@ import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.form.ui.provider.HintProvider
 import org.dhis2.form.ui.provider.HintProviderImpl
 import org.hisp.dhis.android.core.D2
+import org.saudigitus.emis.data.local.AnalyticsRepository
 import org.saudigitus.emis.data.local.DataManager
 import org.saudigitus.emis.data.local.FormRepository
 import org.saudigitus.emis.data.local.UserPreferencesRepository
+import org.saudigitus.emis.data.local.repository.AnalyticsRepositoryImpl
 import org.saudigitus.emis.data.local.repository.DataManagerImpl
 import org.saudigitus.emis.data.local.repository.FormRepositoryImpl
 import org.saudigitus.emis.data.local.repository.UserPreferencesRepositoryImpl
@@ -85,4 +87,12 @@ object AppModule {
     ): FormRepository {
         return FormRepositoryImpl(d2, hintProvider, dataManager)
     }
+
+    @Provides
+    @Singleton
+    fun providesAnalyticsRepository(
+        d2: D2,
+        dataManager: DataManager,
+        resourcesManager: ResourceManager
+    ): AnalyticsRepository = AnalyticsRepositoryImpl(d2, dataManager, resourcesManager)
 }

@@ -239,7 +239,6 @@ data class InfoCard(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShowCard(
     infoCard: InfoCard,
@@ -308,6 +307,62 @@ fun ShowCard(
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun ShowCard(
+    modifier: Modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 16.dp, vertical = 16.dp),
+    infoCard: InfoCard,
+) {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        modifier = modifier,
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(5.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                        .weight(1f),
+                ) {
+                    Icon(
+                        Icons.Rounded.School,
+                        tint = Color(0xFF2C98F0),
+                        contentDescription = "Icon",
+                    )
+                    Spacer(modifier = Modifier.size(10.dp))
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(
+                            text = String.format("%s, %s", infoCard.grade, infoCard.section),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 17.sp,
+                        )
+                        Text(
+                            text = String.format("%s | %s", infoCard.academicYear, infoCard.orgUnitName),
+                            fontSize = 14.sp,
+                            overflow = TextOverflow.Ellipsis,
+                            softWrap = true,
+                            maxLines = 1,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                }
+
             }
         }
     }

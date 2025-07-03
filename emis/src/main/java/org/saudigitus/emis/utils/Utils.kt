@@ -5,6 +5,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import org.dhis2.commons.resources.ColorUtils
 import org.saudigitus.emis.R
+import org.saudigitus.emis.data.model.EMISConfig
+import kotlin.random.Random
 
 object Utils {
     const val GREEN = 0xFF81C784
@@ -52,5 +54,12 @@ object Utils {
             "late" -> Color(0xFFFACC95)
             else -> Color.LightGray
         }
+    }
+
+    fun generateRandomId(length: Int = 11): String {
+        val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+        return (1..length)
+            .map { chars[Random.nextInt(chars.length)] }
+            .joinToString("")
     }
 }

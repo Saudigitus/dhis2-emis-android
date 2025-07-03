@@ -12,6 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import org.dhis2.composetable.ui.Keyboard
 import org.dhis2.composetable.ui.keyboardAsState
@@ -65,6 +66,13 @@ fun FormBuilder(
                     placeholder = formField.placeholder,
                     data = formField.options ?: emptyList(),
                     selectedItem = data?.itemOptions,
+                    enabled = enabled,
+                    colors =
+                        androidx.compose.material3.TextFieldDefaults.colors(
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = InputShellState.UNFOCUSED.color,
+                            disabledIndicatorColor = InputShellState.DISABLED.color,
+                        ),
                 ) { item ->
                     onNext(Triple(formField.uid, item.code, null))
                 }

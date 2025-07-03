@@ -1,5 +1,6 @@
 package org.saudigitus.emis.ui.performance
 
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
@@ -161,6 +162,7 @@ class PerformanceViewModel
                     ).conflate()
                     .distinctUntilChanged()
                     .collectLatest { events ->
+                        Log.e("EVENTS", "$events")
                         viewModelState.update {
                             it.copy(formData = events)
                         }
@@ -183,6 +185,7 @@ class PerformanceViewModel
                 ).conflate()
                 .distinctUntilChanged()
                 .collectLatest { events ->
+                    Log.e("EVENTS", "$events")
                     viewModelState.update {
                         it.copy(formData = events)
                     }

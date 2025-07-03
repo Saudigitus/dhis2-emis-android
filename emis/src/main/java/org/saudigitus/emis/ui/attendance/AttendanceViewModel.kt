@@ -1,5 +1,6 @@
 package org.saudigitus.emis.ui.attendance
 
+import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,6 +20,7 @@ import org.saudigitus.emis.data.model.dto.Absence
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
 import org.saudigitus.emis.ui.base.BaseViewModel
 import org.saudigitus.emis.ui.components.DropdownItem
+import org.saudigitus.emis.ui.form.FormField
 import org.saudigitus.emis.utils.Constants.KEY
 import org.saudigitus.emis.utils.DateHelper
 import org.saudigitus.emis.utils.Utils.WHITE
@@ -60,6 +62,9 @@ class AttendanceViewModel
     private val _absenceStateCache = MutableStateFlow<List<Absence>>(emptyList())
     val absenceStateCache: StateFlow<List<Absence>> = _absenceStateCache
 
+    private val _formFields = MutableStateFlow<List<FormField>>(emptyList())
+    val formFields: StateFlow<List<FormField>> = _formFields
+
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
@@ -91,6 +96,10 @@ class AttendanceViewModel
             }
             getAttendanceOptions(program)
             getReasonForAbsence(datastoreAttendance.value?.absenceReason ?: "")
+            getFields(
+                datastoreAttendance.value?.programStage.orEmpty(),
+                datastoreAttendance.value?.absenceReason.orEmpty(),
+            )
         }
     }
 
@@ -128,6 +137,12 @@ class AttendanceViewModel
         program: String,
     ) {
         _attendanceOptions.value = repository.getAttendanceOptions(program)
+    }
+
+    private fun getFields(stage: String, dl: String) {
+        viewModelScope.launch {
+            _formFields.value = formRepository.keyboardInputTypeByStage(program.value,stage, dl)
+        }
     }
 
     private fun attendanceEvents(
