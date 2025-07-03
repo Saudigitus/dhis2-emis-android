@@ -1,6 +1,5 @@
 package org.saudigitus.emis.ui.attendance
 
-import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,7 +18,6 @@ import org.saudigitus.emis.data.model.Summary
 import org.saudigitus.emis.data.model.dto.Absence
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
 import org.saudigitus.emis.ui.base.BaseViewModel
-import org.saudigitus.emis.ui.components.DropdownItem
 import org.saudigitus.emis.ui.form.FormField
 import org.saudigitus.emis.utils.Constants.KEY
 import org.saudigitus.emis.utils.DateHelper
@@ -42,9 +40,6 @@ class AttendanceViewModel
 
     private val _attendanceStatus = MutableStateFlow<List<AttendanceEntity>>(emptyList())
     val attendanceStatus: StateFlow<List<AttendanceEntity>> = _attendanceStatus
-
-    private val _reasonOfAbsence = MutableStateFlow<List<DropdownItem>>(emptyList())
-    val reasonOfAbsence: StateFlow<List<DropdownItem>> = _reasonOfAbsence
 
     private val _attendanceStep = MutableStateFlow(ButtonStep.EDITING)
     val attendanceStep: StateFlow<ButtonStep> = _attendanceStep
@@ -95,7 +90,6 @@ class AttendanceViewModel
                 _datastoreAttendance.value = config.attendance
             }
             getAttendanceOptions(program)
-            getReasonForAbsence(datastoreAttendance.value?.absenceReason ?: "")
             getFields(
                 datastoreAttendance.value?.programStage.orEmpty(),
                 datastoreAttendance.value?.absenceReason.orEmpty(),
@@ -268,12 +262,6 @@ class AttendanceViewModel
         }
 
         return attendanceBtnStateCache
-    }
-
-    private fun getReasonForAbsence(dataElement: String) {
-        viewModelScope.launch {
-            _reasonOfAbsence.value = repository.getOptions(null, program.value, dataElement)
-        }
     }
 
     fun bulkAttendance(
