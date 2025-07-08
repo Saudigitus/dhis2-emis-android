@@ -129,6 +129,8 @@ class PerformanceViewModel
             eventDate.value,
         )
 
+        data.removeIf { it.tei == tei }
+
         data.add(eventTuple)
 
         _cache.value = data

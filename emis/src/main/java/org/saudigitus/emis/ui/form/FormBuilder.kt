@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.TextFieldColors
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
@@ -54,6 +55,12 @@ fun FormBuilder(
         focusManager.clearFocus(true)
     }
 
+    LaunchedEffect(selectedItemCode) {
+        selectedItemCode?.let { code ->
+
+        }
+    }
+
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.Top,
@@ -61,13 +68,17 @@ fun FormBuilder(
     ) {
         fields.forEach { formField ->
             val data = formData?.find { it.tei == key && it.dataElement == formField.uid }
+            val selectedItem =  formField.options?.findByCode(
+                state.find { it.key == key && it.dataElement == formField.uid }?.value
+                    .orEmpty()
+            )
 
             if (formField.hasOptions() || data?.hasOptions == true) {
                 DropdownField(
                     label = if (fields.size == 1) label.orEmpty() else formField.label,
                     placeholder = formField.placeholder,
                     data = formField.options ?: emptyList(),
-                    selectedItem = data?.itemOptions ?: formField.options?.findByCode(selectedItemCode.orEmpty()),
+                    selectedItem = selectedItem ?: data?.itemOptions,
                     enabled = enabled,
                     colors =
                         androidx.compose.material3.TextFieldDefaults.colors(
@@ -76,6 +87,12 @@ fun FormBuilder(
                             disabledIndicatorColor = InputShellState.DISABLED.color,
                         ),
                 ) { item ->
+                    setFormState.invoke(
+                        key,
+                        formField.uid,
+                        item.code.orEmpty(),
+                        null,
+                    )
                     onNext(Triple(formField.uid, item.code, null))
                 }
             } else {
