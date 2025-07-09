@@ -35,6 +35,7 @@ class FormViewModel
                 index,
                 Field(
                     key = key,
+                    "",
                     dataElement = dataElement,
                     value = value,
                     valueType = valueType,
@@ -44,6 +45,7 @@ class FormViewModel
             junkData.add(
                 Field(
                     key = key,
+                    "",
                     dataElement = dataElement,
                     value = value,
                     valueType = valueType,

@@ -311,7 +311,7 @@ fun AttendanceScreen(
                                         null,
                                     )
                                 },
-                                setAbsenceState = { key, dataElement, value, valueType ->
+                                setAbsenceState = { key, event, dataElement, value, valueType ->
 
                                 },
                                 onNext = { tei, ou, fieldData ->

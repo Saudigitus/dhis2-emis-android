@@ -2,7 +2,6 @@ package org.saudigitus.emis.ui.performance
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -12,8 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.material.LocalTextStyle
-import androidx.compose.material.TextFieldDefaults
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Save
@@ -21,6 +19,7 @@ import androidx.compose.material.icons.twotone.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
@@ -28,6 +27,7 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -63,7 +63,6 @@ import org.saudigitus.emis.ui.components.ToolbarActionState
 import org.saudigitus.emis.ui.form.FormBuilder
 import org.saudigitus.emis.ui.teis.mapper.TEICardMapper
 import org.saudigitus.emis.ui.theme.light_success
-import org.saudigitus.emis.utils.expandedFormSize
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -76,6 +75,7 @@ fun PerformanceScreen(
     defaultSelection: String = "",
     setPerformanceState: (
         key: String,
+        event: String,
         dataElement: String,
         value: String,
         valueType: ValueType?,
@@ -246,9 +246,12 @@ fun PerformanceScreen(
                         val card = student.map(teiCardMapper, showSync = false)
                         val isInactive = student.enrollments.getOrNull(0)?.status() == EnrollmentStatus.CANCELLED
 
-                        Box(
-                            modifier = Modifier.fillMaxWidth(),
-                            contentAlignment = Alignment.CenterEnd,
+                        Column(
+                            modifier = Modifier
+                                .padding(bottom = 5.dp)
+                                .background(color = Color.White),
+                            verticalArrangement = Arrangement.Top,
+                            horizontalAlignment = Alignment.Start,
                         ) {
                             ListCardColumn(
                                 modifier = Modifier.background(
@@ -256,7 +259,8 @@ fun PerformanceScreen(
                                 ),
                             ) {
                                 ListCard(
-                                    modifier = Modifier.testTag("TEI_ITEM")
+                                    modifier = Modifier
+                                        .testTag("TEI_ITEM")
                                         .background(
                                             color = if (isInactive) Color.LightGray.copy(.25f) else Color.White,
                                         ),
@@ -269,30 +273,49 @@ fun PerformanceScreen(
                                     onCardClick = card.onCardCLick,
                                 )
                             }
-                            FormBuilder(
+
+                            Column(
                                 modifier = Modifier
-                                    .expandedFormSize(isExpandedScreen)
-                                    .padding(bottom = 2.dp, end = 16.dp),
-                                colors = TextFieldDefaults.textFieldColors(
-                                    backgroundColor = Color.Transparent,
-                                    focusedIndicatorColor = InputShellState.FOCUSED.color,
-                                    unfocusedIndicatorColor = InputShellState.UNFOCUSED.color,
-                                    disabledIndicatorColor = InputShellState.DISABLED.color,
+                                    .fillMaxSize()
+                                    .background(
+                                        color = Color(0xFFF6F6F6),
+                                        shape = RoundedCornerShape(
+                                            topStart = 0.dp,
+                                            topEnd = 0.dp,
+                                            bottomStart = 16.dp,
+                                            bottomEnd = 16.dp
+                                        )
+                                    ),
+                                verticalArrangement = Arrangement.spacedBy(
+                                    8.dp,
+                                    Alignment.Top
                                 ),
-                                enabled = performanceStep == ButtonStep.HOLD_SAVING && !isInactive,
-                                state = state.fieldsState,
-                                key = student.uid(),
-                                fields = state.formFields,
-                                formData = state.formData,
-                                onNext = {
-                                    onNext.invoke(
-                                        student.uid(),
-                                        student.tei.organisationUnit() ?: "",
-                                        it,
-                                    )
-                                },
-                                setFormState = setPerformanceState,
-                            )
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                FormBuilder(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp),
+                                    colors = TextFieldDefaults.colors(
+                                        focusedIndicatorColor = Color.Transparent,
+                                        unfocusedIndicatorColor = InputShellState.UNFOCUSED.color,
+                                        disabledIndicatorColor = InputShellState.DISABLED.color,
+                                    ),
+                                    enabled = performanceStep == ButtonStep.HOLD_SAVING && !isInactive,
+                                    state = state.fieldsState,
+                                    key = student.uid(),
+                                    fields = state.formFields,
+                                    formData = state.formData,
+                                    onNext = {
+                                        onNext.invoke(
+                                            student.uid(),
+                                            student.tei.organisationUnit() ?: "",
+                                            it,
+                                        )
+                                    },
+                                    setFormState = setPerformanceState,
+                                )
+                            }
                         }
                     }
                 }

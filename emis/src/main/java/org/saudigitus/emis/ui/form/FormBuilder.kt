@@ -3,10 +3,9 @@ package org.saudigitus.emis.ui.form
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.TextFieldColors
-import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
@@ -19,14 +18,12 @@ import org.dhis2.composetable.ui.Keyboard
 import org.dhis2.composetable.ui.keyboardAsState
 import org.hisp.dhis.android.core.common.ValueType
 import org.hisp.dhis.mobile.ui.designsystem.component.InputShellState
-import org.hisp.dhis.mobile.ui.designsystem.theme.SurfaceColor
 import org.saudigitus.emis.utils.findByCode
 
 @Composable
 fun FormBuilder(
     modifier: Modifier = Modifier,
-    colors: TextFieldColors = TextFieldDefaults.textFieldColors(
-        backgroundColor = SurfaceColor.Container,
+    colors: TextFieldColors = TextFieldDefaults.colors(
         focusedIndicatorColor = InputShellState.FOCUSED.color,
         unfocusedIndicatorColor = InputShellState.UNFOCUSED.color,
         disabledIndicatorColor = InputShellState.DISABLED.color,
@@ -41,6 +38,7 @@ fun FormBuilder(
     onNext: (Triple<String, String?, ValueType?>) -> Unit,
     setFormState: (
         key: String,
+        event: String,
         dataElement: String,
         value: String,
         valueType: ValueType?,
@@ -55,12 +53,6 @@ fun FormBuilder(
         focusManager.clearFocus(true)
     }
 
-    LaunchedEffect(selectedItemCode) {
-        selectedItemCode?.let { code ->
-
-        }
-    }
-
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.Top,
@@ -68,9 +60,9 @@ fun FormBuilder(
     ) {
         fields.forEach { formField ->
             val data = formData?.find { it.tei == key && it.dataElement == formField.uid }
+            val selectedState = state.find { it.key == key && it.dataElement == formField.uid }
             val selectedItem =  formField.options?.findByCode(
-                state.find { it.key == key && it.dataElement == formField.uid }?.value
-                    .orEmpty()
+                selectedState?.value.orEmpty()
             )
 
             if (formField.hasOptions() || data?.hasOptions == true) {
@@ -81,7 +73,7 @@ fun FormBuilder(
                     selectedItem = selectedItem ?: data?.itemOptions,
                     enabled = enabled,
                     colors =
-                        androidx.compose.material3.TextFieldDefaults.colors(
+                        TextFieldDefaults.colors(
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = InputShellState.UNFOCUSED.color,
                             disabledIndicatorColor = InputShellState.DISABLED.color,
@@ -89,6 +81,7 @@ fun FormBuilder(
                 ) { item ->
                     setFormState.invoke(
                         key,
+                        data?.event.orEmpty(),
                         formField.uid,
                         item.code.orEmpty(),
                         null,
@@ -102,6 +95,7 @@ fun FormBuilder(
                     onValueChange = {
                         setFormState.invoke(
                             key,
+                            data?.event.orEmpty(),
                             formField.uid,
                             it,
                             formField.type,
@@ -110,6 +104,8 @@ fun FormBuilder(
                     placeholder = formField.placeholder,
                     label = if (fields.size == 1) label else formField.label,
                     inputType = formField.type,
+                    isError = selectedState?.hasError == true,
+                    errorMessage = selectedState?.errorMessage,
                     modifier = Modifier
                         .fillMaxWidth()
                         .onFocusChanged {

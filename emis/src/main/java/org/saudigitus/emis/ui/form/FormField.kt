@@ -16,7 +16,10 @@ data class FormField(
 
 data class Field(
     val key: String,
+    val event: String,
     val dataElement: String,
     val value: String,
     val valueType: ValueType?,
+    val hasError: Boolean = false,
+    val errorMessage: String? = null
 )

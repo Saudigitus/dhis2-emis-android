@@ -3,7 +3,9 @@ package org.saudigitus.emis.ui.performance
 import android.util.Log
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -13,12 +15,14 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.dhis2.commons.date.DateUtils
 import org.dhis2.form.model.ActionType
 import org.dhis2.form.model.RowAction
 import org.hisp.dhis.android.core.common.ValueType
 import org.saudigitus.emis.data.local.DataManager
 import org.saudigitus.emis.data.local.FormRepository
 import org.saudigitus.emis.data.model.EventTuple
+import org.saudigitus.emis.service.RuleEngineRepository
 import org.saudigitus.emis.ui.attendance.ButtonStep
 import org.saudigitus.emis.ui.base.BaseViewModel
 import org.saudigitus.emis.ui.form.Field
@@ -30,6 +34,7 @@ class PerformanceViewModel
 @Inject constructor(
     private val repository: DataManager,
     private val formRepository: FormRepository,
+    private val ruleRepository: RuleEngineRepository,
 ) : BaseViewModel(repository) {
 
     private val viewModelState = MutableStateFlow(
@@ -57,6 +62,8 @@ class PerformanceViewModel
 
     private val _saveOnce = MutableStateFlow(0)
     private val saveOnce: StateFlow<Int> = _saveOnce
+
+    private val fieldValidationJobs = mutableMapOf<String, Job>()
 
     init {
         _toolbarHeaders.update {
@@ -95,14 +102,19 @@ class PerformanceViewModel
 
     override fun save() {
         viewModelScope.launch {
-            if (buttonStep.value == ButtonStep.HOLD_SAVING) {
-                setButtonStep(ButtonStep.SAVING)
-            } else {
-                async {
-                    cache.value.forEach { formRepository.save(it) }
-                }.await()
-                _cache.value = emptyList()
-                setButtonStep(ButtonStep.HOLD_SAVING)
+            when (buttonStep.value) {
+                ButtonStep.HOLD_SAVING -> {
+                    setButtonStep(ButtonStep.SAVING)
+                }
+                else -> {
+                    if (!viewModelState.value.isValidating) {
+                        cache.value.forEach { item ->
+                            formRepository.save(item)
+                        }
+                        _cache.value = emptyList()
+                        setButtonStep(ButtonStep.HOLD_SAVING)
+                    }
+                }
             }
         }
     }
@@ -152,24 +164,7 @@ class PerformanceViewModel
         if (saveOnce.value == 0) {
             _saveOnce.value = 1
             getFields(stage, dl)
-            viewModelScope.launch {
-                _programStage.value = stage
-                formRepository
-                    .getEvents(
-                        ou = ou.value,
-                        program = program.value,
-                        programStage = programStage.value,
-                        dataElement = dl,
-                        teis = teiUIds.value.map { it.first },
-                    ).conflate()
-                    .distinctUntilChanged()
-                    .collectLatest { events ->
-                        Log.e("EVENTS", "$events")
-                        viewModelState.update {
-                            it.copy(formData = events)
-                        }
-                    }
-            }
+            updateDataFields(dl)
         }
     }
 
@@ -203,44 +198,68 @@ class PerformanceViewModel
 
     fun fieldState(
         key: String,
+        event: String,
         dataElement: String,
         value: String,
         valueType: ValueType?,
     ) {
-        val junkData = mutableListOf<Field>()
+        val currentFields = viewModelState.value.fieldsState.toMutableList()
+        val index = currentFields.indexOfFirst { it.key == key && it.dataElement == dataElement }
 
-        val formState = viewModelState.value.fieldsState
-
-        if (formState.isNotEmpty()) {
-            junkData.addAll(formState)
-        }
-
-        val index = junkData.indexOfFirst { it.key == key && it.dataElement == dataElement }
+        val field = Field(
+            key = key,
+            event = event,
+            dataElement = dataElement,
+            value = value,
+            valueType = valueType,
+            hasError = false,
+            errorMessage = null,
+        )
 
         if (index >= 0) {
-            junkData.removeAt(index)
-            junkData.add(
-                index,
-                Field(
-                    key = key,
-                    dataElement = dataElement,
-                    value = value,
-                    valueType = valueType,
-                ),
-            )
+            currentFields[index] = field
         } else {
-            junkData.add(
-                Field(
-                    key = key,
-                    dataElement = dataElement,
-                    value = value,
-                    valueType = valueType,
-                ),
-            )
+            currentFields.add(field)
         }
 
-        viewModelState.update {
-            it.copy(fieldsState = junkData)
+        viewModelState.update { it.copy(fieldsState = currentFields) }
+
+        fieldValidationJobs[key]?.cancel()
+        viewModelState.update { it.copy(isValidating = true) }
+
+        fieldValidationJobs[key] = viewModelScope.launch {
+            val error = validateDataEntry(event, value)
+
+            val updatedFields = viewModelState.value.fieldsState.toMutableList()
+            val idx = updatedFields.indexOfFirst { it.key == key && it.dataElement == dataElement }
+
+            if (idx >= 0) {
+                val validatedField = updatedFields[idx].copy(
+                    hasError = error != null,
+                    errorMessage = error,
+                )
+                updatedFields[idx] = validatedField
+                viewModelState.update { it.copy(fieldsState = updatedFields) }
+            }
+
+            val stillValidating = fieldValidationJobs.any { it.value.isActive }
+            viewModelState.update { it.copy(isValidating = stillValidating) }
         }
+    }
+
+    private suspend fun validateDataEntry(
+        event: String,
+        value: String,
+    ): String? {
+        val effect = ruleRepository.evaluateDataEntry(
+            ou = ou.value,
+            program = program.value,
+            stage = programStage.value,
+            dataElement = dataElement.value,
+            event = event,
+            eventDate = DateHelper.formatDate(DateUtils.getInstance().today.time).orEmpty(),
+            value = value,
+        )
+        return effect?.ruleAction?.values["content"]
     }
 }

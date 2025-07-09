@@ -6,6 +6,7 @@ import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.ZoneId
 import java.util.Date
 import java.util.Locale
 
@@ -46,5 +47,13 @@ object DateHelper {
             Timber.tag("DATE_FORMAT").e(e)
             null
         }
+    }
+
+    fun dateStringToSeconds(dateString: String): Long {
+        val localDate = LocalDate.parse(dateString)
+        return localDate
+            .atStartOfDay(ZoneId.systemDefault())
+            .toInstant()
+            .toEpochMilli() / 1000
     }
 }

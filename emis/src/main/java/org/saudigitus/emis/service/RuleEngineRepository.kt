@@ -22,9 +22,12 @@ import org.hisp.dhis.android.core.program.ProgramRuleActionType
 import org.hisp.dhis.rules.api.RuleEngine
 import org.hisp.dhis.rules.api.RuleEngineContext
 import org.hisp.dhis.rules.models.Rule
+import org.hisp.dhis.rules.models.RuleDataValue
 import org.hisp.dhis.rules.models.RuleEvent
 import org.hisp.dhis.rules.models.RuleEventStatus
 import org.hisp.dhis.rules.models.RuleVariable
+import org.saudigitus.emis.utils.DateHelper
+import java.util.Collections
 import javax.inject.Inject
 
 class RuleEngineRepository @Inject constructor(
@@ -182,7 +185,10 @@ class RuleEngineRepository @Inject constructor(
         )
     }
 
-    private fun getRuleEvent(eventUid: String): RuleEvent {
+    private fun getRuleEvent(
+        eventUid: String,
+        dataValues: List<RuleDataValue> = emptyList(),
+    ): RuleEvent {
         val event = d2.event(eventUid) ?: throw NullPointerException()
         return RuleEvent(
             event = event.uid(),
@@ -194,7 +200,7 @@ class RuleEngineRepository @Inject constructor(
             completedDate = event.completedDate()?.toRuleEngineLocalDate(),
             organisationUnit = event.organisationUnit()!!,
             organisationUnitCode = d2.organisationUnit(event.organisationUnit()!!)?.code(),
-            dataValues = emptyList(),
+            dataValues = dataValues,
         )
     }
 
@@ -226,17 +232,57 @@ class RuleEngineRepository @Inject constructor(
             .toList()
     }
 
+    private fun dataEntry(
+        event: String,
+        stage: String,
+        dataElement: String,
+        value: String,
+    ) = RuleDataValue(
+        eventDate = Instant.fromEpochSeconds(DateHelper.dateStringToSeconds(event)),
+        programStage = stage,
+        dataElement = dataElement,
+        value = value
+    )
+
+    suspend fun evaluateDataEntry(
+        ou: String,
+        program: String,
+        stage: String,
+        dataElement: String,
+        event: String,
+        eventDate: String,
+        value: String
+    ) = evaluate(
+        ou,
+        program,
+        event,
+        Collections.singletonList(
+            dataEntry(
+                eventDate,
+                stage,
+                dataElement,
+                value
+            )
+        )
+    ).find { effect ->
+        effect.ruleAction.type == ProgramRuleActionType.SHOWERROR.name
+    }
+
     suspend fun evaluate(
         ou: String,
         program: String,
         event: String,
+        dataValues: List<RuleDataValue> = emptyList()
     ) = withContext(Dispatchers.IO) {
         val ruleEngineContextData = ruleEngineContextData(ou, program)
+        val events = ruleEngineContextData.ruleEvents.filter {
+            it.event != event
+        }
 
         return@withContext ruleEngine.evaluate(
-            target = getRuleEvent(event),
+            target = getRuleEvent(event, dataValues),
             ruleEnrollment = ruleEngineContextData.ruleEnrollment,
-            ruleEvents = ruleEngineContextData.ruleEvents,
+            ruleEvents = events,
             executionContext = ruleEngineContextData.ruleEngineContext,
         )
     }
