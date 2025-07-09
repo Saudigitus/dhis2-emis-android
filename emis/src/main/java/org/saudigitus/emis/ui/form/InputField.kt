@@ -2,15 +2,15 @@ package org.saudigitus.emis.ui.form
 
 import android.content.Intent
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldColors
-import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,9 +41,12 @@ fun InputField(
     placeholder: String,
     inputType: ValueType?,
     enabled: Boolean = true,
-    colors: TextFieldColors = TextFieldDefaults.textFieldColors(
-        backgroundColor = Color.Transparent,
-
+    isError: Boolean = false,
+    errorMessage: String? = null,
+    colors: TextFieldColors = TextFieldDefaults.colors(
+        focusedIndicatorColor = Color.Transparent,
+        unfocusedIndicatorColor = Color.Transparent,
+        disabledIndicatorColor = Color.Transparent,
     ),
 ) {
     var action by remember { mutableStateOf("") }
@@ -79,6 +82,10 @@ fun InputField(
                     }
                 }
             }
+        },
+        isError = isError,
+        supportingText = {
+            errorMessage?.let { Text(text = it) }
         },
         singleLine = inputType?.toKeyBoardInputType()?.multiline == true,
         maxLines = if (inputType?.toKeyBoardInputType()?.multiline == false) 1 else Int.MAX_VALUE,

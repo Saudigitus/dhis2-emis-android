@@ -104,8 +104,8 @@ fun Modifier.expandedFormSize(isExpanded: Boolean) = if (isExpanded) {
     this.width(170.dp)
         .height(90.dp)
 } else {
-    this.width(120.dp)
-        .height(60.dp)
+    this.width(150.dp)
+        .height(90.dp)
 }
 
 fun List<AnalyticGroup>.isTypeEmpty(type: String) =

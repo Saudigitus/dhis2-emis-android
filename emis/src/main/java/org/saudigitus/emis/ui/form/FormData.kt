@@ -5,6 +5,7 @@ import org.saudigitus.emis.data.model.Option
 
 data class FormData(
     val tei: String,
+    val event: String,
     val dataElement: String,
     val value: String?,
     val date: String?,

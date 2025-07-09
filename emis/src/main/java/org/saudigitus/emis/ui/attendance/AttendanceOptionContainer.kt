@@ -61,6 +61,7 @@ fun AttendanceOptionContainer(
     setTEIAbsence: (index: Int, tei: String, value: String, color: Color?) -> Unit,
     setAbsenceState: (
         key: String,
+        event: String,
         dataElement: String,
         value: String,
         valueType: ValueType?,
@@ -156,6 +157,7 @@ private fun AbsenceForm(
     ) -> Unit,
     setAbsenceState: (
         key: String,
+        event: String,
         dataElement: String,
         value: String,
         valueType: ValueType?,

@@ -1,6 +1,5 @@
 package org.saudigitus.emis.data.local.repository
 
-import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
