@@ -33,7 +33,6 @@ fun FormBuilder(
     state: List<Field>,
     key: String,
     fields: List<FormField>,
-    selectedItemCode: String? = null,
     formData: List<FormData>? = emptyList(),
     onNext: (Triple<String, String?, ValueType?>) -> Unit,
     setFormState: (

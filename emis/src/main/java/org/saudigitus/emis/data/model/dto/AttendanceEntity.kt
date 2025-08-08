@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 
 data class AttendanceEntity(
     val tei: String,
+    val event: String? = null,
     val enrollment: String,
     val dataElement: String,
     val value: String,
@@ -25,6 +26,7 @@ fun AttendanceEntity.withBtnSettings(
     iconColor: Color,
 ) = AttendanceEntity(
     this.tei,
+    this.event,
     this.enrollment,
     this.dataElement,
     this.value,

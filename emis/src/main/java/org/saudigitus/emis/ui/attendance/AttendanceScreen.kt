@@ -54,7 +54,6 @@ import org.saudigitus.emis.ui.components.ToolbarActionState
 import org.saudigitus.emis.ui.teis.mapper.TEICardMapper
 import org.saudigitus.emis.ui.theme.light_success
 import org.saudigitus.emis.utils.DateHelper
-import org.saudigitus.emis.utils.getReasonByTei
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,6 +73,8 @@ fun AttendanceScreen(
     val schoolCalendar by viewModel.schoolCalendar.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val formFields by viewModel.formFields.collectAsStateWithLifecycle()
+    val fieldState by viewModel.fieldState.collectAsStateWithLifecycle()
+    val formData by viewModel.formData.collectAsStateWithLifecycle()
 
     var isAttendanceCompleted by remember { mutableStateOf(false) }
     var launchBulkAssign by remember { mutableStateOf(false) }
@@ -283,11 +284,12 @@ fun AttendanceScreen(
                                 attendanceBtnState = attendanceBtnState,
                                 attendanceOptions = attendanceOptions,
                                 formFields = formFields,
+                                fieldsState = fieldState,
+                                formData = formData,
                                 attendanceStep = attendanceStep,
                                 isEnabled = !isInactive,
                                 student = student,
                                 card = card,
-                                selectedReason = attendanceStatus.getReasonByTei(student.tei?.uid().orEmpty()),
                                 setAttendance = { index, ou, tei, value, reasonOfAbsence, color, hasPersisted ->
                                     viewModel.setAttendance(
                                         index,
@@ -311,9 +313,7 @@ fun AttendanceScreen(
                                         null,
                                     )
                                 },
-                                setAbsenceState = { key, event, dataElement, value, valueType ->
-
-                                },
+                                setAbsenceState = viewModel::fieldState,
                                 onNext = { tei, ou, fieldData ->
                                     viewModel.setAbsence(reasonOfAbsence = fieldData.second)
                                     viewModel.save()

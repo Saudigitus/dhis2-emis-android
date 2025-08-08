@@ -14,5 +14,5 @@ data class PerformanceUiState(
     val fieldsState: List<Field> = emptyList(),
     val formFields: List<FormField> = emptyList(),
     val formData: List<FormData>? = emptyList(),
-    val isValidating: Boolean = false,
+    val isValidating: Boolean ,
 )

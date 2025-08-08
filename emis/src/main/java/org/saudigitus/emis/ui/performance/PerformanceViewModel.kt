@@ -4,8 +4,6 @@ import android.util.Log
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -41,6 +39,7 @@ class PerformanceViewModel
         PerformanceUiState(
             toolbarHeaders = this.toolbarHeaders.value,
             students = this.teis.value,
+            isValidating = false
         ),
     )
 
@@ -103,6 +102,9 @@ class PerformanceViewModel
     override fun save() {
         viewModelScope.launch {
             when (buttonStep.value) {
+                ButtonStep.EDITING -> {
+                    setButtonStep(ButtonStep.HOLD_SAVING)
+                }
                 ButtonStep.HOLD_SAVING -> {
                     setButtonStep(ButtonStep.SAVING)
                 }
@@ -111,8 +113,9 @@ class PerformanceViewModel
                         cache.value.forEach { item ->
                             formRepository.save(item)
                         }
+
                         _cache.value = emptyList()
-                        setButtonStep(ButtonStep.HOLD_SAVING)
+                        setButtonStep(ButtonStep.EDITING)
                     }
                 }
             }
@@ -146,6 +149,7 @@ class PerformanceViewModel
         data.add(eventTuple)
 
         _cache.value = data
+        viewModelState.update { it.copy(isValidating = false) }
     }
 
     private fun getFields(stage: String, dl: String) {
@@ -228,22 +232,27 @@ class PerformanceViewModel
         viewModelState.update { it.copy(isValidating = true) }
 
         fieldValidationJobs[key] = viewModelScope.launch {
-            val error = validateDataEntry(event, value)
+            try {
+                val error = validateDataEntry(event, value)
 
-            val updatedFields = viewModelState.value.fieldsState.toMutableList()
-            val idx = updatedFields.indexOfFirst { it.key == key && it.dataElement == dataElement }
+                val updatedFields = viewModelState.value.fieldsState.toMutableList()
+                val idx =
+                    updatedFields.indexOfFirst { it.key == key && it.dataElement == dataElement }
 
-            if (idx >= 0) {
-                val validatedField = updatedFields[idx].copy(
-                    hasError = error != null,
-                    errorMessage = error,
-                )
-                updatedFields[idx] = validatedField
-                viewModelState.update { it.copy(fieldsState = updatedFields) }
+                if (idx >= 0) {
+                    val validatedField = updatedFields[idx].copy(
+                        hasError = error != null,
+                        errorMessage = error,
+                    )
+                    updatedFields[idx] = validatedField
+                    viewModelState.update { it.copy(fieldsState = updatedFields) }
+                }
+
+                val stillValidating = fieldValidationJobs.any { it.value.isActive }
+                viewModelState.update { it.copy(isValidating = stillValidating) }
+            } catch (_: Exception) {
+                viewModelState.update { it.copy(isValidating = false) }
             }
-
-            val stillValidating = fieldValidationJobs.any { it.value.isActive }
-            viewModelState.update { it.copy(isValidating = stillValidating) }
         }
     }
 

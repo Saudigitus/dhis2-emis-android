@@ -32,8 +32,10 @@ import org.saudigitus.emis.data.model.SearchTeiModel
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
 import org.saudigitus.emis.ui.form.Field
 import org.saudigitus.emis.ui.form.FormBuilder
+import org.saudigitus.emis.ui.form.FormData
 import org.saudigitus.emis.ui.form.FormField
 import org.saudigitus.emis.utils.Constants.ABSENT
+import org.saudigitus.emis.utils.isVisible
 
 @Stable
 @Suppress("DEPRECATION")
@@ -44,11 +46,11 @@ fun AttendanceOptionContainer(
     attendanceOptions: List<AttendanceOption> = emptyList(),
     formFields: List<FormField> = emptyList(),
     fieldsState: List<Field> = emptyList(),
+    formData: List<FormData> = emptyList(),
     attendanceStep: ButtonStep,
     card: ListCardUiModel,
     student: SearchTeiModel,
     isEnabled: Boolean = true,
-    selectedReason: String? = null,
     setAttendance: (
         index: Int,
         ou: String,
@@ -73,6 +75,9 @@ fun AttendanceOptionContainer(
     ) -> Unit,
 ) {
     var isAbsent by rememberSaveable { mutableStateOf(false) }
+    var has2BVisible by rememberSaveable {
+        mutableStateOf(formData.isVisible(student.tei.uid()))
+    }
 
     Column(
         modifier = Modifier
@@ -123,17 +128,20 @@ fun AttendanceOptionContainer(
                     if (key.lowercase() == ABSENT) {
                         isAbsent = true
                         setTEIAbsence(index, tei ?: student.tei.uid(), attendance, color)
+                    } else {
+                        isAbsent = false
+                        has2BVisible = false
                     }
                 }
             }
         }
         AbsenceForm(
-            visibility = isAbsent || selectedReason != null,
+            visibility = isAbsent || formData.isVisible(student.tei.uid()),
             enabled = attendanceStep == ButtonStep.HOLD_SAVING,
             student = student,
             formFields = formFields,
             fieldsState = fieldsState,
-            selectedReason = selectedReason,
+            formData = formData,
             onNext = onNext,
             setAbsenceState = setAbsenceState,
         )
@@ -147,9 +155,9 @@ private fun AbsenceForm(
     visibility: Boolean = false,
     enabled: Boolean = true,
     student: SearchTeiModel,
-    selectedReason: String? = null,
     formFields: List<FormField> = emptyList(),
     fieldsState: List<Field> = emptyList(),
+    formData: List<FormData>,
     onNext: (
         tei: String,
         ou: String,
@@ -186,7 +194,7 @@ private fun AbsenceForm(
                 state = fieldsState,
                 key = student.uid(),
                 fields = formFields,
-                selectedItemCode = selectedReason,
+                formData = formData,
                 onNext = {
                     onNext.invoke(
                         student.uid(),
