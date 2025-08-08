@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import org.dhis2.composetable.ui.displayName
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.arch.repositories.scope.RepositoryScope
 import org.hisp.dhis.android.core.event.Event
@@ -12,8 +13,12 @@ import org.saudigitus.emis.R
 import org.saudigitus.emis.data.model.AnalyticGroup
 import org.saudigitus.emis.data.model.OU
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
+import org.saudigitus.emis.ui.attendance.AttendanceOption
 import org.saudigitus.emis.ui.components.DropdownItem
 import org.saudigitus.emis.ui.components.DropdownState
+import org.saudigitus.emis.ui.form.Field
+import org.saudigitus.emis.ui.form.FormData
+import org.saudigitus.emis.ui.form.FormField
 import org.saudigitus.emis.ui.teis.FilterType
 
 fun D2.eventsWithTrackedDataValues(
@@ -24,6 +29,7 @@ fun D2.eventsWithTrackedDataValues(
     .byOrganisationUnitUid().eq(ou)
     .byProgramUid().eq(program)
     .byProgramStageUid().eq(stage)
+    .byDeleted().isFalse
     .withTrackedEntityDataValues()
     .blockingGet()
 
@@ -120,3 +126,18 @@ fun List<org.saudigitus.emis.data.model.Option>.findByCode(code: String) =
 fun List<AttendanceEntity>.getReasonByTei(tei: String) =
     this.find { it.tei == tei }
         ?.reasonOfAbsence
+
+
+fun  List<FormData>.isVisible(tei: String) =
+    this.any { it.tei == tei }
+
+
+fun FormField.getOption(reason: String): org.saudigitus.emis.data.model.Option {
+    val option =  this.options?.find { it.code == reason }
+
+    return org.saudigitus.emis.data.model.Option(
+        uid = option?.uid.orEmpty(),
+        code = option?.code,
+        displayName = option?.displayName,
+    )
+}

@@ -63,6 +63,8 @@ interface DataManager {
         date: String?,
     ): List<AttendanceEntity>
 
+    suspend fun deleteEvent(tei: String, enrollment: String, eventDate: String)
+
     suspend fun geTeiByAttendanceStatus(
         ou: String,
         program: String,

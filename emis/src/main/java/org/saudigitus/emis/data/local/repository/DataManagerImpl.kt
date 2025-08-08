@@ -10,12 +10,14 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import org.dhis2.commons.bindings.dataElement
 import org.dhis2.commons.bindings.enrollment
+import org.dhis2.commons.bindings.event
 import org.dhis2.commons.date.DateUtils
 import org.dhis2.commons.network.NetworkUtils
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.dataelement.DataElement
 import org.hisp.dhis.android.core.event.EventCreateProjection
 import org.hisp.dhis.android.core.event.EventStatus
+import org.joda.time.format.ISODateTimeFormat.date
 import org.saudigitus.emis.data.local.DataManager
 import org.saudigitus.emis.data.local.util.SqlRaw
 import org.saudigitus.emis.data.model.CalendarConfig
@@ -163,9 +165,9 @@ class DataManagerImpl
         return@withContext rawOptions
             .map {
                 DropdownItem(
-                    id        = it.uid(),
-                    itemName  = it.displayName().orEmpty(),
-                    code      = it.code().orEmpty(),
+                    id = it.uid(),
+                    itemName = it.displayName().orEmpty(),
+                    code = it.code().orEmpty(),
                     sortOrder = it.sortOrder()
                 )
             }
@@ -236,9 +238,10 @@ class DataManagerImpl
                 program,
                 stage,
             ).filter {
-                val dataElements = it.trackedEntityDataValues()?.associate { trackedEntityDataValue ->
-                    Pair(trackedEntityDataValue.dataElement(), trackedEntityDataValue.value())
-                }
+                val dataElements =
+                    it.trackedEntityDataValues()?.associate { trackedEntityDataValue ->
+                        Pair(trackedEntityDataValue.dataElement(), trackedEntityDataValue.value())
+                    }
                 dataElements?.keys?.containsAll(dataElementIds) == true &&
                     dataElements.values.containsAll(dataValues)
             }.mapNotNull {
@@ -274,6 +277,7 @@ class DataManagerImpl
                 .byTrackedEntityInstanceUids(teis)
                 .byProgramUid().eq(program)
                 .byProgramStageUid().eq(programStage)
+                .byDeleted().isFalse
                 .byEventDate().eq(
                     if (date != null) {
                         Date.valueOf(date)
@@ -300,6 +304,24 @@ class DataManagerImpl
         }
 
         return@withContext deferredEvents.await()
+    }
+
+    override suspend fun deleteEvent(
+        tei: String,
+        enrollment: String,
+        eventDate: String
+    ) = withContext(Dispatchers.IO) {
+        val events = d2.eventModule().events()
+            .byTrackedEntityInstanceUids(listOf(tei))
+            .byEnrollmentUid().eq(enrollment)
+            .byEventDate().eq(Date.valueOf(eventDate))
+            .blockingGetUids()
+
+        events.forEach {
+            d2.eventModule().events()
+                .uid(it)
+                .blockingDeleteIfExist()
+        }
     }
 
     override suspend fun geTeiByAttendanceStatus(

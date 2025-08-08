@@ -72,7 +72,7 @@ class FormRepositoryImpl
 
     override suspend fun save(
         eventTuple: EventTuple,
-    ): Unit = withContext(Dispatchers.IO) {
+    ): Boolean = withContext(Dispatchers.IO) {
         try {
             val uid = eventUid(
                 eventTuple.tei,
@@ -92,9 +92,12 @@ class FormRepositoryImpl
 
             val repository = d2.eventModule().events().uid(uid)
 
-            repository.blockingGet()
+            val result = repository.blockingGet()
+
+            return@withContext result != null
         } catch (e: Exception) {
             Timber.tag("SAVE_EVENT").e(e)
+            return@withContext false
         }
     }
 
@@ -103,6 +106,13 @@ class FormRepositoryImpl
         stage: String,
         dl: String,
     ) = withContext(Dispatchers.IO) {
+        d2.programModule().programTrackedEntityAttributes()
+            .byProgram().eq("")
+            .bySearchable().isTrue
+            .byDisplayInList().isTrue
+            .blockingGet()
+
+
         d2.programModule().programStageDataElements()
             .byProgramStage().eq(stage)
             .byDataElement().eq(dl)
