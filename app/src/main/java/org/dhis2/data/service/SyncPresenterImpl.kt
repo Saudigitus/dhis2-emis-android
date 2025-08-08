@@ -85,6 +85,16 @@ class SyncPresenterImpl(
         Completable.fromObservable(d2.eventModule().events().upload())
             .andThen(
                 Completable.fromObservable(
+                    d2.dataStoreModule()
+                        .dataStoreDownloader()
+                        .download(),
+                ).doOnError {
+                    Timber.d("error while downloading Data store")
+                }.onErrorComplete()
+                    .doOnComplete { Timber.d("finished datastore download") },
+            )
+            .andThen(
+                Completable.fromObservable(
                     d2.eventModule()
                         .eventDownloader()
                         .limit(eventLimit)

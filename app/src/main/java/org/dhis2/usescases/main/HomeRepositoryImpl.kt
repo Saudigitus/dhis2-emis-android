@@ -17,6 +17,8 @@ import org.hisp.dhis.android.core.category.CategoryOptionCombo
 import org.hisp.dhis.android.core.program.ProgramType
 import org.hisp.dhis.android.core.systeminfo.SystemInfo
 import org.hisp.dhis.android.core.user.User
+import org.saudigitus.emis.data.model.EMISConfig
+import org.saudigitus.emis.utils.Constants
 
 class HomeRepositoryImpl(
     private val d2: D2,
@@ -65,6 +67,17 @@ class HomeRepositoryImpl(
         return d2.programs().size + d2.dataSetInstanceSummaries().size
     }
 
+    private fun isSEMIS(program: String): Boolean {
+        val dataStore = d2.dataStoreModule()
+            .dataStore()
+            .byNamespace().eq("semis")
+            .byKey().eq(Constants.KEY)
+            .one().blockingGet()
+
+        val config = EMISConfig.fromJson(dataStore?.value()) ?: emptyList()
+        return config.find { it.program == program } != null
+    }
+
     override fun singleHomeItemData(): HomeItemData? {
         val program = d2.programs().firstOrNull()
         val dataSetInstance = d2.dataSetInstanceSummaries().firstOrNull()
@@ -81,6 +94,7 @@ class HomeRepositoryImpl(
                     } else {
                         null
                     },
+                    isSEMIS = isSEMIS(program.uid()),
                 )
 
             program?.programType() == ProgramType.WITHOUT_REGISTRATION ->

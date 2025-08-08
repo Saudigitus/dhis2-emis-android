@@ -75,7 +75,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.dhis2"
+        applicationId = "com.dhis2.semis"
         compileSdk = libs.versions.sdk.get().toInt()
         targetSdk = libs.versions.sdk.get().toInt()
         minSdk = libs.versions.minSdk.get().toInt()
@@ -88,6 +88,7 @@ android {
         val bitriseSentryDSN = System.getenv("SENTRY_DSN") ?: ""
 
         buildConfigField("String", "SDK_VERSION", "\"" + libs.versions.dhis2sdk.get() + "\"")
+        buildConfigField("String", "SEMIS_VERSION", "\"" + libs.versions.semis.get() + "\"")
         buildConfigField("String", "MATOMO_URL", "\"https://usage.analytics.dhis2.org/matomo.php\"")
         buildConfigField("long", "VERSION_CODE", "${defaultConfig.versionCode}")
         buildConfigField("String", "VERSION_NAME", "\"${defaultConfig.versionName}\"")
@@ -158,21 +159,21 @@ android {
 
     productFlavors {
         create("dhis") {
-            applicationId = "com.dhis2"
+            applicationId = "com.dhis2.semis"
             dimension = "default"
             versionCode = libs.versions.vCode.get().toInt()
             versionName = libs.versions.vName.get()
         }
 
         create("dhisPlayServices") {
-            applicationId = "com.dhis2"
+            applicationId = "com.dhis2.semis"
             dimension = "default"
             versionCode = libs.versions.vCode.get().toInt()
             versionName = libs.versions.vName.get()
         }
 
         create("dhisUITesting") {
-            applicationId = "com.dhis2"
+            applicationId = "com.dhis2.semis"
             dimension = "default"
             versionCode = libs.versions.vCode.get().toInt()
             versionName = libs.versions.vName.get()
@@ -252,6 +253,7 @@ dependencies {
     implementation(project(":stock-usecase"))
     implementation(project(":dhis2-mobile-program-rules"))
     implementation(project(":tracker"))
+    implementation(project(":emis"))
 
     implementation(libs.security.conscrypt)
     implementation(libs.security.rootbeer)

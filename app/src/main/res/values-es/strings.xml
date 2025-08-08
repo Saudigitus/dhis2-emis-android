@@ -822,7 +822,6 @@
     <string name="search_too_many_results">Demasiados resultados</string>
     <string name="search_too_many_results_message">Intente cambiar su búsqueda para restringir los resultados.</string>
     <string name="search_create_new">Crear nuevo</string>
-    <string name="search_new_te_type">Nuevo %s</string>
     <string name="search_min_attributes_message">Es necesario que ingrese al menos %s atributos para iniciar la búsqueda</string>
     <string name="action_ok">De acuerdo</string>
     <string name="init_search">Empieza una búsqueda para encontrar %s</string>

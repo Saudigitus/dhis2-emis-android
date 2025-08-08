@@ -138,7 +138,8 @@ class ProgramRepositoryImplTest {
                     it[0].count == 10 &&
                     it[0].typeName == "event" &&
                     it[1].count == 2 &&
-                    it[1].typeName == "tei"
+                    it[1].typeName == "tei" &&
+                    !it[1].isSEMIS
             }
     }
 
