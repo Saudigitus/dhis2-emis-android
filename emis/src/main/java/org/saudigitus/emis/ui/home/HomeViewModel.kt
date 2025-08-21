@@ -130,12 +130,12 @@ class HomeViewModel
 
     private fun getTeis() {
         viewModelScope.launch {
-            if (!viewModelState.value.isNull || viewModelState.value.isStaffFiltersNotNull) {
-                val dataElements = listOf(
+            if (!viewModelState.value.isNull) {
+                val dataElements = listOfNotNull(
                     registration.value?.academicYear,
                     registration.value?.grade,
                     registration.value?.section,
-                ).mapNotNull { it }
+                )
 
                 repository.getTeisBy(
                     ou = "${viewModelState.value.school?.uid}",

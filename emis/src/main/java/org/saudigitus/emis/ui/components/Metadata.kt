@@ -229,13 +229,8 @@ data class InfoCard(
     val isStaff: Boolean = false,
 ) {
     fun hasData(): Boolean {
-        return if (isStaff) {
-            academicYear.isNotEmpty() &&
-                orgUnitName.isNotEmpty()
-        } else {
-            grade.isNotEmpty() && section.isNotEmpty() && academicYear.isNotEmpty() &&
-                orgUnitName.isNotEmpty()
-        }
+        return academicYear.isNotEmpty() &&
+            orgUnitName.isNotEmpty()
     }
 }
 

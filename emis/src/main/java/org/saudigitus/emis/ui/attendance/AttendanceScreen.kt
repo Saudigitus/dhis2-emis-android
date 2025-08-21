@@ -294,7 +294,7 @@ fun AttendanceScreen(
                                     viewModel.setAttendance(
                                         index,
                                         ou,
-                                        tei ,
+                                        tei,
                                         student.selectedEnrollment.uid().orEmpty(),
                                         value,
                                         reasonOfAbsence,
