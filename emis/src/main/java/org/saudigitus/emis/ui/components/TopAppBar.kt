@@ -34,6 +34,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.saudigitus.emis.R
+import java.time.LocalDate
 
 data class ToolbarHeaders(
     val title: String,
@@ -111,7 +112,6 @@ fun Toolbar(
     actionState: ToolbarActionState = ToolbarActionState(),
     calendarAction: (date: String) -> Unit = {},
     dateValidator: (Long) -> Boolean = { true },
-    favoriteAction: () -> Unit = {},
     syncAction: () -> Unit = {},
     filterAction: () -> Unit = {},
 ) {
