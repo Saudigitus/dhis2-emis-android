@@ -106,13 +106,6 @@ class FormRepositoryImpl
         stage: String,
         dl: String,
     ) = withContext(Dispatchers.IO) {
-        d2.programModule().programTrackedEntityAttributes()
-            .byProgram().eq("")
-            .bySearchable().isTrue
-            .byDisplayInList().isTrue
-            .blockingGet()
-
-
         d2.programModule().programStageDataElements()
             .byProgramStage().eq(stage)
             .byDataElement().eq(dl)

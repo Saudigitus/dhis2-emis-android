@@ -27,26 +27,17 @@ data class HomeUiState(
     val modules: List<Module> = emptyList(),
 ) {
     val isNull: Boolean
-        get() = academicYear == null && school == null && grade == null && section == null
-
-    val isStaffFiltersNotNull: Boolean
-        get() = key == Constants.STAFF && academicYear != null && school != null
+        get() = academicYear == null && school == null
 
     val isStaff: Boolean
         get() = key == Constants.STAFF
 
     val options: List<String>
-        get() = if (key == Constants.STAFF && academicYear != null && school != null) {
-            listOf(
+        get() = if (academicYear != null && school != null) {
+            listOfNotNull(
                 academicYear.code,
                 grade?.code,
                 section?.code,
-            ).mapNotNull { it }
-        } else if (!isNull) {
-            listOf(
-                "${academicYear?.code}",
-                "${grade?.code}",
-                "${section?.code}",
             )
         } else {
             emptyList()
