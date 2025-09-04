@@ -72,6 +72,7 @@ data class DropdownState(
     val leadingIcon: ImageVector? = null,
     val trailingIcon: ImageVector? = null,
     val displayName: String = "",
+    val order: Int = -1,
     val data: List<DropdownItem> = emptyList(),
 )
 

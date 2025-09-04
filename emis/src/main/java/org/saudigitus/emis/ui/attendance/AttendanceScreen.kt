@@ -54,6 +54,8 @@ import org.saudigitus.emis.ui.components.ToolbarActionState
 import org.saudigitus.emis.ui.teis.mapper.TEICardMapper
 import org.saudigitus.emis.ui.theme.light_success
 import org.saudigitus.emis.utils.DateHelper
+import org.saudigitus.emis.utils.DateHelper.stringToLocalDate
+import java.time.ZoneId
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -150,17 +152,27 @@ fun AttendanceScreen(
                 ),
                 calendarAction = viewModel::setDate,
                 dateValidator = {
-                    val date = DateHelper.stringToLocalDate(DateHelper.formatDate(it)!!)
+                    val date = stringToLocalDate(DateHelper.formatDate(it)!!)
                     val today = System.currentTimeMillis()
 
                     if (schoolCalendar != null) {
-                        (
+                        val startDate = schoolCalendar?.academicYear?.startDate
+                        val endDate = schoolCalendar?.academicYear?.endDate
+
+                        val startMillis = stringToLocalDate(startDate!!)
+                            .atStartOfDay(ZoneId.systemDefault())
+                            ?.toInstant()?.toEpochMilli()!!
+                        val endMillis = stringToLocalDate(endDate!!)
+                            .atStartOfDay(ZoneId.systemDefault())
+                            ?.toInstant()?.toEpochMilli()!!
+
+                       (
                             !DateHelper.isWeekend(date) && schoolCalendar?.weekDays?.saturday == false &&
                                 schoolCalendar?.weekDays?.sunday == false
                             ) &&
                             schoolCalendar?.holidays?.let { holiday ->
                                 DateHelper.isHoliday(holiday, it)
-                            } == true && it <= today
+                            } == true && (it in startMillis..endMillis) && it <= today
                     } else {
                         it <= today
                     }

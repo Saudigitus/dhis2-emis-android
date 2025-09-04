@@ -15,6 +15,7 @@ import org.dhis2.commons.Constants.DATA_SET_NAME
 import org.dhis2.commons.Constants.PROGRAM_UID
 import org.saudigitus.emis.data.local.DataManager
 import org.saudigitus.emis.data.model.DefaultConfig
+import org.saudigitus.emis.data.model.Filter
 import org.saudigitus.emis.data.model.OU
 import org.saudigitus.emis.data.model.Registration
 import org.saudigitus.emis.helper.ISEMISSync
@@ -28,18 +29,15 @@ import org.saudigitus.emis.utils.Constants
 import javax.inject.Inject
 
 
-private data class FilterSpec(
-    val type: FilterType,
-    val idProvider: Registration.() -> String?
-)
-
-
 @HiltViewModel
 class HomeViewModel
 @Inject constructor(
     private val repository: DataManager,
     private val semisSync: ISEMISSync,
 ) : BaseViewModel(repository) {
+
+    private val _filter = MutableStateFlow<Filter?>(null)
+    private val filter: StateFlow<Filter?> = _filter
 
     private val _registration = MutableStateFlow<Registration?>(null)
     private val registration: StateFlow<Registration?> = _registration
@@ -66,38 +64,54 @@ class HomeViewModel
     private suspend fun loadFiltersSequentially(
         defaultConfig: DefaultConfig? = null
     ) {
-        val specs = listOf(
-            FilterSpec(FilterType.ACADEMIC_YEAR) { academicYear },
-            FilterSpec(FilterType.GRADE)       { grade },
-            FilterSpec(FilterType.SECTION)     { section }
+        val filterType = mapOf(
+            "grade" to FilterType.GRADE,
+            "class" to FilterType.SECTION
         )
 
         val results = mutableListOf<DropdownState>()
 
-        specs.forEach { spec ->
-            val elementId = registration.value?.run(spec.idProvider).orEmpty()
+        val academicYearId = registration.value?.academicYear
+        var academicYearState: DropdownState? = null
+
+        academicYearId?.let {
+            val options = options(academicYearId)
+            val displayName = getDataElementName(academicYearId)
+
+            academicYearState = DropdownState(
+                FilterType.ACADEMIC_YEAR,
+                displayName = displayName,
+                data = options,
+            )
+
+            setAcademicYear(options.find { it.code == defaultConfig?.currentAcademicYear })
+        }
+
+        filter.value?.dataElements?.forEach { item ->
+            val elementId = item.dataElement.orEmpty()
             if (elementId.isBlank()) return@forEach
 
             val options = options(elementId)
             val displayName = getDataElementName(elementId)
+            val type = filterType.getOrDefault(item.code, FilterType.NONE)
 
             val state = DropdownState(
-                spec.type,
-                null,
-                null,
-                displayName,
-                options,
+                type,
+                displayName = displayName,
+                order = item.order ?: 0,
+                data = options,
             )
 
             results.add(state)
         }
+
+        results.sortBy { r -> r.order }
         viewModelState.update {
-            it.copy(dataElementFilters = results)
+            it.copy(
+                academicYearState = academicYearState,
+                dataElementFilters = results
+            )
         }
-        setAcademicYear(
-            results.find { it.filterType == FilterType.ACADEMIC_YEAR }
-                ?.data?.find { it.code == defaultConfig?.currentAcademicYear },
-        )
     }
 
 
@@ -110,6 +124,8 @@ class HomeViewModel
             if (config != null) {
                 val defaultConfig = config.default
                 _registration.value = config.registration
+                _filter.value = config.filter
+
                 viewModelState.update {
                     it.copy(
                         key = config.key,
@@ -227,19 +243,20 @@ class HomeViewModel
     private suspend fun reloadFilters(): MutableList<DropdownState> {
         val filters = uiState.value.dataElementFilters.toMutableList()
 
-        if (filters.size > 1) {
-            filters.removeAt(1)
-            filters.add(
-                index = 1,
-                DropdownState(
-                    FilterType.GRADE,
-                    null,
-                    null,
-                    getDataElementName("${registration.value?.grade}"),
-                    options("${registration.value?.grade}"),
-                ),
-            )
+        if (filters.isNotEmpty()) {
+            val isRemoved = filters.removeIf { f -> f.filterType == FilterType.GRADE }
+
+            if (isRemoved) {
+                filters.add(
+                    DropdownState(
+                        FilterType.GRADE,
+                        displayName = getDataElementName("${registration.value?.grade}"),
+                        data = options("${registration.value?.grade}"),
+                    ),
+                )
+            }
         }
+        filters.sortBy { it.order }
 
         return filters
     }
