@@ -11,6 +11,8 @@ data class EMISConfigItem(
     val modules: List<Module> = emptyList(),
     @JsonProperty("defaults")
     val default: DefaultConfig?,
+    @JsonProperty("filters")
+    val filter: Filter?,
     @JsonProperty("key")
     val key: String?,
     @JsonProperty("lastUpdate")

@@ -157,23 +157,22 @@ fun HomeUI(
                 verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top),
                 horizontalAlignment = Alignment.Start,
             ) {
-                uiState.dataElementFilters.firstOrNull { it.filterType == FilterType.ACADEMIC_YEAR }
-                    ?.let { filter ->
-                        AnimatedVisibility(visible = filter.data.isNotEmpty()) {
-                            DropDownWithSelectionByCode(
-                                dropdownState = filter,
-                                defaultSelection = uiState.filterSelection.first,
-                                onItemClick = { item ->
-                                    onEvent(
-                                        HomeUiEvent.OnFilterChange(
-                                            FilterType.ACADEMIC_YEAR,
-                                            item
-                                        )
+                uiState.academicYearState?.let {
+                    AnimatedVisibility(visible = it.data.isNotEmpty()) {
+                        DropDownWithSelectionByCode(
+                            dropdownState = it,
+                            defaultSelection = uiState.filterSelection.first,
+                            onItemClick = { item ->
+                                onEvent(
+                                    HomeUiEvent.OnFilterChange(
+                                        FilterType.ACADEMIC_YEAR,
+                                        item
                                     )
-                                }
-                            )
-                        }
+                                )
+                            }
+                        )
                     }
+                }
 
                 AnimatedVisibility(visible = true) {
                     DropDownOu(
@@ -187,25 +186,23 @@ fun HomeUI(
                         }
                     )
                 }
-                uiState.dataElementFilters
-                    .filter { it.filterType == FilterType.GRADE || it.filterType == FilterType.SECTION }
-                    .forEach { filter ->
-                        val defaultSelection = when (filter.filterType) {
-                            FilterType.GRADE -> uiState.filterSelection.second
-                            FilterType.SECTION -> uiState.filterSelection.third
-                            else -> null
-                        }
-
-                        AnimatedVisibility(visible = filter.data.isNotEmpty()) {
-                            DropDown(
-                                dropdownState = filter,
-                                defaultSelection = defaultSelection,
-                                onItemClick = { item ->
-                                    onEvent(HomeUiEvent.OnFilterChange(filter.filterType, item))
-                                }
-                            )
-                        }
+                uiState.dataElementFilters.forEach { filter ->
+                    val defaultSelection = when (filter.filterType) {
+                        FilterType.GRADE -> uiState.filterSelection.second
+                        FilterType.SECTION -> uiState.filterSelection.third
+                        else -> null
                     }
+
+                    AnimatedVisibility(visible = filter.data.isNotEmpty()) {
+                        DropDown(
+                            dropdownState = filter,
+                            defaultSelection = defaultSelection,
+                            onItemClick = { item ->
+                                onEvent(HomeUiEvent.OnFilterChange(filter.filterType, item))
+                            }
+                        )
+                    }
+                }
                 Button(
                     modifier = Modifier
                         .fillMaxWidth()

@@ -172,7 +172,7 @@ fun AttendanceScreen(
                             ) &&
                             schoolCalendar?.holidays?.let { holiday ->
                                 DateHelper.isHoliday(holiday, it)
-                            } == true && (it in startMillis..endMillis)
+                            } == true && (it in startMillis..endMillis) && it <= today
                     } else {
                         it <= today
                     }
