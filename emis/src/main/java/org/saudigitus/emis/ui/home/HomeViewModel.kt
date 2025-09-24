@@ -14,10 +14,11 @@ import kotlinx.coroutines.launch
 import org.dhis2.commons.Constants.DATA_SET_NAME
 import org.dhis2.commons.Constants.PROGRAM_UID
 import org.saudigitus.emis.data.local.DataManager
-import org.saudigitus.emis.data.model.DefaultConfig
-import org.saudigitus.emis.data.model.Filter
+import org.saudigitus.emis.data.model.Module
 import org.saudigitus.emis.data.model.OU
-import org.saudigitus.emis.data.model.Registration
+import org.saudigitus.emis.data.model.app_config.EMISConfigItem
+import org.saudigitus.emis.data.model.app_config.Filters
+import org.saudigitus.emis.data.model.app_config.Registration
 import org.saudigitus.emis.helper.ISEMISSync
 import org.saudigitus.emis.ui.base.BaseViewModel
 import org.saudigitus.emis.ui.components.DropdownItem
@@ -36,8 +37,8 @@ class HomeViewModel
     private val semisSync: ISEMISSync,
 ) : BaseViewModel(repository) {
 
-    private val _filter = MutableStateFlow<Filter?>(null)
-    private val filter: StateFlow<Filter?> = _filter
+    private val _filter = MutableStateFlow<Filters?>(null)
+    private val filter: StateFlow<Filters?> = _filter
 
     private val _registration = MutableStateFlow<Registration?>(null)
     private val registration: StateFlow<Registration?> = _registration
@@ -61,9 +62,7 @@ class HomeViewModel
     override fun setConfig(program: String) {
     }
 
-    private suspend fun loadFiltersSequentially(
-        defaultConfig: DefaultConfig? = null
-    ) {
+    private suspend fun loadFiltersSequentially() {
         val filterType = mapOf(
             "grade" to FilterType.GRADE,
             "class" to FilterType.SECTION
@@ -71,34 +70,33 @@ class HomeViewModel
 
         val results = mutableListOf<DropdownState>()
 
-        val academicYearId = registration.value?.academicYear
+        val academicYearId = schoolCalendar.value?.academicYear
         var academicYearState: DropdownState? = null
 
         academicYearId?.let {
             val options = options(academicYearId)
             val displayName = getDataElementName(academicYearId)
-
             academicYearState = DropdownState(
                 FilterType.ACADEMIC_YEAR,
                 displayName = displayName,
                 data = options,
             )
 
-            setAcademicYear(options.find { it.code == defaultConfig?.currentAcademicYear })
+            setAcademicYear(options.find { it.code == currentSchoolCalendar.value?.academicYear?.code })
         }
 
         filter.value?.dataElements?.forEach { item ->
-            val elementId = item.dataElement.orEmpty()
+            val elementId = item?.dataElement.orEmpty()
             if (elementId.isBlank()) return@forEach
 
             val options = options(elementId)
             val displayName = getDataElementName(elementId)
-            val type = filterType.getOrDefault(item.code, FilterType.NONE)
+            val type = filterType.getOrDefault(item?.code, FilterType.NONE)
 
             val state = DropdownState(
                 type,
                 displayName = displayName,
-                order = item.order ?: 0,
+                order = item?.order ?: 0,
                 data = options,
             )
 
@@ -122,33 +120,51 @@ class HomeViewModel
             val config = repository.getConfig(Constants.KEY)?.find { it.program == program }
 
             if (config != null) {
-                val defaultConfig = config.default
                 _registration.value = config.registration
-                _filter.value = config.filter
+                _filter.value = config.filters
+
+                val modules = moduleVisibility(config)
 
                 viewModelState.update {
                     it.copy(
                         key = config.key,
                         trackedEntityType = repository.getTrackedEntityType(program).orEmpty(),
-                        modules = config.modules
+                        modules = modules
                     )
                 }
-                loadFiltersSequentially(defaultConfig)
+                loadFiltersSequentially()
             }
         }
+    }
+
+    private fun moduleVisibility(config: EMISConfigItem?): List<Module> {
+        return listOf(
+            Module(
+                key = "absenteeism",
+                display = config?.absenteeism?.enabled ?: false
+            ),
+            Module(
+                key = "attendance",
+                display = config?.attendance?.enabled ?: false
+            ),
+            Module(
+                key = "performance",
+                display = config?.performance?.enabled ?: false
+            )
+        )
     }
 
     override fun setDate(date: String) {}
     override fun save() {}
 
     private suspend fun getDataElementName(uid: String) =
-        repository.getDataElement(uid)?.displayFormName() ?: ""
+        repository.getDataElement(uid)?.displayFormName().orEmpty()
 
     private fun getTeis() {
         viewModelScope.launch {
             if (!viewModelState.value.isNull) {
                 val dataElements = listOfNotNull(
-                    registration.value?.academicYear,
+                    schoolCalendar.value?.academicYear,
                     registration.value?.grade,
                     registration.value?.section,
                 )
@@ -168,10 +184,10 @@ class HomeViewModel
                         it.copy(
                             isLoading = false,
                             infoCard = InfoCard(
-                                grade = viewModelState.value.grade?.itemName ?: "",
-                                section = viewModelState.value.section?.itemName ?: "",
-                                academicYear = viewModelState.value.academicYear?.itemName ?: "",
-                                orgUnitName = viewModelState.value.school?.displayName ?: "",
+                                grade = viewModelState.value.grade?.itemName.orEmpty(),
+                                section = viewModelState.value.section?.itemName.orEmpty(),
+                                academicYear = viewModelState.value.academicYear?.itemName.orEmpty(),
+                                orgUnitName = viewModelState.value.school?.displayName.orEmpty(),
                                 teiCount = teis.value.size,
                                 isStaff = viewModelState.value.isStaff,
                             ),
@@ -183,7 +199,7 @@ class HomeViewModel
     }
 
     fun setBundle(bundle: Bundle?) {
-        setConfig(bundle?.getString(PROGRAM_UID) ?: "")
+        setConfig(bundle?.getString(PROGRAM_UID).orEmpty())
 
         _toolbarHeaders.update {
             it.copy(title = "${bundle?.getString(DATA_SET_NAME)}")
@@ -196,7 +212,7 @@ class HomeViewModel
         }
     }
 
-    private fun <T>updateToolbar(obj: T?): ToolbarHeaders {
+    private fun <T> updateToolbar(obj: T?): ToolbarHeaders {
         return when (obj) {
             is DropdownItem -> {
                 val subtitle = if (viewModelState.value.school?.displayName != null) {
@@ -211,6 +227,7 @@ class HomeViewModel
 
                 toolbarHeaders.value
             }
+
             is OU -> {
                 val subtitle = if (viewModelState.value.academicYear?.itemName != null) {
                     "${viewModelState.value.academicYear?.itemName} | ${obj.displayName}"
@@ -224,6 +241,7 @@ class HomeViewModel
 
                 toolbarHeaders.value
             }
+
             else -> {
                 toolbarHeaders.value
             }
@@ -312,20 +330,24 @@ class HomeViewModel
         }
     }
 
-    private fun <T>onFilterItemClick(filterType: FilterType, filterItem: T) {
+    private fun <T> onFilterItemClick(filterType: FilterType, filterItem: T) {
         when (filterType) {
             FilterType.ACADEMIC_YEAR -> {
                 setAcademicYear(filterItem as DropdownItem)
             }
+
             FilterType.GRADE -> {
                 setGrade(filterItem as DropdownItem)
             }
+
             FilterType.SECTION -> {
                 setSection(filterItem as DropdownItem)
             }
+
             FilterType.SCHOOL -> {
                 setSchool(filterItem as OU)
             }
+
             FilterType.NONE -> {}
         }
     }
@@ -335,13 +357,15 @@ class HomeViewModel
             is HomeUiEvent.HideShowFilter -> {
                 onFilterClick()
             }
+
             is HomeUiEvent.OnFilterChange<*> -> {
                 onFilterItemClick(homeUiEvent.filterType, homeUiEvent.obj)
             }
+
             is HomeUiEvent.OnDownloadStudent -> {
                 viewModelScope.launch {
                     val dataElementIds = listOf(
-                        registration.value?.academicYear,
+                        schoolCalendar.value?.academicYear,
                         registration.value?.grade,
                         registration.value?.section,
                     ).mapNotNull { it }
@@ -358,6 +382,7 @@ class HomeViewModel
                     }
                 }
             }
+
             else -> {}
         }
     }

@@ -17,7 +17,7 @@ import org.hisp.dhis.android.core.category.CategoryOptionCombo
 import org.hisp.dhis.android.core.program.ProgramType
 import org.hisp.dhis.android.core.systeminfo.SystemInfo
 import org.hisp.dhis.android.core.user.User
-import org.saudigitus.emis.data.model.EMISConfig
+import org.saudigitus.emis.data.model.app_config.EMISConfig
 import org.saudigitus.emis.utils.Constants
 
 class HomeRepositoryImpl(

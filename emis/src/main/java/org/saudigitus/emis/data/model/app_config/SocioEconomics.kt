@@ -1,10 +1,11 @@
-package org.saudigitus.emis.data.model
+package org.saudigitus.emis.data.model.app_config
+
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class Performance(
-    @JsonProperty("programStages")
-    val programStages: List<ProgramStage?>?,
+data class SocioEconomics(
+    @JsonProperty("programStage")
+    val programStage: String?
 )

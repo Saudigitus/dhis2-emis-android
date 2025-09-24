@@ -16,7 +16,7 @@ import org.hisp.dhis.android.core.program.Program
 import org.hisp.dhis.android.core.program.ProgramType.WITHOUT_REGISTRATION
 import org.hisp.dhis.android.core.program.ProgramType.WITH_REGISTRATION
 import org.hisp.dhis.mobile.ui.designsystem.theme.SurfaceColor
-import org.saudigitus.emis.data.model.EMISConfig
+import org.saudigitus.emis.data.model.app_config.EMISConfig
 import org.saudigitus.emis.utils.Constants
 
 internal class ProgramRepositoryImpl(

@@ -9,8 +9,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hisp.dhis.android.core.enrollment.EnrollmentStatus
 import org.saudigitus.emis.data.local.DataManager
-import org.saudigitus.emis.data.model.CalendarConfig
 import org.saudigitus.emis.data.model.SearchTeiModel
+import org.saudigitus.emis.data.model.schoolcalendar_config.SchoolCalendar
+import org.saudigitus.emis.data.model.schoolcalendar_config.SchoolCalendarConfig
 import org.saudigitus.emis.ui.attendance.ButtonStep
 import org.saudigitus.emis.ui.components.InfoCard
 import org.saudigitus.emis.ui.components.ToolbarHeaders
@@ -35,8 +36,11 @@ abstract class BaseViewModel(
     )
     val toolbarHeaders: StateFlow<ToolbarHeaders> = _toolbarHeaders
 
-    private val _schoolCalendar = MutableStateFlow<CalendarConfig?>(null)
-    val schoolCalendar: StateFlow<CalendarConfig?> = _schoolCalendar
+    private val _schoolCalendar = MutableStateFlow<SchoolCalendarConfig?>(null)
+    val schoolCalendar: StateFlow<SchoolCalendarConfig?> = _schoolCalendar
+
+    private val _currentSchoolCalendar = MutableStateFlow<SchoolCalendar?>(null)
+    val currentSchoolCalendar: StateFlow<SchoolCalendar?> = _currentSchoolCalendar;
 
     protected val _eventDate = MutableStateFlow(DateHelper.formatDate(System.currentTimeMillis()) ?: "")
     val eventDate: StateFlow<String> = _eventDate
@@ -56,6 +60,10 @@ abstract class BaseViewModel(
     init {
         viewModelScope.launch {
             _schoolCalendar.value = repository.dateValidation(Constants.CALENDAR_KEY)
+            val default = schoolCalendar.value?.defaults
+            _currentSchoolCalendar.value = schoolCalendar.value?.schoolCalendar?.find {
+                it?.academicYear?.code == default?.academicYear
+            }
         }
     }
 

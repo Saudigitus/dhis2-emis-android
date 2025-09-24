@@ -42,6 +42,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastFilterNotNull
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.dhis2.ui.theme.colorPrimary
 import org.hisp.dhis.android.core.enrollment.EnrollmentStatus
@@ -73,6 +74,7 @@ fun AttendanceScreen(
     val attendanceStatus by viewModel.attendanceStatus.collectAsStateWithLifecycle()
     val toolbarHeaders by viewModel.toolbarHeaders.collectAsStateWithLifecycle()
     val schoolCalendar by viewModel.schoolCalendar.collectAsStateWithLifecycle()
+    val currentSchoolCalendar by viewModel.currentSchoolCalendar.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val formFields by viewModel.formFields.collectAsStateWithLifecycle()
     val fieldState by viewModel.fieldState.collectAsStateWithLifecycle()
@@ -155,9 +157,9 @@ fun AttendanceScreen(
                     val date = stringToLocalDate(DateHelper.formatDate(it)!!)
                     val today = System.currentTimeMillis()
 
-                    if (schoolCalendar != null) {
-                        val startDate = schoolCalendar?.academicYear?.startDate
-                        val endDate = schoolCalendar?.academicYear?.endDate
+                    if (schoolCalendar != null && currentSchoolCalendar != null) {
+                        val startDate = currentSchoolCalendar?.academicYear?.startDate
+                        val endDate = currentSchoolCalendar?.academicYear?.endDate
 
                         val startMillis = stringToLocalDate(startDate!!)
                             .atStartOfDay(ZoneId.systemDefault())
@@ -167,11 +169,11 @@ fun AttendanceScreen(
                             ?.toInstant()?.toEpochMilli()!!
 
                        (
-                            !DateHelper.isWeekend(date) && schoolCalendar?.weekDays?.saturday == false &&
-                                schoolCalendar?.weekDays?.sunday == false
+                            !DateHelper.isWeekend(date) && currentSchoolCalendar?.weekDays?.saturday == false &&
+                                currentSchoolCalendar?.weekDays?.sunday == false
                             ) &&
-                            schoolCalendar?.holidays?.let { holiday ->
-                                DateHelper.isHoliday(holiday, it)
+                           currentSchoolCalendar?.holidays?.let { holiday ->
+                                DateHelper.isHoliday(holiday.fastFilterNotNull(), it)
                             } == true && (it in startMillis..endMillis) && it <= today
                     } else {
                         it <= today
