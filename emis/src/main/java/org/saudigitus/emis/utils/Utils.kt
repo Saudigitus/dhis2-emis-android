@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import org.dhis2.commons.resources.ColorUtils
 import org.saudigitus.emis.R
-import org.saudigitus.emis.data.model.EMISConfig
+import org.saudigitus.emis.data.model.app_config.EMISConfig
 import kotlin.random.Random
 
 object Utils {

@@ -1,7 +1,7 @@
 package org.saudigitus.emis.utils
 
 import org.dhis2.commons.date.DateUtils
-import org.saudigitus.emis.data.model.Holiday
+import org.saudigitus.emis.data.model.schoolcalendar_config.Holiday
 import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.time.DayOfWeek

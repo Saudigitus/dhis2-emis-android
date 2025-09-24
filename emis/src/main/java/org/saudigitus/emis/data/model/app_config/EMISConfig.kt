@@ -1,16 +1,16 @@
-package org.saudigitus.emis.data.model
+package org.saudigitus.emis.data.model.app_config
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.saudigitus.emis.utils.Mapper.translateJsonToObject
+import org.saudigitus.emis.utils.Mapper
 
 class EMISConfig {
-    private fun toJson(): String = translateJsonToObject().writeValueAsString(this)
+    private fun toJson(): String = Mapper.translateJsonToObject().writeValueAsString(this)
 
     companion object {
         fun fromJson(json: String?): List<EMISConfigItem>? = if (json != null) {
             val mapper = ObjectMapper()
 
-            translateJsonToObject()
+            Mapper.translateJsonToObject()
                 .readValue(
                     json,
                     mapper.typeFactory.constructCollectionType(
@@ -24,7 +24,7 @@ class EMISConfig {
 
         inline fun <reified T> translateFromJson(json: String?): T? =
             if (json != null) {
-                translateJsonToObject()
+                Mapper.translateJsonToObject()
                     .readValue(json, T::class.java)
             } else {
                 null

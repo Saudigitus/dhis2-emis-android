@@ -1,12 +1,11 @@
 package org.saudigitus.emis.ui.attendance
 
 import androidx.compose.ui.graphics.Color
-import org.saudigitus.emis.data.model.CalendarConfig
 import org.saudigitus.emis.data.model.SearchTeiModel
 import org.saudigitus.emis.data.model.dto.Absence
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
+import org.saudigitus.emis.data.model.schoolcalendar_config.SchoolCalendarConfig
 import org.saudigitus.emis.ui.components.DropdownItem
-import org.saudigitus.emis.ui.components.InfoCard
 import org.saudigitus.emis.ui.components.ToolbarHeaders
 import org.saudigitus.emis.ui.form.Field
 import org.saudigitus.emis.ui.form.FormData
@@ -25,7 +24,7 @@ data class AttendanceUiState(
     val fieldsState: List<Field> = emptyList(),
     val formFields: List<FormField> = emptyList(),
     val formData: List<FormData>? = emptyList(),
-    val schoolCalendar: CalendarConfig? = null,
+    val schoolCalendar: SchoolCalendarConfig? = null,
 )
 
 data class AttendanceActionButtonState(

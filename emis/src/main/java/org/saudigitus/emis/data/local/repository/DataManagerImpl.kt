@@ -10,24 +10,22 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import org.dhis2.commons.bindings.dataElement
 import org.dhis2.commons.bindings.enrollment
-import org.dhis2.commons.bindings.event
 import org.dhis2.commons.date.DateUtils
 import org.dhis2.commons.network.NetworkUtils
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.dataelement.DataElement
 import org.hisp.dhis.android.core.event.EventCreateProjection
 import org.hisp.dhis.android.core.event.EventStatus
-import org.joda.time.format.ISODateTimeFormat.date
 import org.saudigitus.emis.data.local.DataManager
 import org.saudigitus.emis.data.local.util.SqlRaw
-import org.saudigitus.emis.data.model.CalendarConfig
-import org.saudigitus.emis.data.model.EMISConfig
-import org.saudigitus.emis.data.model.EMISConfigItem
-import org.saudigitus.emis.data.model.ProgramStage
+import org.saudigitus.emis.data.model.app_config.EMISConfig
+import org.saudigitus.emis.data.model.app_config.EMISConfigItem
 import org.saudigitus.emis.data.model.SearchTeiModel
 import org.saudigitus.emis.data.model.Subject
+import org.saudigitus.emis.data.model.app_config.ProgramStages
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
 import org.saudigitus.emis.data.model.dto.withBtnSettings
+import org.saudigitus.emis.data.model.schoolcalendar_config.SchoolCalendarConfig
 import org.saudigitus.emis.service.RuleEngineRepository
 import org.saudigitus.emis.ui.attendance.AttendanceOption
 import org.saudigitus.emis.ui.components.DropdownItem
@@ -43,6 +41,7 @@ import org.saudigitus.emis.utils.optionsNotInOptionsSets
 import timber.log.Timber
 import java.sql.Date
 import javax.inject.Inject
+import kotlin.collections.mapNotNull
 
 class DataManagerImpl
 @Inject constructor(
@@ -196,10 +195,10 @@ class DataManagerImpl
         val config = getConfig(Constants.KEY)?.find { it.program == program }
             ?.attendance ?: return@withContext emptyList()
 
-        val optionsCode = config.attendanceStatus?.mapNotNull { it.code } ?: emptyList()
+        val optionsCode = config.statusOptions?.mapNotNull { it.code } ?: emptyList()
 
         return@withContext getOptionsByCode("${config.status}", optionsCode).mapNotNull {
-            val status = config.attendanceStatus?.find { status ->
+            val status = config.statusOptions?.find { status ->
                 status.code == it.code
             }
 
@@ -291,7 +290,7 @@ class DataManagerImpl
                     transformations.eventTransform(it, dataElement, reasonDataElement)
                 }
                 .map { attendanceEntity ->
-                    val status = config.attendanceStatus?.find { status ->
+                    val status = config.statusOptions?.find { status ->
                         status.code == attendanceEntity.value
                     }
 
@@ -338,7 +337,7 @@ class DataManagerImpl
         val config = getConfig(Constants.KEY)?.find { it.program == program }
             ?.attendance ?: return@withContext emptyMap()
 
-        val attendanceStatus = config.attendanceStatus?.find { status ->
+        val attendanceStatus = config.statusOptions?.find { status ->
             status.key == Constants.ABSENT
         }?.code ?: ""
 
@@ -393,7 +392,7 @@ class DataManagerImpl
         }
     }
 
-    override suspend fun dateValidation(id: String): CalendarConfig? =
+    override suspend fun dateValidation(id: String): SchoolCalendarConfig? =
         withContext(Dispatchers.IO) {
             return@withContext try {
                 val dataStore = d2.dataStoreModule()
@@ -402,7 +401,7 @@ class DataManagerImpl
                     .byKey().eq(id)
                     .one().blockingGet()
 
-                EMISConfig.translateFromJson<CalendarConfig>(dataStore?.value())
+                EMISConfig.translateFromJson<SchoolCalendarConfig>(dataStore?.value())
             } catch (_: Exception) {
                 null
             }
@@ -424,7 +423,7 @@ class DataManagerImpl
             }
     }
 
-    override suspend fun getTerms(stages: List<ProgramStage>) = withContext(Dispatchers.IO) {
+    override suspend fun getTerms(stages: List<ProgramStages>) = withContext(Dispatchers.IO) {
         val stagesIds = stages.mapNotNull { it.programStage }
 
         return@withContext d2.programModule().programStages()
