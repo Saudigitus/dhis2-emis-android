@@ -1,18 +1,20 @@
-package org.saudigitus.emis.data.model
+package org.saudigitus.emis.data.model.app_config
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class EMISConfigItem(
+    @JsonProperty("absenteeism")
+    val absenteeism: Absenteeism?,
     @JsonProperty("attendance")
     val attendance: Attendance?,
-    @JsonProperty("modules")
-    val modules: List<Module> = emptyList(),
     @JsonProperty("defaults")
-    val default: DefaultConfig?,
+    val defaults: Defaults?,
     @JsonProperty("filters")
-    val filter: Filter?,
+    val filters: Filters?,
+    @JsonProperty("final-result")
+    val finalResult: FinalResult?,
     @JsonProperty("key")
     val key: String?,
     @JsonProperty("lastUpdate")
@@ -21,10 +23,14 @@ data class EMISConfigItem(
     val performance: Performance?,
     @JsonProperty("program")
     val program: String?,
+    @JsonProperty("reenroll")
+    val reenroll: Reenroll?,
     @JsonProperty("registration")
     val registration: Registration?,
     @JsonProperty("socio-economics")
     val socioEconomics: SocioEconomics?,
+    @JsonProperty("trackedEntityType")
+    val trackedEntityType: String?,
     @JsonProperty("transfer")
-    val transfer: Transfer?,
+    val transfer: Transfer?
 )

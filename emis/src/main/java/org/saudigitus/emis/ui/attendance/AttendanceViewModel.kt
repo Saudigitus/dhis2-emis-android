@@ -11,11 +11,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.dhis2.commons.date.DateUtils
-import org.hisp.dhis.android.core.arch.helpers.CollectionsHelper.isDeleted
 import org.hisp.dhis.android.core.common.ValueType
 import org.saudigitus.emis.data.local.DataManager
 import org.saudigitus.emis.data.local.FormRepository
-import org.saudigitus.emis.data.model.Attendance
+import org.saudigitus.emis.data.model.app_config.Attendance
 import org.saudigitus.emis.data.model.Summary
 import org.saudigitus.emis.data.model.dto.Absence
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
@@ -158,9 +157,9 @@ class AttendanceViewModel
                 _attendanceStatus.value = async {
                     repository.getAttendanceEvent(
                         program = program.value,
-                        programStage = datastoreAttendance.value?.programStage ?: "",
-                        dataElement = datastoreAttendance.value?.status ?: "",
-                        reasonDataElement = datastoreAttendance.value?.absenceReason ?: "",
+                        programStage = datastoreAttendance.value?.programStage.orEmpty(),
+                        dataElement = datastoreAttendance.value?.status.orEmpty(),
+                        reasonDataElement = datastoreAttendance.value?.absenceReason.orEmpty(),
                         teis = teiUIds.value.map { it.first },
                         date = date.toString(),
                     )
@@ -192,13 +191,13 @@ class AttendanceViewModel
                 repository.geTeiByAttendanceStatus(
                     ou = ou.value,
                     program = program.value,
-                    stage = registration?.programStage ?: "",
-                    attendanceStage = datastoreAttendance.value?.programStage ?: "",
-                    attendanceDataElement = datastoreAttendance.value?.status ?: "",
-                    reasonDataElement = datastoreAttendance.value?.absenceReason ?: "",
+                    stage = registration?.programStage.orEmpty(),
+                    attendanceStage = datastoreAttendance.value?.programStage.orEmpty(),
+                    attendanceDataElement = datastoreAttendance.value?.status.orEmpty(),
+                    reasonDataElement = datastoreAttendance.value?.absenceReason.orEmpty(),
                     date = date,
                     dataElementIds = listOf(
-                        "${registration?.academicYear}",
+                        "${schoolCalendar.value?.academicYear}",
                         "${registration?.grade}",
                         "${registration?.section}",
                     ),
@@ -345,7 +344,7 @@ class AttendanceViewModel
             val attendance = AttendanceEntity(
                 tei = tei,
                 enrollment = enrollment,
-                dataElement = datastoreAttendance.value?.status ?: "",
+                dataElement = datastoreAttendance.value?.status.orEmpty(),
                 value = value,
                 reasonDataElement = datastoreAttendance.value?.absenceReason,
                 reasonOfAbsence = reasonOfAbsence,
@@ -366,7 +365,7 @@ class AttendanceViewModel
                     repository.save(
                         ou = ou,
                         program = program.value,
-                        programStage = datastoreAttendance.value?.programStage ?: "",
+                        programStage = datastoreAttendance.value?.programStage.orEmpty(),
                         attendance = attendance,
                     )
                 }
@@ -477,7 +476,7 @@ class AttendanceViewModel
                     repository.save(
                         ou = ou.value,
                         program = program.value,
-                        programStage = datastoreAttendance.value?.programStage ?: "",
+                        programStage = datastoreAttendance.value?.programStage.orEmpty(),
                         attendance = attendance,
                     )
                 }

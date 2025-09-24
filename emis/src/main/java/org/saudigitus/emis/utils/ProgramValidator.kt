@@ -1,7 +1,7 @@
 package org.saudigitus.emis.utils
 
 import org.hisp.dhis.android.core.D2
-import org.saudigitus.emis.data.model.EMISConfig
+import org.saudigitus.emis.data.model.app_config.EMISConfig
 import javax.inject.Inject
 
 class ProgramValidator @Inject constructor(private val d2: D2) {

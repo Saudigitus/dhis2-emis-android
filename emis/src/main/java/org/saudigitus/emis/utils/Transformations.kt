@@ -10,7 +10,7 @@ import org.hisp.dhis.android.core.event.Event
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttribute
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttributeValue
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityInstance
-import org.saudigitus.emis.data.model.Attendance
+import org.saudigitus.emis.data.model.app_config.Attendance
 import org.saudigitus.emis.data.model.SearchTeiModel
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
 import org.saudigitus.emis.data.model.dto.withBtnSettings
@@ -43,7 +43,7 @@ class Transformations(private val d2: D2) {
         val teiModel = transform(tei, program, enrollment)
         val transformedEvent = eventTransform(event, attendanceDataElement, reasonDataElement)
 
-        val status = config.attendanceStatus?.find { status ->
+        val status = config.statusOptions?.find { status ->
             status.code == transformedEvent?.value
         }
 

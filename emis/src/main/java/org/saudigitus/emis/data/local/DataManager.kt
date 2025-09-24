@@ -2,12 +2,12 @@ package org.saudigitus.emis.data.local
 
 import kotlinx.coroutines.flow.Flow
 import org.hisp.dhis.android.core.dataelement.DataElement
-import org.saudigitus.emis.data.model.CalendarConfig
-import org.saudigitus.emis.data.model.EMISConfigItem
-import org.saudigitus.emis.data.model.ProgramStage
+import org.saudigitus.emis.data.model.app_config.EMISConfigItem
 import org.saudigitus.emis.data.model.SearchTeiModel
 import org.saudigitus.emis.data.model.Subject
+import org.saudigitus.emis.data.model.app_config.ProgramStages
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
+import org.saudigitus.emis.data.model.schoolcalendar_config.SchoolCalendarConfig
 import org.saudigitus.emis.ui.attendance.AttendanceOption
 import org.saudigitus.emis.ui.components.DropdownItem
 
@@ -77,9 +77,9 @@ interface DataManager {
         options: List<String>,
     ): Map<SearchTeiModel, AttendanceEntity>
 
-    suspend fun dateValidation(id: String): CalendarConfig?
+    suspend fun dateValidation(id: String): SchoolCalendarConfig?
 
     suspend fun getSubjects(stage: String): List<Subject>
 
-    suspend fun getTerms(stages: List<ProgramStage>): List<DropdownItem>
+    suspend fun getTerms(stages: List<ProgramStages>): List<DropdownItem>
 }

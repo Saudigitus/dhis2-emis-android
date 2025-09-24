@@ -1,26 +1,21 @@
 package org.saudigitus.emis.data.local.repository
 
-import android.util.Log
 import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.dhis2.commons.resources.ResourceManager
 import org.hisp.dhis.android.core.D2
-import org.hisp.dhis.android.core.analytics.aggregated.DimensionItem
-import org.hisp.dhis.android.core.analytics.trackerlinelist.DateFilter
-import org.hisp.dhis.android.core.analytics.trackerlinelist.OrganisationUnitFilter
-import org.hisp.dhis.android.core.analytics.trackerlinelist.TrackerLineListItem
 import org.hisp.dhis.android.core.period.DatePeriod
 import org.saudigitus.emis.data.local.AnalyticsRepository
 import org.saudigitus.emis.data.local.DataManager
-import org.saudigitus.emis.data.model.AcademicYear
 import org.saudigitus.emis.data.model.Analytic
 import org.saudigitus.emis.data.model.AnalyticGroup
 import org.saudigitus.emis.data.model.AnalyticSettings
 import org.saudigitus.emis.data.model.AttendanceIndicator
-import org.saudigitus.emis.data.model.EMISConfig
+import org.saudigitus.emis.data.model.app_config.EMISConfig
 import org.saudigitus.emis.data.model.Indicator
 import org.saudigitus.emis.data.model.Visualization
+import org.saudigitus.emis.data.model.schoolcalendar_config.AcademicYear
 import org.saudigitus.emis.utils.Constants
 import org.saudigitus.emis.utils.Utils
 import timber.log.Timber
@@ -42,8 +37,11 @@ class AnalyticsRepositoryImpl
 
     private suspend fun getAcademicYearDates(): AcademicYear? {
         val config = repository.dateValidation(Constants.CALENDAR_KEY)
+        val default = config?.defaults
 
-        return config?.academicYear
+        return config?.schoolCalendar?.find {
+            it?.academicYear?.code == default?.academicYear
+        }?.academicYear
     }
 
     private fun getAnalyticsSettings(program: String): Analytic? {
