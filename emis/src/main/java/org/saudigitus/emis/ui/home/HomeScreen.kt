@@ -190,7 +190,7 @@ fun HomeUI(
                     val defaultSelection = when (filter.filterType) {
                         FilterType.GRADE -> uiState.filterSelection.second
                         FilterType.SECTION -> uiState.filterSelection.third
-                        else -> null
+                        else -> uiState.selectedFilters.firstOrNull { it == filter }
                     }
 
                     AnimatedVisibility(visible = filter.data.isNotEmpty()) {

@@ -1,6 +1,7 @@
 package org.saudigitus.emis.ui.home
 
 import android.os.Bundle
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
@@ -145,7 +146,7 @@ class HomeViewModel
             ),
             Module(
                 key = "attendance",
-                display = config?.attendance?.enabled ?: false
+                display = config?.attendance?.enabled ?: true
             ),
             Module(
                 key = "performance",
@@ -174,7 +175,9 @@ class HomeViewModel
                     program = "${uiState.value.programSettings?.getString(PROGRAM_UID)}",
                     stage = "${registration.value?.programStage}",
                     dataElementIds = dataElements,
-                    dataValues = viewModelState.value.options,
+                    dataValues = viewModelState.value.options.ifEmpty {
+                        viewModelState.value.unknownOptions
+                    },
                 ).collect { teiList ->
                     setTeis(teiList)
                 }
@@ -309,6 +312,13 @@ class HomeViewModel
         invokeInFilters()
     }
 
+    private fun addSelectedFilters(filter: DropdownItem) {
+        viewModelState.update {
+            it.copy(selectedFilters = it.selectedFilters + filter)
+        }
+        invokeInFilters()
+    }
+
     private suspend fun options(uid: String) = repository.getOptions(
         ou = viewModelState.value.school?.uid,
         program = program.value,
@@ -348,7 +358,9 @@ class HomeViewModel
                 setSchool(filterItem as OU)
             }
 
-            FilterType.NONE -> {}
+            FilterType.NONE -> {
+                addSelectedFilters(filterItem as DropdownItem)
+            }
         }
     }
 

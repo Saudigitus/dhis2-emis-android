@@ -18,6 +18,7 @@ data class HomeUiState(
     val school: OU? = null,
     val grade: DropdownItem? = null,
     val section: DropdownItem? = null,
+    val selectedFilters: List<DropdownItem> = emptyList(),
     val key: String? = null,
     val trackedEntityType: String = "",
     val academicYearState: DropdownState? = null,
@@ -43,6 +44,9 @@ data class HomeUiState(
         } else {
             emptyList()
         }
+
+    val unknownOptions: List<String>
+        get() = selectedFilters.mapNotNull { it.code }
 
     val filterSelection: Triple<DropdownItem?, DropdownItem?, DropdownItem?>
         get() = Triple(academicYear, grade, section)
