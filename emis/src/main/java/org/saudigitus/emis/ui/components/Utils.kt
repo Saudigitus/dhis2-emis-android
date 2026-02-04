@@ -1,21 +1,28 @@
 package org.saudigitus.emis.ui.components
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.HideSource
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
@@ -37,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import org.dhis2.commons.date.DateUtils
 import org.saudigitus.emis.R
+import org.saudigitus.emis.ui.theme.dark_warning
 import org.saudigitus.emis.ui.theme.light_error
 import org.saudigitus.emis.ui.theme.light_info
 import org.saudigitus.emis.utils.DateHelper
@@ -125,8 +133,7 @@ fun CustomDatePicker(
             ),
             colors = DatePickerDefaults.colors(
                 containerColor = Color.White,
-                todayContentColor = Color(0xFF2C98F0),
-                todayDateBorderColor = Color(0xFF2C98F0),
+                todayDateBorderColor = Color.Unspecified,
                 selectedDayContainerColor = Color(0xFF2C98F0),
                 selectedYearContainerColor = Color(0xFF2C98F0),
             ),
@@ -183,6 +190,34 @@ fun FavoriteAlertDialog(
                     /**  TODO("SET String resource") */
                 )
             },
+        )
+    }
+}
+
+@Composable
+fun Info(
+    modifier: Modifier = Modifier,
+    imageVector: ImageVector = Icons.Default.Info,
+    message: String = stringResource(R.string.no_attendance_school_days)
+) {
+    Row(
+        modifier = modifier.then(
+            Modifier.background(
+                color = Color.LightGray.copy(alpha = .25f),
+                shape = RoundedCornerShape(16.dp)
+            ).padding(16.dp)
+        ),
+        horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.Start),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            imageVector = imageVector,
+            contentDescription = stringResource(R.string.no_attendance_school_days),
+            tint = dark_warning
+        )
+        androidx.compose.material3.Text(
+            text = message,
+            color = dark_warning
         )
     }
 }

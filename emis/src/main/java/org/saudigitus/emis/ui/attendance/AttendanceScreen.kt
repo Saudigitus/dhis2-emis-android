@@ -30,6 +30,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -48,6 +49,9 @@ import org.dhis2.ui.theme.colorPrimary
 import org.hisp.dhis.android.core.enrollment.EnrollmentStatus
 import org.saudigitus.emis.R
 import org.saudigitus.emis.data.model.mapper.map
+import org.saudigitus.emis.data.model.schoolcalendar_config.SchoolCalendar
+import org.saudigitus.emis.data.model.schoolcalendar_config.SchoolCalendarConfig
+import org.saudigitus.emis.ui.components.Info
 import org.saudigitus.emis.ui.components.InfoCard
 import org.saudigitus.emis.ui.components.ShowCard
 import org.saudigitus.emis.ui.components.Toolbar
@@ -80,12 +84,26 @@ fun AttendanceScreen(
     val fieldState by viewModel.fieldState.collectAsStateWithLifecycle()
     val formData by viewModel.formData.collectAsStateWithLifecycle()
 
+    var canTakeAttendance by remember {
+        mutableStateOf(false)
+    }
+
+    var longDate by remember { mutableLongStateOf(System.currentTimeMillis()) }
+
     var isAttendanceCompleted by remember { mutableStateOf(false) }
     var launchBulkAssign by remember { mutableStateOf(false) }
     var isBulk by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
+
+    LaunchedEffect(schoolCalendar != null) {
+        canTakeAttendance = validateCalendar(
+            longDate,
+            schoolCalendar,
+            currentSchoolCalendar
+        )
+    }
 
     if (attendanceStep == ButtonStep.SAVING) {
         AttendanceSummaryDialog(
@@ -152,32 +170,24 @@ fun AttendanceScreen(
                     filterVisibility = false,
                     showCalendar = true,
                 ),
-                calendarAction = viewModel::setDate,
+                calendarAction = {
+                    val date = DateHelper.convertDateToMilliseconds(it)
+
+                    longDate = date
+                    canTakeAttendance = validateCalendar(
+                        date,
+                        schoolCalendar,
+                        currentSchoolCalendar
+                    )
+
+                    viewModel.setDate(it)
+                },
                 dateValidator = {
-                    val date = stringToLocalDate(DateHelper.formatDate(it)!!)
-                    val today = System.currentTimeMillis()
-
-                    if (schoolCalendar != null && currentSchoolCalendar != null) {
-                        val startDate = currentSchoolCalendar?.academicYear?.startDate
-                        val endDate = currentSchoolCalendar?.academicYear?.endDate
-
-                        val startMillis = stringToLocalDate(startDate!!)
-                            .atStartOfDay(ZoneId.systemDefault())
-                            ?.toInstant()?.toEpochMilli()!!
-                        val endMillis = stringToLocalDate(endDate!!)
-                            .atStartOfDay(ZoneId.systemDefault())
-                            ?.toInstant()?.toEpochMilli()!!
-
-                       (
-                            !DateHelper.isWeekend(date) && currentSchoolCalendar?.weekDays?.saturday == false &&
-                                currentSchoolCalendar?.weekDays?.sunday == false
-                            ) &&
-                           currentSchoolCalendar?.holidays?.let { holiday ->
-                                DateHelper.isHoliday(holiday.fastFilterNotNull(), it)
-                            } == true && (it in startMillis..endMillis) && it <= today
-                    } else {
-                        it <= today
-                    }
+                    validateCalendar(
+                        it,
+                        schoolCalendar,
+                        currentSchoolCalendar
+                    )
                 },
                 syncAction = sync,
             )
@@ -212,7 +222,7 @@ fun AttendanceScreen(
                     if (attendanceStep == ButtonStep.HOLD_SAVING) {
                         isAttendanceCompleted = false
                         viewModel.setAttendanceStep(ButtonStep.SAVING)
-                    } else {
+                    } else if (canTakeAttendance) {
                         viewModel.setAttendanceStep(ButtonStep.HOLD_SAVING)
                     }
                 },
@@ -271,12 +281,25 @@ fun AttendanceScreen(
                 verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                ShowCard(
-                    infoCard,
-                    false,
-                    enabledIconButton = attendanceStep == ButtonStep.HOLD_SAVING,
-                    onIconClick = { launchBulkAssign = true },
-                )
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top),
+                ) {
+                    ShowCard(
+                        infoCard,
+                        false,
+                        enabledIconButton = attendanceStep == ButtonStep.HOLD_SAVING,
+                        onIconClick = { launchBulkAssign = true },
+                    )
+
+                    if (!canTakeAttendance) {
+                        Info(
+                            modifier = Modifier.fillMaxWidth()
+                                .padding(16.dp),
+                        )
+                    }
+                }
 
                 if (isLoading) {
                     CircularProgressIndicator(
@@ -338,5 +361,39 @@ fun AttendanceScreen(
                 }
             }
         }
+    }
+}
+
+
+private fun validateCalendar(
+    longDate: Long,
+    schoolCalendar: SchoolCalendarConfig?,
+    currentSchoolCalendar: SchoolCalendar?
+): Boolean {
+    val date = stringToLocalDate(DateHelper.formatDate(longDate)!!)
+    val today = System.currentTimeMillis()
+
+    return if (schoolCalendar != null && currentSchoolCalendar != null) {
+        val startDate = currentSchoolCalendar.academicYear?.startDate
+        val endDate = currentSchoolCalendar.academicYear?.endDate
+
+        val startMillis = stringToLocalDate(startDate!!)
+            .atStartOfDay(ZoneId.systemDefault())
+            ?.toInstant()?.toEpochMilli()!!
+        val endMillis = stringToLocalDate(endDate!!)
+            .atStartOfDay(ZoneId.systemDefault())
+            ?.toInstant()?.toEpochMilli()!!
+
+      val isValid = (
+            !DateHelper.isWeekend(date) && currentSchoolCalendar.weekDays?.saturday == false &&
+                currentSchoolCalendar.weekDays.sunday == false
+            ) &&
+            currentSchoolCalendar.holidays?.let { holiday ->
+                DateHelper.isHoliday(holiday.fastFilterNotNull(), longDate)
+            } == true && (longDate in startMillis..endMillis) && longDate <= today
+
+        isValid
+    } else {
+        longDate <= today
     }
 }
