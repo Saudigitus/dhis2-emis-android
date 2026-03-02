@@ -1,5 +1,6 @@
 package org.saudigitus.emis.ui.subjects
 
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,10 +40,12 @@ class SubjectViewModel
                     it.copy(filters = repository.getTerms(stages))
                 }
 
-                val selected = uiState.value.filters.getOrNull(0)
+                val selected = programStage.value.ifEmpty {
+                    uiState.value.filters.getOrNull(0)?.id
+                }
 
                 if (selected != null) {
-                    performOnFilterClick(selected.id)
+                    performOnFilterClick(selected)
                 }
             }
         }

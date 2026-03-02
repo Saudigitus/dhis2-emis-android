@@ -13,6 +13,7 @@ import org.dhis2.commons.bindings.enrollment
 import org.dhis2.commons.date.DateUtils
 import org.dhis2.commons.network.NetworkUtils
 import org.hisp.dhis.android.core.D2
+import org.hisp.dhis.android.core.arch.repositories.scope.RepositoryScope
 import org.hisp.dhis.android.core.dataelement.DataElement
 import org.hisp.dhis.android.core.event.EventCreateProjection
 import org.hisp.dhis.android.core.event.EventStatus
@@ -416,7 +417,7 @@ class DataManagerImpl
 
                 Subject(
                     uid = dl?.uid() ?: "",
-                    code = dl?.code()?.ifEmpty { "" },
+                    code = dl?.code() ?: "",
                     color = dl?.style()?.color(),
                     displayName = dl?.displayFormName(),
                 )
@@ -428,6 +429,7 @@ class DataManagerImpl
 
         return@withContext d2.programModule().programStages()
             .byUid().`in`(stagesIds)
+            .orderBySortOrder(RepositoryScope.OrderByDirection.ASC)
             .blockingGet()
             .map {
                 DropdownItem(
