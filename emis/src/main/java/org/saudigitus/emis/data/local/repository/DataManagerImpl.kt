@@ -19,11 +19,13 @@ import org.hisp.dhis.android.core.event.EventCreateProjection
 import org.hisp.dhis.android.core.event.EventStatus
 import org.saudigitus.emis.data.local.DataManager
 import org.saudigitus.emis.data.local.util.SqlRaw
-import org.saudigitus.emis.data.model.app_config.EMISConfig
-import org.saudigitus.emis.data.model.app_config.EMISConfigItem
 import org.saudigitus.emis.data.model.SearchTeiModel
 import org.saudigitus.emis.data.model.Subject
+import org.saudigitus.emis.data.model.TransferredTei
+import org.saudigitus.emis.data.model.app_config.EMISConfig
+import org.saudigitus.emis.data.model.app_config.EMISConfigItem
 import org.saudigitus.emis.data.model.app_config.ProgramStages
+import org.saudigitus.emis.data.model.app_config.TransferEvent
 import org.saudigitus.emis.data.model.dto.AttendanceEntity
 import org.saudigitus.emis.data.model.dto.withBtnSettings
 import org.saudigitus.emis.data.model.schoolcalendar_config.SchoolCalendarConfig
@@ -34,6 +36,7 @@ import org.saudigitus.emis.utils.Constants
 import org.saudigitus.emis.utils.Transformations
 import org.saudigitus.emis.utils.Utils
 import org.saudigitus.emis.utils.Utils.getAttendanceStatusColor
+import org.saudigitus.emis.utils.Utils.mapToType
 import org.saudigitus.emis.utils.eventsWithTrackedDataValues
 import org.saudigitus.emis.utils.optionByOptionSet
 import org.saudigitus.emis.utils.optionsByOptionSetAndCode
@@ -42,7 +45,6 @@ import org.saudigitus.emis.utils.optionsNotInOptionsSets
 import timber.log.Timber
 import java.sql.Date
 import javax.inject.Inject
-import kotlin.collections.mapNotNull
 
 class DataManagerImpl
 @Inject constructor(
@@ -225,6 +227,63 @@ class DataManagerImpl
             return@withContext d2.dataElement(uid)
         }
 
+    override suspend fun getTransferredTeis(orgUnit: String) =
+        withContext(Dispatchers.IO) {
+            try {
+                val dataStore = d2.dataStoreModule()
+                    .dataStore()
+                    .byNamespace().eq("semis")
+                    .byKey().eq("transfers")
+                    .one().blockingGet()
+
+                val transferred = EMISConfig.translateFromJson<TransferEvent>(dataStore?.value())
+                    ?: return@withContext emptyList()
+
+                val requiredDataElements = listOfNotNull(
+                    transferred.academicYear,
+                    transferred.enrollment,
+                    transferred.trackerId,
+                )
+
+                d2.eventModule().events()
+                    .byProgramUid().eq(transferred.program)
+                    .byOrganisationUnitUid().eq(orgUnit)
+                    .withTrackedEntityDataValues()
+                    .byDeleted().isFalse
+                    .blockingGet()
+                    .filter { event ->
+                        val values = event.trackedEntityDataValues().orEmpty()
+
+                        val presentElements = values
+                            .filter { !it.value().isNullOrEmpty() }
+                            .map { it.dataElement() }
+
+                        requiredDataElements.all { it in presentElements }
+                    }
+                    .flatMap { event ->
+                        event.trackedEntityDataValues().orEmpty()
+                            .mapNotNull { dataValue ->
+                                val de = dataValue.dataElement()
+                                val value = dataValue.value()
+
+                                if (de in requiredDataElements && !value.isNullOrEmpty()) {
+                                    val type = mapToType(de.orEmpty(), transferred)
+
+                                    type?.let {
+                                        TransferredTei(
+                                            dataElement = de.orEmpty(),
+                                            value = value,
+                                            type = it
+                                        )
+                                    }
+                                } else null
+                            }
+                    }
+            } catch (_: Exception) {
+                emptyList()
+            }
+        }
+
     override fun getTeisBy(
         ou: String,
         program: String,
@@ -246,14 +305,19 @@ class DataManagerImpl
                     dataElements.values.containsAll(dataValues)
             }.mapNotNull {
                 d2.enrollment("${it.enrollment()}")
-            }.map {
-                val tei = d2.trackedEntityModule()
-                    .trackedEntityInstances()
-                    .byUid().eq(it.trackedEntityInstance())
-                    .withTrackedEntityAttributeValues()
-                    .one().blockingGet()
+            }.mapNotNull {
+                val transferred = getTransferredTeis(ou)
+                val dataValues = transferred.map { dataValue -> dataValue.value }
 
-                transformations.transform(tei, program, it)
+                if (!dataValues.contains(it.trackedEntityInstance())) {
+                    val tei = d2.trackedEntityModule()
+                        .trackedEntityInstances()
+                        .byUid().eq(it.trackedEntityInstance())
+                        .withTrackedEntityAttributeValues()
+                        .one().blockingGet()
+
+                    transformations.transform(tei, program, it)
+                } else null
             },
         )
     }.buffer()
