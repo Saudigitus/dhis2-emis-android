@@ -22,6 +22,7 @@ import org.saudigitus.emis.data.local.util.SqlRaw
 import org.saudigitus.emis.data.model.SearchTeiModel
 import org.saudigitus.emis.data.model.Subject
 import org.saudigitus.emis.data.model.TransferredTei
+import org.saudigitus.emis.data.model.app_config.Defaults
 import org.saudigitus.emis.data.model.app_config.EMISConfig
 import org.saudigitus.emis.data.model.app_config.EMISConfigItem
 import org.saudigitus.emis.data.model.app_config.ProgramStages
@@ -291,34 +292,47 @@ class DataManagerImpl
         dataElementIds: List<String>,
         dataValues: List<String>,
     ): Flow<List<SearchTeiModel>> = flow {
+        val default = getDefaultFromEmisConfig(program)
+        val defaultOrder = default?.defaultOrder?.split(":")
+        val attrId = defaultOrder?.firstOrNull().orEmpty()
+        val order = if (defaultOrder?.lastOrNull()
+                .orEmpty().lowercase() == "desc"
+        ) RepositoryScope.OrderByDirection.DESC
+        else RepositoryScope.OrderByDirection.ASC
+
         emit(
-            d2.eventsWithTrackedDataValues(
-                ou,
-                program,
-                stage,
-            ).filter {
-                val dataElements =
-                    it.trackedEntityDataValues()?.associate { trackedEntityDataValue ->
-                        Pair(trackedEntityDataValue.dataElement(), trackedEntityDataValue.value())
+            d2.trackedEntityModule().trackedEntityInstanceQuery()
+                .byOrgUnits().eq(ou)
+                .byProgram().eq(program)
+                .byProgramStage().eq(stage)
+                .orderByAttribute(attrId).eq(order)
+                .blockingGet().flatMap {
+                    d2.eventsWithTrackedDataValues(
+                        ou,
+                        program,
+                        stage,
+                        it.uid()
+                    ).filter { event ->
+                        val dataElements =
+                            event.trackedEntityDataValues()?.associate { trackedEntityDataValue ->
+                                Pair(
+                                    trackedEntityDataValue.dataElement(),
+                                    trackedEntityDataValue.value()
+                                )
+                            }
+                        dataElements?.keys?.containsAll(dataElementIds) == true &&
+                            dataElements.values.containsAll(dataValues)
+                    }.mapNotNull { event ->
+                        d2.enrollment(event.enrollment().orEmpty())
+                    }.mapNotNull { enrollment ->
+                        val transferred = getTransferredTeis(ou)
+                        val dataValues = transferred.map { dataValue -> dataValue.value }
+
+                        if (!dataValues.contains(enrollment.trackedEntityInstance())) {
+                            transformations.transform(it, program, enrollment)
+                        } else null
                     }
-                dataElements?.keys?.containsAll(dataElementIds) == true &&
-                    dataElements.values.containsAll(dataValues)
-            }.mapNotNull {
-                d2.enrollment("${it.enrollment()}")
-            }.mapNotNull {
-                val transferred = getTransferredTeis(ou)
-                val dataValues = transferred.map { dataValue -> dataValue.value }
-
-                if (!dataValues.contains(it.trackedEntityInstance())) {
-                    val tei = d2.trackedEntityModule()
-                        .trackedEntityInstances()
-                        .byUid().eq(it.trackedEntityInstance())
-                        .withTrackedEntityAttributeValues()
-                        .one().blockingGet()
-
-                    transformations.transform(tei, program, it)
-                } else null
-            },
+                }
         )
     }.buffer()
         .conflate()
@@ -502,5 +516,12 @@ class DataManagerImpl
                     code = it.code(),
                 )
             }
+    }
+
+    private suspend fun getDefaultFromEmisConfig(program: String): Defaults? {
+        val config = getConfig(Constants.KEY)?.find { it.program == program }
+            ?: return null
+
+        return config.defaults
     }
 }

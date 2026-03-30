@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Auth(
     val baseUrl: String?,
+    val endpoint: String?,
     val type: String?,
     val token: String?,
     val key: String? = null
@@ -24,6 +25,12 @@ data class Auth(
             null
         }
     }
+
+    fun formatEndpoint(): String? {
+        if (endpoint.isNullOrBlank()) return null
+        return endpoint.removePrefix("/").trim()
+    }
+
 
     override fun toString(): String {
         return "{baseUrl: ${validateAndFormatBaseUrl()}, type: $type, token: $token}"

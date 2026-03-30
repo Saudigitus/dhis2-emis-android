@@ -122,6 +122,7 @@ fun AttendanceScreen(
             } else {
                 viewModel.clearCache()
                 viewModel.refreshOnSave()
+                sync.invoke()
             }
         }
     }
