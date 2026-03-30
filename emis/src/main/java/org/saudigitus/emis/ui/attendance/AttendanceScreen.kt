@@ -118,6 +118,7 @@ fun AttendanceScreen(
                 viewModel.bulkSave {
                     isAttendanceCompleted = false
                     isBulk = false
+                    sync.invoke()
                 }
             } else {
                 viewModel.clearCache()

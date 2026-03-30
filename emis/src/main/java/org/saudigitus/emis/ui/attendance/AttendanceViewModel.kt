@@ -483,12 +483,7 @@ class AttendanceViewModel
             }.await()
 
             clearCache()
-            setAttendanceStep(ButtonStep.EDITING)
-            if (isOnlyAbsence.value) {
-                geTeiByAttendanceStatus(eventDate.value)
-            } else {
-                attendanceEvents(eventDate.value)
-            }
+            refreshOnSave()
             onSuccess()
         }
     }
