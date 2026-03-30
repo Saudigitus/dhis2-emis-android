@@ -11,8 +11,8 @@
         <item quantity="one">Error</item>
         <item quantity="other">Errors</item>
     </plurals>
-    <string name="error_wrong_server_url">Wrong server url</string>
-    <string name="error_wrong_credentials">Wrong credentials</string>
+    <string name="error_wrong_server_url">Invalid link</string>
+    <string name="error_wrong_credentials">Invalid username or password. Please check your details and try again, or contact your supervisor for help.</string>
     <string name="error_unexpected_error">Unexpected error</string>
     <string name="error_internal_server_error">Internal server error</string>
     <string name="no_value">no value</string>
@@ -52,7 +52,7 @@
     <string name="referral">Referral</string>
 
     <!-- Login -->
-    <string name="url_hint">Server url</string>
+    <string name="url_hint">Server link</string>
     <string name="user_hint">Username</string>
     <string name="password_hint">Password</string>
     <string name="log_in_button">Log In</string>

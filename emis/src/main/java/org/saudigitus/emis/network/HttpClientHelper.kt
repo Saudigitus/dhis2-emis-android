@@ -57,9 +57,6 @@ class HttpClientHelper @Inject constructor(private val d2: D2) {
                 retryOnException(5, true)
                 exponentialDelay()
             }
-            defaultRequest {
-                url(urlString = auth?.validateAndFormatBaseUrl().orEmpty())
-            }
         }
     }
 }
