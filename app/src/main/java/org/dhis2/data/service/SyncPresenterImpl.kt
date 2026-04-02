@@ -198,6 +198,8 @@ class SyncPresenterImpl(
     }
 
     override fun syncAndDownloadDataValues() {
+        syncHelperRepository.cleanBasedOnEvents()
+
         if (!d2.dataSetModule().dataSets().blockingIsEmpty()) {
             syncStatusController.startDownloadingDataSets()
             Completable.fromObservable(d2.dataValueModule().dataValues().upload())
@@ -358,7 +360,7 @@ class SyncPresenterImpl(
                 val data = Data.Builder()
                     .putStringArray("incomplete", arrayOf("INCOMPLETE"))
                     .build()
-                ListenableWorker.Result.failure(data)
+                ListenableWorker.Result.success()
             }
         }
     }
@@ -374,7 +376,7 @@ class SyncPresenterImpl(
                 val data = Data.Builder()
                     .putStringArray("incomplete", arrayOf("INCOMPLETE"))
                     .build()
-                ListenableWorker.Result.failure(data)
+                ListenableWorker.Result.success()
             }
         }
     }
@@ -384,7 +386,7 @@ class SyncPresenterImpl(
             .andThen(Completable.fromObservable(syncGranularDataSetComplete(dataSetUid)))
             .blockingAwait()
         return if (!checkSyncDataSetStatus(dataSetUid)) {
-            ListenableWorker.Result.failure()
+            ListenableWorker.Result.success()
         } else {
             ListenableWorker.Result.success()
         }
@@ -407,7 +409,7 @@ class SyncPresenterImpl(
             )
             .blockingAwait()
         return if (!checkSyncDataValueStatus(orgUnitUid, attrOptionCombo, periodId)) {
-            ListenableWorker.Result.failure()
+            ListenableWorker.Result.success()
         } else {
             ListenableWorker.Result.success()
         }

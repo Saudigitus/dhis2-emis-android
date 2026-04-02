@@ -249,7 +249,7 @@ class MainActivity : FragmentActivity() {
         }
     }
 
-    private fun syncProgram() {
+    private fun syncProgram(refresh : (() -> Unit)? = null) {
         if (networkUtils.isOnline()) {
             SyncDialog(
                 activity = this@MainActivity,
@@ -265,6 +265,7 @@ class MainActivity : FragmentActivity() {
                 dismissListener = object : OnDismissListener {
                     override fun onDismiss(hasChanged: Boolean) {
                         viewModel.refreshData()
+                        refresh?.invoke()
                     }
                 }
             ).show()

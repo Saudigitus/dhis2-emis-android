@@ -350,38 +350,34 @@ class DataManagerImpl
         val config = getConfig(Constants.KEY)?.find { it.program == program }
             ?.attendance ?: return@withContext emptyList()
 
-        val deferredEvents = async {
-            d2.eventModule().events()
-                .byTrackedEntityInstanceUids(teis)
-                .byProgramUid().eq(program)
-                .byProgramStageUid().eq(programStage)
-                .byDeleted().isFalse
-                .byEventDate().eq(
-                    if (date != null) {
-                        Date.valueOf(date)
-                    } else {
-                        DateUtils.getInstance().today
-                    },
+        d2.eventModule().events()
+            .byTrackedEntityInstanceUids(teis)
+            .byProgramUid().eq(program)
+            .byProgramStageUid().eq(programStage)
+            .byDeleted().isFalse
+            .byEventDate().eq(
+                if (date != null) {
+                    Date.valueOf(date)
+                } else {
+                    DateUtils.getInstance().today
+                },
+            )
+            .withTrackedEntityDataValues()
+            .blockingGet()
+            .mapNotNull {
+                transformations.eventTransform(it, dataElement, reasonDataElement)
+            }
+            .map { attendanceEntity ->
+                val status = config.statusOptions?.find { status ->
+                    status.code == attendanceEntity.value
+                }
+
+                attendanceEntity.withBtnSettings(
+                    icon = Utils.dynamicIcons("${status?.icon}"),
+                    iconName = "${status?.icon}",
+                    iconColor = getAttendanceStatusColor("${status?.key}", "${status?.color}"),
                 )
-                .withTrackedEntityDataValues()
-                .blockingGet()
-                .mapNotNull {
-                    transformations.eventTransform(it, dataElement, reasonDataElement)
-                }
-                .map { attendanceEntity ->
-                    val status = config.statusOptions?.find { status ->
-                        status.code == attendanceEntity.value
-                    }
-
-                    attendanceEntity.withBtnSettings(
-                        icon = Utils.dynamicIcons("${status?.icon}"),
-                        iconName = "${status?.icon}",
-                        iconColor = getAttendanceStatusColor("${status?.key}", "${status?.color}"),
-                    )
-                }
-        }
-
-        return@withContext deferredEvents.await()
+            }
     }
 
     override suspend fun deleteEvent(
@@ -418,7 +414,7 @@ class DataManagerImpl
 
         val attendanceStatus = config.statusOptions?.find { status ->
             status.key == Constants.ABSENT
-        }?.code ?: ""
+        }?.code.orEmpty()
 
         val data = mutableMapOf<SearchTeiModel, AttendanceEntity>()
 
