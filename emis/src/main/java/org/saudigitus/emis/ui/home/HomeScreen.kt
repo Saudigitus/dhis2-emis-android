@@ -205,7 +205,7 @@ fun HomeUI(
                 }
             }
         }
-        if (!uiState.infoCard.hasData()) {
+        if (uiState.isFetchingTei) {
             LinearProgressIndicator(
                 modifier = Modifier.fillMaxWidth(),
             )

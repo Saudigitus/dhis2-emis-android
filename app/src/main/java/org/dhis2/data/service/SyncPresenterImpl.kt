@@ -6,7 +6,6 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.ListenableWorker
 import io.reactivex.Completable
 import io.reactivex.Observable
-import kotlinx.coroutines.runBlocking
 import org.dhis2.bindings.toSeconds
 import org.dhis2.commons.bindings.enrollment
 import org.dhis2.commons.bindings.program
@@ -34,13 +33,11 @@ import org.hisp.dhis.android.core.arch.call.D2ProgressStatus
 import org.hisp.dhis.android.core.common.State
 import org.hisp.dhis.android.core.fileresource.FileResourceDomainType
 import org.hisp.dhis.android.core.imports.TrackerImportConflict
-import org.hisp.dhis.android.core.imports.TrackerImportConflictTableInfo
 import org.hisp.dhis.android.core.program.ProgramType
 import org.hisp.dhis.android.core.settings.GeneralSettings
 import org.hisp.dhis.android.core.settings.LimitScope
 import org.hisp.dhis.android.core.settings.ProgramSettings
 import org.hisp.dhis.android.core.systeminfo.DHISVersion
-import org.hisp.dhis.android.core.trackedentity.TrackedEntityInstanceTableInfo
 import org.saudigitus.emis.data.local.repository.SyncHelperRepository
 import timber.log.Timber
 import java.util.Calendar
@@ -325,7 +322,7 @@ class SyncPresenterImpl(
             .blockingAwait()
         syncHelperRepository.cleanBasedOnEvents()
         return if (!checkSyncProgramStatus(programUid)) {
-            ListenableWorker.Result.failure()
+            ListenableWorker.Result.success()
         } else {
             syncStatusController.updateSingleProgramToSuccess(programUid)
             ListenableWorker.Result.success()
@@ -354,7 +351,7 @@ class SyncPresenterImpl(
                 val data = Data.Builder()
                     .putStringArray("conflict", mergeDateConflicts.toTypedArray())
                     .build()
-                ListenableWorker.Result.failure(data)
+                ListenableWorker.Result.success()
             }
 
             SyncResult.INCOMPLETE -> {
@@ -372,7 +369,7 @@ class SyncPresenterImpl(
         syncHelperRepository.cleanBasedOnEvents()
         return when (checkSyncEventStatus(eventUid)) {
             SyncResult.SYNC -> ListenableWorker.Result.success()
-            SyncResult.ERROR -> ListenableWorker.Result.failure()
+            SyncResult.ERROR -> ListenableWorker.Result.success()
             SyncResult.INCOMPLETE -> {
                 val data = Data.Builder()
                     .putStringArray("incomplete", arrayOf("INCOMPLETE"))
