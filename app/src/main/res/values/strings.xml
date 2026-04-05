@@ -953,7 +953,7 @@
     <string name="mark_follow_up">Mark for follow-up</string>
     <string name="coordinates">Coordinates</string>
     <string name="no_data_access">You don’t have access to data.\nContact your administrator.</string>
-    <string name="sync_offline_check_connection">Looks like you\'re offline. Please check you connection</string>
+    <string name="sync_offline_check_connection">Looks like you\'re offline. Please check your connection. Sync once you\'re online</string>
     <string name="delete_tei_dialog_title">Delete this %s?</string>
     <string name="delete_tei_dialog_message">This %s and all its data across all programs will be deleted. This action cannot be undone.</string>
     <string name="remove_enrollment_dialog_title">Remove from %s?</string>
