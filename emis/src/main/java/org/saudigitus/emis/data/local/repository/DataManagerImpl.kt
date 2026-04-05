@@ -130,6 +130,22 @@ class DataManagerImpl
             }
         }
 
+    override suspend fun save(
+        ou: String,
+        program: String,
+        programStage: String,
+        attendances: List<AttendanceEntity>
+    ) = withContext(Dispatchers.IO) {
+        attendances.forEach { attendance ->
+            save(
+                ou,
+                program,
+                programStage,
+                attendance
+            )
+        }
+    }
+
     override suspend fun getConfig(id: String): List<EMISConfigItem>? =
         withContext(Dispatchers.IO) {
             val dataStore = d2.dataStoreModule()
@@ -350,38 +366,34 @@ class DataManagerImpl
         val config = getConfig(Constants.KEY)?.find { it.program == program }
             ?.attendance ?: return@withContext emptyList()
 
-        val deferredEvents = async {
-            d2.eventModule().events()
-                .byTrackedEntityInstanceUids(teis)
-                .byProgramUid().eq(program)
-                .byProgramStageUid().eq(programStage)
-                .byDeleted().isFalse
-                .byEventDate().eq(
-                    if (date != null) {
-                        Date.valueOf(date)
-                    } else {
-                        DateUtils.getInstance().today
-                    },
+        d2.eventModule().events()
+            .byTrackedEntityInstanceUids(teis)
+            .byProgramUid().eq(program)
+            .byProgramStageUid().eq(programStage)
+            .byDeleted().isFalse
+            .byEventDate().eq(
+                if (date != null) {
+                    Date.valueOf(date)
+                } else {
+                    DateUtils.getInstance().today
+                },
+            )
+            .withTrackedEntityDataValues()
+            .blockingGet()
+            .mapNotNull {
+                transformations.eventTransform(it, dataElement, reasonDataElement)
+            }
+            .map { attendanceEntity ->
+                val status = config.statusOptions?.find { status ->
+                    status.code == attendanceEntity.value
+                }
+
+                attendanceEntity.withBtnSettings(
+                    icon = Utils.dynamicIcons("${status?.icon}"),
+                    iconName = "${status?.icon}",
+                    iconColor = getAttendanceStatusColor("${status?.key}", "${status?.color}"),
                 )
-                .withTrackedEntityDataValues()
-                .blockingGet()
-                .mapNotNull {
-                    transformations.eventTransform(it, dataElement, reasonDataElement)
-                }
-                .map { attendanceEntity ->
-                    val status = config.statusOptions?.find { status ->
-                        status.code == attendanceEntity.value
-                    }
-
-                    attendanceEntity.withBtnSettings(
-                        icon = Utils.dynamicIcons("${status?.icon}"),
-                        iconName = "${status?.icon}",
-                        iconColor = getAttendanceStatusColor("${status?.key}", "${status?.color}"),
-                    )
-                }
-        }
-
-        return@withContext deferredEvents.await()
+            }
     }
 
     override suspend fun deleteEvent(
@@ -389,17 +401,30 @@ class DataManagerImpl
         enrollment: String,
         eventDate: String
     ) = withContext(Dispatchers.IO) {
-        val events = d2.eventModule().events()
+        val event = d2.eventModule().events()
             .byTrackedEntityInstanceUids(listOf(tei))
             .byEnrollmentUid().eq(enrollment)
             .byEventDate().eq(Date.valueOf(eventDate))
-            .blockingGetUids()
+            .one()
+            .blockingGet()
 
-        events.forEach {
-            d2.eventModule().events()
-                .uid(it)
-                .blockingDeleteIfExist()
-        }
+        d2.eventModule().events()
+            .uid(event?.uid())
+            .blockingDeleteIfExist()
+    }
+
+    override suspend fun deleteAllEvents(
+        teis: List<String>,
+        eventDate: String
+    ) = withContext(Dispatchers.IO) {
+        d2.eventModule().events()
+            .byTrackedEntityInstanceUids(teis)
+            .byEventDate().eq(Date.valueOf(eventDate))
+            .blockingGetUids()
+            .forEach {
+                d2.eventModule().events()
+                    .uid(it).blockingDeleteIfExist()
+            }
     }
 
     override suspend fun geTeiByAttendanceStatus(
@@ -418,7 +443,7 @@ class DataManagerImpl
 
         val attendanceStatus = config.statusOptions?.find { status ->
             status.key == Constants.ABSENT
-        }?.code ?: ""
+        }?.code.orEmpty()
 
         val data = mutableMapOf<SearchTeiModel, AttendanceEntity>()
 

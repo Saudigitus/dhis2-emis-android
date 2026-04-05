@@ -1,5 +1,7 @@
 package org.saudigitus.emis.ui.attendance
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.OutlinedButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ClearAll
 import androidx.compose.material.icons.filled.Rocket
@@ -44,7 +47,7 @@ import org.saudigitus.emis.utils.Utils
 fun BulkAssignComponent(
     onDismissRequest: () -> Unit,
     attendanceOptions: List<AttendanceOption>,
-    onAttendanceStatus: (Triple<Int, String, Color?>) -> Unit,
+    onAttendanceStatus: (Triple<Int, String, Color?>, key: String?) -> Unit,
     onClear: () -> Unit,
     onCancel: () -> Unit,
 ) {
@@ -77,14 +80,22 @@ fun BulkAssignComponent(
                 fontSize = 20.sp,
             )
 
-            LazyColumn(modifier = Modifier.fillMaxWidth()) {
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top),
+            ) {
                 itemsIndexed(attendanceOptions) { index, option ->
                     Card(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth()
+                            .border(
+                                width = 0.5.dp,
+                                color = option.color ?: Color.LightGray.copy(0.25f),
+                                shape = RoundedCornerShape(16.dp)
+                            ),
                         colors = CardDefaults.cardColors(
                             containerColor = Color.White,
                         ),
-                        onClick = { onAttendanceStatus.invoke(Triple(index, option.code!!, option.color)) },
+                        onClick = { onAttendanceStatus.invoke(Triple(index, option.code.orEmpty(), option.color), option.key) },
                     ) {
                         Row(
                             modifier = Modifier
@@ -125,10 +136,12 @@ fun BulkAssignComponent(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                TextButton(
+                OutlinedButton(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
+                    shape = RoundedCornerShape(32.dp),
+                    border = BorderStroke(width = 1.dp, color = Color.LightGray.copy(0.3f)),
                     onClick = onClear::invoke,
                 ) {
                     Row(
