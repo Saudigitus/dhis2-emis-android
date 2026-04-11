@@ -419,8 +419,10 @@ class AttendanceViewModel
         data.find { it.tei == tei }?.let {
             data.remove(it)
             _formData.value = data
-            repository.deleteEvent(tei, enrollment, eventDate.value)
         }
+        repository.deleteEvent(tei, enrollment, eventDate.value)
+        delay(100L)
+
         val fieldState = fieldState.value.toMutableList()
         fieldState.find { it.key == tei }?.let {
             val current =  it.copy(value = "")
@@ -613,7 +615,6 @@ class AttendanceViewModel
         viewModelScope.launch {
             repository.deleteAllEvents(teiUIds.value.map { it.first }, eventDate.value)
         }
-        clearCache()
     }
 
     fun clearCache() {
@@ -624,6 +625,7 @@ class AttendanceViewModel
         _formData.value = emptyList()
         _displayReasonField.value = emptyList()
         _absenceState.value = Absence()
+        _attendanceStatus.value = emptyList()
         _formData.value = emptyList()
         closeAll()
     }
