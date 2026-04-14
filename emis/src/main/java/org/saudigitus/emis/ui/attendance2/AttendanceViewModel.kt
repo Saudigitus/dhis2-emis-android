@@ -493,7 +493,8 @@ class AttendanceViewModel @Inject constructor(
             _uiState.value = currentState.copy(
                 attendanceStep = ButtonStep.EDITING,
                 attendanceButtonState = currentButtonState.copy(isEditing = false),
-                execSync = false
+                execSync = false,
+                displayReasonField = emptyMap(),
             )
             delay(10L)
             loadAttendanceEventsByDate(currentState.selectedDate)
