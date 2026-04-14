@@ -45,6 +45,7 @@ import org.hisp.dhis.mobile.ui.designsystem.component.ListCardTitleModel
 import org.hisp.dhis.mobile.ui.designsystem.component.ProgressIndicator
 import org.hisp.dhis.mobile.ui.designsystem.component.ProgressIndicatorType
 import org.saudigitus.emis.R
+import org.saudigitus.emis.data.model.SearchTeiModel
 import org.saudigitus.emis.data.model.mapper.map
 import org.saudigitus.emis.ui.attendance.AttendanceSummaryDialog
 import org.saudigitus.emis.ui.attendance.BulkAssignComponent
@@ -61,6 +62,7 @@ import org.saudigitus.emis.ui.teis.mapper.TEICardMapper
 import org.saudigitus.emis.ui.theme.light_error
 import org.saudigitus.emis.ui.theme.light_success
 import org.saudigitus.emis.utils.hasStudent
+import kotlin.collections.List
 
 @Suppress("DEPRECATION")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,6 +70,7 @@ import org.saudigitus.emis.utils.hasStudent
 internal fun AttendanceUi(
     uiState: AttendanceUiState,
     teiCardMapper: TEICardMapper,
+    students: List<SearchTeiModel>,
     snackbarHostState: SnackbarHostState,
     dateValidator: (Long) -> Boolean,
     onEvent: (AttendanceUiEvent) -> Unit,
@@ -221,7 +224,6 @@ internal fun AttendanceUi(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 when (uiState) {
-                    is AttendanceUiState.IDLE -> Unit
                     is AttendanceUiState.LOADING -> {
                         Box(
                             modifier = Modifier.fillMaxSize(),
@@ -258,7 +260,7 @@ internal fun AttendanceUi(
                             contentPadding = PaddingValues(bottom = 108.dp),
                         ) {
                             items(
-                                uiState.students,
+                                uiState.students.ifEmpty { students },
                                 key = { student -> student.tei.uid().orEmpty() },
                             ) { student ->
                                 val card =

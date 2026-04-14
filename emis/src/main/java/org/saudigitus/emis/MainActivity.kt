@@ -9,6 +9,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -16,7 +17,6 @@ import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -61,7 +61,8 @@ class MainActivity : FragmentActivity() {
 
         setContent {
             val widthSizeClass = calculateWindowSizeClass(this).widthSizeClass
-            val isExpandedScreen = (widthSizeClass == WindowWidthSizeClass.Medium) || (widthSizeClass == WindowWidthSizeClass.Expanded)
+            val isExpandedScreen =
+                (widthSizeClass == WindowWidthSizeClass.Medium) || (widthSizeClass == WindowWidthSizeClass.Expanded)
 
             EMISAndroidTheme(
                 darkTheme = false,
@@ -107,18 +108,24 @@ class MainActivity : FragmentActivity() {
                                 },
                             ),
                         ) {
-                            val attendanceViewModel: org.saudigitus.emis.ui.attendance2.AttendanceViewModel = hiltViewModel()
+                            val attendanceViewModel: org.saudigitus.emis.ui.attendance2.AttendanceViewModel =
+                                hiltViewModel()
                             val teis by viewModel.teis.collectAsStateWithLifecycle()
                             val infoCard by viewModel.infoCard.collectAsStateWithLifecycle()
 
+                            LaunchedEffect(teis) {
+                                attendanceViewModel.initialize(
+                                    intent?.extras?.getString(Constants.PROGRAM_UID).orEmpty(),
+                                    teis,
+                                    infoCard
+                                )
+                            }
 
                             org.saudigitus.emis.ui.attendance2.AttendanceScreen(
                                 this@MainActivity,
                                 attendanceViewModel,
                                 teiCardMapper,
-                                intent?.extras?.getString(Constants.PROGRAM_UID).orEmpty(),
                                 teis,
-                                infoCard,
                                 navController::navigateUp,
                                 ::syncProgram,
                             )
@@ -143,13 +150,18 @@ class MainActivity : FragmentActivity() {
                             val attendanceViewModel: AttendanceViewModel = hiltViewModel()
                             val infoCard by attendanceViewModel.infoCard.collectAsStateWithLifecycle()
 
-                            attendanceViewModel.setDefaults(stringResource(R.string.absenteeism), true)
+                            attendanceViewModel.setDefaults(
+                                stringResource(R.string.absenteeism),
+                                true
+                            )
                             attendanceViewModel.setOptions(
                                 it.arguments?.getString("academicYear") ?: "",
                                 it.arguments?.getString("grade") ?: "",
                                 it.arguments?.getString("section") ?: "",
                             )
-                            attendanceViewModel.setProgram(intent?.extras?.getString(Constants.PROGRAM_UID) ?: "")
+                            attendanceViewModel.setProgram(
+                                intent?.extras?.getString(Constants.PROGRAM_UID) ?: ""
+                            )
                             attendanceViewModel.setInfoCard(viewModel.infoCard.collectAsStateWithLifecycle().value)
                             attendanceViewModel.setOU(it.arguments?.getString("ou") ?: "")
 
@@ -192,7 +204,9 @@ class MainActivity : FragmentActivity() {
                             val ou = it.arguments?.getString("ou") ?: ""
 
                             performanceViewModel.setOU(ou)
-                            performanceViewModel.setProgram(intent?.extras?.getString(Constants.PROGRAM_UID) ?: "")
+                            performanceViewModel.setProgram(
+                                intent?.extras?.getString(Constants.PROGRAM_UID) ?: ""
+                            )
                             performanceViewModel.loadSubjects(stage)
                             performanceViewModel.setTeis(teis, performanceViewModel::updateTEISList)
                             performanceViewModel.setInfoCard(viewModel.infoCard.collectAsStateWithLifecycle().value)
@@ -206,7 +220,10 @@ class MainActivity : FragmentActivity() {
                                 infoCard = infoCard,
                                 defaultSelection = it.arguments?.getString("subjectName") ?: "",
                                 setPerformanceState = performanceViewModel::fieldState,
-                                performanceStats = Pair("${stats.size}", "${teis.size.minus(stats.size)}"),
+                                performanceStats = Pair(
+                                    "${stats.size}",
+                                    "${teis.size.minus(stats.size)}"
+                                ),
                                 performanceStep = performanceStep,
                                 setDate = performanceViewModel::setDate,
                                 onNext = performanceViewModel::onClickNext,
@@ -228,7 +245,9 @@ class MainActivity : FragmentActivity() {
                             val state by subjectViewModel.uiState.collectAsStateWithLifecycle()
                             val stage by subjectViewModel.programStage.collectAsStateWithLifecycle()
                             val infoCard by viewModel.infoCard.collectAsStateWithLifecycle()
-                            subjectViewModel.setProgram(intent?.extras?.getString(Constants.PROGRAM_UID) ?: "")
+                            subjectViewModel.setProgram(
+                                intent?.extras?.getString(Constants.PROGRAM_UID) ?: ""
+                            )
                             val ou = it.arguments?.getString("ou") ?: ""
 
                             SubjectScreen(
@@ -249,7 +268,7 @@ class MainActivity : FragmentActivity() {
     }
 
     private fun syncProgram(
-        refresh : (() -> Unit)? = null,
+        refresh: (() -> Unit)? = null,
         offlineAction: (() -> Unit)? = null,
     ) {
         if (networkUtils.isOnline()) {

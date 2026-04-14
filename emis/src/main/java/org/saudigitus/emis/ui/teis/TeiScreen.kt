@@ -63,6 +63,7 @@ fun TeiScreen(
                 actionState = ToolbarActionState(
                     syncVisibility = true,
                     showFavorite = false,
+                    filterVisibility = false,
                 ),
                 syncAction = onSync,
             )
