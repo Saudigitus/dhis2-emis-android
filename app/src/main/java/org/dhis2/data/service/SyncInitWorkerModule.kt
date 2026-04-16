@@ -17,9 +17,7 @@ import javax.inject.Singleton
 class SyncInitWorkerModule {
     @Provides
     @PerService
-    fun syncRepository(d2: D2): SyncRepository {
-        return SyncRepositoryImpl(d2)
-    }
+    fun syncRepository(d2: D2): SyncRepository = SyncRepositoryImpl(d2)
 
     @Provides
     @PerService
@@ -48,8 +46,8 @@ class SyncInitWorkerModule {
         syncStatusController: SyncStatusController,
         syncRepository: SyncRepository,
         syncHelperRepository: SyncHelperRepository
-    ): SyncPresenter {
-        return SyncPresenterImpl(
+    ): SyncPresenter =
+        SyncPresenterImpl(
             d2,
             preferences,
             workManagerController,
@@ -58,5 +56,4 @@ class SyncInitWorkerModule {
             syncRepository,
             syncHelperRepository,
         )
-    }
 }
