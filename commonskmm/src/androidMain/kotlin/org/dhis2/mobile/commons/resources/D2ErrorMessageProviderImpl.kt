@@ -223,6 +223,8 @@ class D2ErrorMessageProviderImpl : D2ErrorMessageProvider {
 
             D2ErrorCode.NOT_IN_TOTP_2FA_ENROLLMENT_MODE ->
                 getString(Res.string.not_in_totp_2fa_enrollment_mode)
+
+            else -> defaultError()
         }
 
     private suspend fun defaultError() = getString(Res.string.error_unexpected)

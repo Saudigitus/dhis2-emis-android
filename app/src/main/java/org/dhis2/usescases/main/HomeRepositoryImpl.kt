@@ -71,7 +71,7 @@ class HomeRepositoryImpl(
             Result.success(d2.userModule().blockingLogOut())
         }
 
-    override suspend fun clearSessionLock(): Result<Unit> =
+    suspend fun clearSessionLock(): Result<Unit> =
         execute {
             preferences.setValue(Preference.SESSION_LOCKED, false)
             d2
@@ -94,7 +94,7 @@ class HomeRepositoryImpl(
             false
         }
 
-    override fun checkDeleteBiometricsPermission() {
+    fun checkDeleteBiometricsPermission() {
         val hasLessThanTwoAccounts =
             d2
                 .userModule()

@@ -45,7 +45,7 @@ data class Graph(
         } else if (series.isNotEmpty()) {
             val min = minDate()
             val max = maxDate()
-            return when (eventPeriodType) {
+            when (eventPeriodType) {
                 PeriodType.Daily,
                 PeriodType.Weekly,
                 PeriodType.WeeklySaturday,
@@ -71,6 +71,10 @@ data class Graph(
                 PeriodType.FinancialNov,
                 -> {
                     ChronoUnit.YEARS.between(YearMonth.from(min), YearMonth.from(max)).toFloat()
+                }
+
+                else -> {
+                    0f
                 }
             }
         } else {
@@ -150,6 +154,11 @@ data class Graph(
             PeriodType.FinancialNov,
             -> {
                 val date = minDate().plusYears(numberOfSteps)
+                YearMonth.from(date).atDay(1)
+            }
+
+            else -> {
+                val date = minDate().plusMonths(numberOfSteps)
                 YearMonth.from(date).atDay(1)
             }
         }

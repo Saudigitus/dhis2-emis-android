@@ -212,4 +212,5 @@ fun Dhis2PeriodType.toUiStringResource() =
         -> R.string.period_financial_year_title
 
         Dhis2PeriodType.Daily -> R.string.period_daily_title
+        else -> R.string.not_now
     }

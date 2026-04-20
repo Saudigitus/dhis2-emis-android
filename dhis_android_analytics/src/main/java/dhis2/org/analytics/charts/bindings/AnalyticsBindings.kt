@@ -59,4 +59,7 @@ fun PeriodType.datePattern(): String =
         -> {
             "YYYY"
         }
+        else  -> {
+            "MMM YYYY"
+        }
     }

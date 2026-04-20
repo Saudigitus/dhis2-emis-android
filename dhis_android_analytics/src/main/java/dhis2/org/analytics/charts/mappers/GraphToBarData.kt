@@ -84,5 +84,7 @@ class GraphToBarData {
             -> {
                 YEARLY_BAR_WIDTH
             }
+
+            else -> 0f
         }
 }

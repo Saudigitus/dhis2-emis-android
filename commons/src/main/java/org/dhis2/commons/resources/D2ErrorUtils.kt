@@ -2,6 +2,7 @@ package org.dhis2.commons.resources
 
 import android.content.Context
 import kotlinx.coroutines.runBlocking
+import org.dhis2.commons.R
 import org.dhis2.commons.network.NetworkUtils
 import org.dhis2.mobile.commons.resources.D2ErrorMessageProviderImpl
 
@@ -19,7 +20,6 @@ class D2ErrorUtils(
         runBlocking {
             d2ErrorMessageProvider.getErrorMessage(throwable, networkUtils.isOnline())
         }
-    }
 
     private fun defaultError() =
         context.getString(R.string.error_unexpected)

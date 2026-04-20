@@ -56,6 +56,7 @@ class DateToPosition {
                     val yearDiff = minMonth?.let { ChronoUnit.YEARS.between(it, yearMonth) } ?: 0
                     yearDiff.toFloat()
                 }
+                else -> throw IllegalArgumentException("Unknown period type: $eventPeriodType")
             }
 
         if (minMonth == null) updateMinMonth(yearMonth)

@@ -139,6 +139,8 @@ class DomainErrorMapper(
             D2ErrorCode.ALREADY_EXECUTED,
             D2ErrorCode.NOT_IN_TOTP_2FA_ENROLLMENT_MODE,
             -> DomainError.UnexpectedError(errorMessage)
+
+            else -> DomainError.DataNotFoundError(errorMessage)
         }
     }
 }

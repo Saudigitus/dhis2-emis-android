@@ -42,6 +42,7 @@ import org.hisp.dhis.android.core.dataset.DataSetEditableStatus
 import org.hisp.dhis.android.core.dataset.DataSetNonEditableReason
 import org.hisp.dhis.android.core.dataset.SectionPivotMode
 import org.hisp.dhis.android.core.dataset.TabsDirection
+import org.hisp.dhis.android.core.datavalue.LegacyDataValueApi
 import org.hisp.dhis.android.core.maintenance.D2Error
 import org.hisp.dhis.android.core.validation.engine.ValidationResultViolation
 import java.io.File
@@ -179,6 +180,8 @@ internal class DataSetInstanceRepositoryImpl(
 
                                     DataSetNonEditableReason.EXPIRED ->
                                         NonEditableReason.Expired
+
+                                    else -> NonEditableReason.None
                                 }
                             } ?: NonEditableReason.None,
                     )
@@ -382,6 +385,7 @@ internal class DataSetInstanceRepositoryImpl(
             }
     }
 
+    @OptIn(LegacyDataValueApi::class)
     override suspend fun conflicts(
         dataSetUid: String,
         periodId: String,
@@ -811,6 +815,7 @@ internal class DataSetInstanceRepositoryImpl(
                 }
         } ?: emptyList()
 
+    @OptIn(LegacyDataValueApi::class)
     override suspend fun getLegend(
         dataElementUid: String,
         periodId: String,
@@ -976,6 +981,7 @@ internal class DataSetInstanceRepositoryImpl(
             }
     }
 
+    @OptIn(LegacyDataValueApi::class)
     override suspend fun value(
         periodId: String,
         orgUnitUid: String,
@@ -996,6 +1002,7 @@ internal class DataSetInstanceRepositoryImpl(
         ).blockingGet()
         ?.value()
 
+    @OptIn(LegacyDataValueApi::class)
     override suspend fun updateValue(
         periodId: String,
         orgUnitUid: String,
@@ -1308,6 +1315,7 @@ internal class DataSetInstanceRepositoryImpl(
             )
         }
 
+    @OptIn(LegacyDataValueApi::class)
     private fun mapDataElements(
         dataElementUids: Set<DataElementOperand>,
         periodId: String,

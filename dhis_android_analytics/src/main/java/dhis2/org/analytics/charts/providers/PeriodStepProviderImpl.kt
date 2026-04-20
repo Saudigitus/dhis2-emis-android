@@ -235,6 +235,7 @@ class PeriodStepProviderImpl(
                     ).years
 
             null -> 0
+            else -> 0
         }
 
     // TODO:Some of these strings need to be localized
