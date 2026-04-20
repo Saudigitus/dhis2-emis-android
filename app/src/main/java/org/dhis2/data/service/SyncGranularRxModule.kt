@@ -10,7 +10,6 @@ import org.dhis2.data.service.workManager.WorkManagerController
 import org.dhis2.utils.analytics.AnalyticsHelper
 import org.hisp.dhis.android.core.D2
 import org.saudigitus.emis.data.local.repository.SyncHelperRepository
-import org.saudigitus.emis.data.local.repository.SyncHelperRepository
 import org.saudigitus.emis.network.HttpClientHelper
 
 @Module

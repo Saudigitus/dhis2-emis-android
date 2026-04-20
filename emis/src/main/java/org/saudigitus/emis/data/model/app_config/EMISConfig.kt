@@ -17,5 +17,12 @@ class EMISConfig {
                 null
             }
         }
+
+        inline fun <reified T> translateFromJson(json: String?): T? =
+            if (json != null) {
+                JsonMapper.json.decodeFromString<T>(json)
+            } else {
+                null
+            }
     }
 }

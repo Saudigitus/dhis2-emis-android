@@ -43,7 +43,7 @@ import org.saudigitus.emis.ui.teis.mapper.TEICardMapper
 import org.saudigitus.emis.ui.theme.EMISAndroidTheme
 import javax.inject.Inject
 
-@AndroidEntryPoint
+
 class MainActivity : FragmentActivity() {
 
     private val viewModel: HomeViewModel by viewModels()

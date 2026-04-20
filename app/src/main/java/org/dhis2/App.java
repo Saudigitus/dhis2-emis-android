@@ -23,6 +23,7 @@ import org.dhis2.commons.featureconfig.di.FeatureConfigActivityComponent;
 import org.dhis2.commons.featureconfig.di.FeatureConfigActivityModule;
 import org.dhis2.commons.featureconfig.di.FeatureConfigModule;
 import org.dhis2.commons.filters.data.FilterPresenter;
+import org.dhis2.commons.navigator.TeiDashboardComponentProvider;
 import org.dhis2.commons.network.NetworkUtilsModule;
 import org.dhis2.commons.orgunitselector.OUTreeComponent;
 import org.dhis2.commons.orgunitselector.OUTreeModule;

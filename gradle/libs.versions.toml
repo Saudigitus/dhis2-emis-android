@@ -151,7 +151,6 @@ androidx-compose-materialIcons = { group = "androidx.compose.material", name = "
 androidx-compose-material-iconsExtended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "materialIcons" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "androidxNavigation" }
 androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "androidxHiltNavigation" }
-androidx-dynamicanimation = { group = "androidx.dynamicanimation", name = "dynamicanimation", version.ref = "dynamicanimation" }
 kotlin-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxserialization" }
 google-guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }
 google-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "playservicesauth" }

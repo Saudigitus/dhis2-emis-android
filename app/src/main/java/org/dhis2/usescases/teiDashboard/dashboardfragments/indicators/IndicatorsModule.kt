@@ -3,7 +3,7 @@ package org.dhis2.usescases.teiDashboard.dashboardfragments.indicators
 import dagger.Module
 import dagger.Provides
 import dhis2.org.analytics.charts.Charts
-import org.dhis2.android.rtsm.utils.NetworkUtils
+import org.dhis2.commons.network.NetworkUtils
 import org.dhis2.commons.di.dagger.PerFragment
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.commons.schedulers.SchedulerProvider

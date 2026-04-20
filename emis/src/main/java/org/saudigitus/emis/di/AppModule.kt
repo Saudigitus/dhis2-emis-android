@@ -15,12 +15,10 @@ import org.saudigitus.emis.data.local.AnalyticsRepository
 import org.saudigitus.emis.data.local.AttendanceRepository
 import org.saudigitus.emis.data.local.DataManager
 import org.saudigitus.emis.data.local.FormRepository
-import org.saudigitus.emis.data.local.UserPreferencesRepository
 import org.saudigitus.emis.data.local.repository.AnalyticsRepositoryImpl
 import org.saudigitus.emis.data.local.repository.AttendanceRepositoryImpl
 import org.saudigitus.emis.data.local.repository.DataManagerImpl
 import org.saudigitus.emis.data.local.repository.FormRepositoryImpl
-import org.saudigitus.emis.data.local.repository.UserPreferencesRepositoryImpl
 import org.saudigitus.emis.data.local.util.AttendanceTransformation
 import org.saudigitus.emis.helper.ISEMISSync
 import org.saudigitus.emis.helper.SEMISSync
@@ -74,12 +72,6 @@ object AppModule {
         d2: D2,
         networkUtils: NetworkUtils,
     ): ISEMISSync = SEMISSync(d2, networkUtils)
-
-    @Provides
-    @Singleton
-    fun providesUserPreferences(
-        @ApplicationContext context: Context,
-    ): UserPreferencesRepository = UserPreferencesRepositoryImpl(context)
 
     @Provides
     @Singleton

@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     id("com.android.library")
     kotlin("android")
-    kotlin("kapt")
+    id("com.google.devtools.ksp")
     id("kotlin-parcelize")
     id("kotlinx-serialization")
     alias(libs.plugins.kotlin.compose.compiler)
@@ -88,6 +88,7 @@ kotlin {
 dependencies {
 
     implementation(project(":commons"))
+    implementation(project(":commonskmm"))
     implementation(project(":compose-table"))
     implementation(project(":form"))
     implementation(project(":dhis2-mobile-program-rules"))
@@ -105,7 +106,6 @@ dependencies {
     implementation(libs.androidx.compose.uitooling)
     implementation(libs.androidx.compose.preview)
     implementation(libs.androidx.material3)
-    implementation(libs.kotlinx.coroutines.android)
     implementation(libs.dagger.hilt.android)
     implementation(libs.androidx.material3.window)
     implementation(libs.kotlin.serialization.json)
@@ -115,12 +115,8 @@ dependencies {
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.serialization.kotlinx.json)
 
-    kapt(libs.dagger.hilt.android.compiler)
+    ksp(libs.dagger.hilt.android.compiler)
 
     coreLibraryDesugaring(libs.desugar)
 
-}
-
-kapt {
-    correctErrorTypes = true
 }
