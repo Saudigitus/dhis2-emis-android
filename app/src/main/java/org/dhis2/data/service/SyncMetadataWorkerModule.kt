@@ -10,15 +10,14 @@ import org.dhis2.data.service.workManager.WorkManagerController
 import org.dhis2.utils.analytics.AnalyticsHelper
 import org.hisp.dhis.android.core.D2
 import org.saudigitus.emis.data.local.repository.SyncHelperRepository
+import org.saudigitus.emis.data.local.repository.SyncHelperRepository
 import org.saudigitus.emis.network.HttpClientHelper
 
 @Module
 class SyncMetadataWorkerModule {
     @Provides
     @PerService
-    fun syncRepository(d2: D2): SyncRepository {
-        return SyncRepositoryImpl(d2)
-    }
+    fun syncRepository(d2: D2): SyncRepository = SyncRepositoryImpl(d2)
 
     @Provides
     @PerService
@@ -46,9 +45,9 @@ class SyncMetadataWorkerModule {
         analyticsHelper: AnalyticsHelper,
         syncStatusController: SyncStatusController,
         syncRepository: SyncRepository,
-        syncHelperRepository: SyncHelperRepository
-    ): SyncPresenter {
-        return SyncPresenterImpl(
+        syncHelperRepository: SyncHelperRepository,
+    ): SyncPresenter =
+        SyncPresenterImpl(
             d2,
             preferences,
             workManagerController,
@@ -57,5 +56,4 @@ class SyncMetadataWorkerModule {
             syncRepository,
             syncHelperRepository,
         )
-    }
 }
