@@ -453,53 +453,7 @@ class DataManagerImpl
 
         val data = mutableMapOf<SearchTeiModel, AttendanceEntity>()
 
-        return@withContext try {
-            val cursor = d2.databaseAdapter().rawQuery(
-                SqlRaw.geTeiByAttendanceStatusQuery(
-                    ou,
-                    program,
-                    stage,
-                    attendanceStage,
-                    attendanceStatus,
-                    attendanceDataElement,
-                    reasonDataElement,
-                    date,
-                    dataElementIds,
-                    options,
-                ),
-            )
-
-            if (cursor.count > 0) {
-                cursor.moveToFirst()
-
-                do {
-                    if (!cursor.isNull(0) &&
-                        !cursor.isNull(1) && !cursor.isNull(2)
-                    ) {
-                        val response = async {
-                            transformations.teiEventTransform(
-                                teiUid = cursor.getString(1),
-                                eventUid = cursor.getString(0),
-                                program = program,
-                                attendanceDataElement = attendanceDataElement,
-                                reasonDataElement = reasonDataElement,
-                                config = config,
-                            )
-                        }
-
-                        val result = response.await()
-
-                        data[result.first] = result.second
-                    }
-                } while (cursor.moveToNext())
-
-                data
-            } else {
-                emptyMap()
-            }
-        } catch (_: Exception) {
-            emptyMap()
-        }
+        return@withContext data
     }
 
     override suspend fun dateValidation(id: String): SchoolCalendarConfig? =

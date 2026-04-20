@@ -15,8 +15,8 @@ import org.dhis2.commons.resources.ResourceManager
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.common.State
 import org.hisp.dhis.android.core.imports.ImportStatus
-import org.hisp.dhis.android.core.imports.TrackerImportConflictTableInfo
-import org.hisp.dhis.android.core.trackedentity.TrackedEntityInstanceTableInfo
+import org.hisp.dhis.android.persistence.imports.TrackerImportConflictTableInfo
+import org.hisp.dhis.android.persistence.trackedentity.TrackedEntityInstanceTableInfo
 import org.saudigitus.emis.data.model.Auth
 import org.saudigitus.emis.data.model.DataValue
 import org.saudigitus.emis.data.model.EventBulkRequest
@@ -191,15 +191,13 @@ class SyncHelperRepository @Inject constructor(
     private suspend fun pruneNotOwnedTEs(trackers: List<String>) = withContext(Dispatchers.IO) {
         trackers.forEach { tei ->
             d2.databaseAdapter().delete(
-                TrackedEntityInstanceTableInfo.TABLE_INFO.name(),
+                TrackedEntityInstanceTableInfo.TABLE_NAME,
                 "${TrackedEntityInstanceTableInfo.Columns.UID} = '$tei'",
-                emptyArray()
             )
 
             d2.databaseAdapter().delete(
-                TrackerImportConflictTableInfo.TABLE_INFO.name(),
+                TrackerImportConflictTableInfo.TABLE_NAME,
                 "${TrackerImportConflictTableInfo.Columns.TRACKED_ENTITY_INSTANCE} = '$tei'",
-                emptyArray()
             )
         }
     }

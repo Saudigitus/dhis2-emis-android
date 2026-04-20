@@ -100,6 +100,9 @@ browser = "1.9.0"
 biometric = "1.1.0"
 coil = "3.3.0"
 cyclonedx = "2.1.0"
+ktor="2.3.11"
+materialIcons = "1.4.3"
+lifecycleRuntimeComposeAndroid = "2.8.7"
 
 [libraries]
 gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "gradle" }
@@ -146,14 +149,11 @@ androidx-biometric = { group = "androidx.biometric", name = "biometric", version
 androidx-browser = { group = "androidx.browser", name = "browser", version.ref = "browser" }
 androidx-compose-materialIcons = { group = "androidx.compose.material", name = "material-icons-core", version.ref = "materialIcons" }
 androidx-compose-material-iconsExtended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "materialIcons" }
-androidx-dynamicanimation = { group = "androidx.dynamicanimation", name = "dynamicanimation", version.ref = "dynamicanimation" }
 
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "androidxNavigation" }
 androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "androidxHiltNavigation" }
 
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxcoroutines" }
-datastore = { group = "androidx.datastore", name = "datastore", version.ref = "datastore" }
-kotlinx-collections-immutable = { group = "org.jetbrains.kotlinx", name = "kotlinx-collections-immutable", version.ref = "ktxCollectionsImmutable" }
 kotlin-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxserialization" }
 google-guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }
 google-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "playservicesauth" }
@@ -166,6 +166,9 @@ network-okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref 
 dates-jodatime = { group = "joda-time", name = "joda-time", version.ref = "jodatime" }
 dagger = { group = "com.google.dagger", name = "dagger", version.ref = "dagger" }
 dagger-compiler = { group = "com.google.dagger", name = "dagger-compiler", version.ref = "dagger" }
+dagger-hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "dagger" }
+dagger-hilt-android-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "dagger" }
+dagger-hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "dagger" }
 rx-java = { group = "io.reactivex.rxjava2", name = "rxjava", version.ref = "rxjava" }
 rx-android = { group = "io.reactivex.rxjava2", name = "rxandroid", version.ref = "rxandroid" }
 rx-relay = { group = "com.jakewharton.rxrelay2", name = "rxrelay", version.ref = "rxrelay" }
@@ -233,6 +236,11 @@ ktxml = { module = "org.kobjects.ktxml:core", version.ref = "ktxml" }
 commons-text = { module = "org.apache.commons:commons-text", version.ref = "commonsText" }
 coil = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil"}
 coil-network = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil"}
+ktor-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
+ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio", version.ref = "ktor" }
+androidx-lifecycle-runtime-compose-android = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose-android", version.ref = "lifecycleRuntimeComposeAndroid" }
 
 [plugins]
 kotlin-compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

@@ -5,7 +5,6 @@ plugins {
     kotlin("android")
     kotlin("kapt")
     id("kotlin-parcelize")
-    id("dagger.hilt.android.plugin")
     id("kotlinx-serialization")
     alias(libs.plugins.kotlin.compose.compiler)
 }
@@ -109,9 +108,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.dagger.hilt.android)
     implementation(libs.androidx.material3.window)
-    implementation(libs.datastore)
     implementation(libs.kotlin.serialization.json)
-    implementation(libs.kotlinx.collections.immutable)
     implementation(libs.androidx.lifecycle.runtime.compose.android)
     implementation(libs.ktor.core)
     implementation(libs.ktor.client.cio)
@@ -122,13 +119,6 @@ dependencies {
 
     coreLibraryDesugaring(libs.desugar)
 
-    debugImplementation(libs.bundles.stock.debugImplementation)
-    releaseImplementation(libs.bundles.stock.releaseImplementation)
-    testImplementation(libs.bundles.stock.test)
-
-    debugImplementation(libs.analytics.flipper.network) {
-        exclude("com.squareup.okhttp3")
-    }
 }
 
 kapt {
