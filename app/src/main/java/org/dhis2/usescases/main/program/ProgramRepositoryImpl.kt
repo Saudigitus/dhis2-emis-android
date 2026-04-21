@@ -20,6 +20,7 @@ import org.hisp.dhis.android.core.program.ProgramType.WITH_REGISTRATION
 import org.hisp.dhis.mobile.ui.designsystem.theme.SurfaceColor
 import org.saudigitus.emis.data.model.app_config.EMISConfig
 import org.saudigitus.emis.utils.Constants
+import org.saudigitus.emis.utils.decodeJson
 
 internal class ProgramRepositoryImpl(
     private val d2: D2,
@@ -65,7 +66,7 @@ internal class ProgramRepositoryImpl(
             .byKey().eq(Constants.KEY)
             .one().blockingGet()
 
-        val config = EMISConfig.fromJson(dataStore?.value()) ?: emptyList()
+        val config = EMISConfig.fromJson(decodeJson(dataStore?.value())) ?: emptyList()
         return@withContext config.find { it.program == program } != null
     }
 

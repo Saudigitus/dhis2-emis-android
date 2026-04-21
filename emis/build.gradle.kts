@@ -99,14 +99,12 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.viewModelKtx)
     implementation(libs.androidx.navigation.compose)
-    implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.compose.materialIcons)
     implementation(libs.androidx.compose.material.iconsExtended)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.uitooling)
     implementation(libs.androidx.compose.preview)
     implementation(libs.androidx.material3)
-    implementation(libs.dagger.hilt.android)
     implementation(libs.androidx.material3.window)
     implementation(libs.kotlin.serialization.json)
     implementation(libs.androidx.lifecycle.runtime.compose.android)
@@ -115,7 +113,11 @@ dependencies {
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.serialization.kotlinx.json)
 
-    ksp(libs.dagger.hilt.android.compiler)
+    api(libs.koin.core)
+    implementation(libs.koin.compose)
+    implementation(libs.koin.composeVM)
+    implementation(libs.koin.android)
+    implementation(libs.koin.androidx.compose)
 
     coreLibraryDesugaring(libs.desugar)
 

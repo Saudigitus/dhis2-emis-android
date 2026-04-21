@@ -15,6 +15,7 @@ import org.hisp.dhis.android.core.D2Configuration
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
+import org.saudigitus.emis.di.emisModule
 
 object KoinInitialization {
     operator fun Application.invoke(d2Configuration: D2Configuration) {
@@ -33,6 +34,7 @@ object KoinInitialization {
                 settingsProgramModule,
                 biometricModule,
                 matomoModule,
+                emisModule,
             )
         }
     }

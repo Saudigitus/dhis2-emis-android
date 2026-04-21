@@ -22,6 +22,7 @@ import org.hisp.dhis.android.core.maintenance.D2Error
 import org.hisp.dhis.android.core.program.ProgramType
 import org.saudigitus.emis.data.model.app_config.EMISConfig
 import org.saudigitus.emis.utils.Constants
+import org.saudigitus.emis.utils.decodeJson
 import java.io.File
 
 private const val NO_HOME_ITEM = "No home item found"
@@ -140,7 +141,7 @@ class HomeRepositoryImpl(
             .byKey().eq(Constants.KEY)
             .one().blockingGet()
 
-        val config = EMISConfig.fromJson(dataStore?.value()) ?: emptyList()
+        val config = EMISConfig.fromJson(decodeJson(dataStore?.value())) ?: emptyList()
         return@withContext config.find { it.program == program } != null
     }
 

@@ -38,6 +38,7 @@ import org.saudigitus.emis.utils.Transformations
 import org.saudigitus.emis.utils.Utils
 import org.saudigitus.emis.utils.Utils.getAttendanceStatusColor
 import org.saudigitus.emis.utils.Utils.mapToType
+import org.saudigitus.emis.utils.decodeJson
 import org.saudigitus.emis.utils.eventsWithTrackedDataValues
 import org.saudigitus.emis.utils.optionByOptionSet
 import org.saudigitus.emis.utils.optionsByOptionSetAndCode
@@ -160,7 +161,7 @@ class DataManagerImpl
                 .byKey().eq(id)
                 .one().blockingGet()
 
-            return@withContext EMISConfig.fromJson(dataStore?.value())
+            return@withContext EMISConfig.fromJson(decodeJson(dataStore?.value()))
         }
 
     override suspend fun getTrackedEntityType(program: String) = withContext(Dispatchers.IO) {
