@@ -139,6 +139,12 @@ fun CustomDatePicker(
                 state = datePickerState,
                 title = {},
                 showModeToggle = false,
+                colors = DatePickerDefaults.colors(
+                    containerColor = Color.White,
+                    todayDateBorderColor = Color.Unspecified,
+                    selectedDayContainerColor = Color(0xFF2C98F0),
+                    selectedYearContainerColor = Color(0xFF2C98F0),
+                ),
             )
         }
     }

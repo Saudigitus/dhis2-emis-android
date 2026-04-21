@@ -48,7 +48,7 @@ val emisModule = module {
     single<AttendanceTransformation> {
         AttendanceTransformation(
             d2 = get(),
-            transformation = TODO()
+            transformation = get()
         )
     }
 

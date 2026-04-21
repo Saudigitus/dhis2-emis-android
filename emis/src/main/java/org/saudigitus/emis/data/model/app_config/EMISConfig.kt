@@ -1,5 +1,6 @@
 package org.saudigitus.emis.data.model.app_config
 
+import android.util.Log
 import kotlinx.serialization.builtins.ListSerializer
 import org.saudigitus.emis.utils.JsonMapper
 
@@ -13,7 +14,8 @@ class EMISConfig {
                     ListSerializer(EMISConfigItem.serializer()),
                     json
                 )
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                Log.e("EMISConfig", "fromJson: ${e.message}")
                 null
             }
         }

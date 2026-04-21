@@ -36,6 +36,9 @@ fun HomeItem(
         border = BorderStroke(width = 0.85.dp, color = Color.LightGray.copy(.85f)),
         elevation = CardDefaults.cardElevation(3.dp),
         shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
         enabled = enabled,
         onClick = onClick,
     ) {

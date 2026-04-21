@@ -30,6 +30,7 @@ import org.dhis2.commons.network.NetworkUtils
 import org.dhis2.commons.sync.OnDismissListener
 import org.dhis2.commons.sync.SyncContext
 import org.dhis2.commons.sync.SyncDialog
+import org.koin.android.ext.android.inject
 import org.koin.androidx.compose.koinViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.saudigitus.emis.ui.home.HomeRoute
@@ -48,11 +49,9 @@ class MainActivity : FragmentActivity() {
 
     private val viewModel: HomeViewModel by viewModel()
 
-    @Inject
-    lateinit var teiCardMapper: TEICardMapper
+    private val teiCardMapper: TEICardMapper by inject()
 
-    @Inject
-    lateinit var networkUtils: NetworkUtils
+    private val networkUtils: NetworkUtils by inject()
 
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -260,7 +260,7 @@ class DataManagerImpl
                     .byKey().eq("transfers")
                     .one().blockingGet()
 
-                val transferred = EMISConfig.translateFromJson<TransferEvent>(dataStore?.value())
+                val transferred = EMISConfig.translateFromJson<TransferEvent>(decodeJson(dataStore?.value()))
                     ?: return@withContext emptyList()
 
                 val requiredDataElements = listOfNotNull(
@@ -466,7 +466,7 @@ class DataManagerImpl
                     .byKey().eq(id)
                     .one().blockingGet()
 
-                EMISConfig.translateFromJson<SchoolCalendarConfig>(dataStore?.value())
+                EMISConfig.translateFromJson<SchoolCalendarConfig>(decodeJson(dataStore?.value()))
             } catch (_: Exception) {
                 null
             }

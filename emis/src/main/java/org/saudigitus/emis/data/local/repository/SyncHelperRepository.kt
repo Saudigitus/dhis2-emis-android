@@ -30,6 +30,7 @@ import org.saudigitus.emis.network.HttpClientHelper
 import org.saudigitus.emis.utils.Constants
 import org.saudigitus.emis.utils.DateHelper
 import org.saudigitus.emis.utils.Utils.mapToType
+import org.saudigitus.emis.utils.decodeJson
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -110,7 +111,7 @@ class SyncHelperRepository @Inject constructor(
                     .byKey().eq("transfers")
                     .one().blockingGet()
 
-                val transferred = EMISConfig.translateFromJson<TransferEvent>(dataStore?.value())
+                val transferred = EMISConfig.translateFromJson<TransferEvent>(decodeJson(dataStore?.value()))
                     ?: return@withContext emptyList()
 
                 val requiredDataElements = listOfNotNull(
@@ -218,7 +219,7 @@ class SyncHelperRepository @Inject constructor(
                 .byKey().eq(Constants.AUTH_KEY)
                 .one().blockingGet()
 
-            EMISConfig.translateFromJson<Auth?>(datastore?.value())
+            EMISConfig.translateFromJson<Auth?>(decodeJson(datastore?.value()))
         } catch (_: Exception) {
             null
         }

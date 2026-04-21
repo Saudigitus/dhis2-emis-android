@@ -24,6 +24,7 @@ import org.hisp.dhis.android.core.systeminfo.SystemInfo
 import org.hisp.dhis.android.core.user.User
 import org.saudigitus.emis.data.model.app_config.EMISConfig
 import org.saudigitus.emis.utils.Constants
+import org.saudigitus.emis.utils.decodeJson
 
 class HomeRepositoryImpl(
     private val d2: D2,
@@ -134,7 +135,7 @@ class HomeRepositoryImpl(
             .byKey().eq(Constants.KEY)
             .one().blockingGet()
 
-        val config = EMISConfig.fromJson(dataStore?.value()) ?: emptyList()
+        val config = EMISConfig.fromJson(decodeJson(dataStore?.value())) ?: emptyList()
         return@withContext config.find { it.program == program } != null
     }
 
