@@ -48,9 +48,13 @@ fun AttendanceScreen(
             if (status != null && status) {
                 sync.invoke(
                     {
+                        snackbarHostState.currentSnackbarData?.dismiss()
                         viewModel.refresh()
                     },
-                    { viewModel.refresh() }
+                    {
+                        snackbarHostState.currentSnackbarData?.dismiss()
+                        viewModel.refresh()
+                    }
                 )
             }
         }
@@ -95,9 +99,13 @@ fun AttendanceScreen(
                 is AttendanceUiEvent.SyncHandler -> {
                     sync.invoke(
                         {
+                            snackbarHostState.currentSnackbarData?.dismiss()
                             viewModel.refresh()
                         },
-                        { viewModel.refresh() }
+                        {
+                            snackbarHostState.currentSnackbarData?.dismiss()
+                            viewModel.refresh()
+                        }
                     )
                 }
                 else -> viewModel.handleUiEvent(it)

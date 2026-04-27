@@ -284,6 +284,7 @@ class MainActivity : FragmentActivity() {
                         getString(R.string.sync_offline_check_connection),
                         Snackbar.LENGTH_SHORT,
                     ).show()
+                    offlineAction?.invoke()
                 },
                 dismissListener = object : OnDismissListener {
                     override fun onDismiss(hasChanged: Boolean) {
