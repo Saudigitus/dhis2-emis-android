@@ -63,6 +63,7 @@ import org.saudigitus.emis.ui.form.attendance.fields.AttendanceField
 import org.saudigitus.emis.ui.teis.mapper.TEICardMapper
 import org.saudigitus.emis.ui.theme.light_error
 import org.saudigitus.emis.ui.theme.light_success
+import org.saudigitus.emis.utils.Utils.generateRandomId
 import org.saudigitus.emis.utils.hasStudent
 
 @Suppress("DEPRECATION")
@@ -262,7 +263,7 @@ internal fun AttendanceUi(
                         ) {
                             items(
                                 uiState.students.ifEmpty { students },
-                                key = { student -> student.tei.uid().orEmpty() },
+                                key = { generateRandomId() },
                             ) { student ->
                                 val card =
                                     student.map(teiCardMapper = teiCardMapper, showSync = false)
